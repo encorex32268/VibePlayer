@@ -3,6 +3,14 @@
     <string name="permission_description">VibePlayer needs access to your music files to build
 your library and play songs</string>
     <string name="permission_allow_button">Allow Access</string>
+    <string name="permission_dialog_try_again">Try Again</string>
+    <string name="permission_dialog_ok">OK</string>
+    <string name="permission_dialog_cancel">Cancel</string>
+    <string name="permission_rationale_title">Permission Required</string>
+    <string name="permission_rationale_message">VibePlayer needs access to your music files to build your library and play songs.</string>
+    <string name="permission_denied_title">Permission Denied</string>
+    <string name="permission_denied_message">You have permanently denied the storage permission. Please enable it in Settings to use VibePlayer.</string>
+    <string name="permission_denied_settings">Open Settings</string>
     <string name="main_not_found_title">No music found</string>
     <string name="main_not_found_description">Try scanning again or check your folders.</string>
     <string name="main_not_found_scan_again">Scan again</string>

@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+
 }
 
 android {
@@ -60,4 +62,10 @@ dependencies {
 
     //Permission
     implementation(libs.google.accompanist.permissions)
+
+    //Navigation
+    implementation(libs.navigation.compose)
+
+    //Coil3
+    implementation(libs.bundles.coil3.bundle)
 }
