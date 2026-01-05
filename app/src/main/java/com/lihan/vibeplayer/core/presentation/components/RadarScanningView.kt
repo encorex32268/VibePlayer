@@ -46,7 +46,7 @@ fun RadarScanningView(
         targetValue = 360f,
         animationSpec = InfiniteRepeatableSpec(
             animation = tween(
-                durationMillis = 7000,
+                durationMillis = 2000,
                 easing = LinearEasing
             ),
         )

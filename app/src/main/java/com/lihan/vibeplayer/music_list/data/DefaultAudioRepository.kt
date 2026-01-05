@@ -2,16 +2,20 @@ package com.lihan.vibeplayer.music_list.data
 
 import android.content.ContentUris
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.lihan.vibeplayer.music_list.domain.Audio
+import com.lihan.vibeplayer.music_list.domain.AudioRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class DefaultAudioRepository(
     private val context: Context
-) {
+): AudioRepository{
 
-    fun getAudios(): List<Audio> {
+    override suspend fun getAudios(): List<Audio> {
         val contentResolver = context.contentResolver
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
@@ -40,30 +44,28 @@ class DefaultAudioRepository(
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-            val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val title = cursor.getString(titleColumn)
                 val artist = cursor.getString(artistColumn)
                 val duration = cursor.getLong(durationColumn)
-                val albumId = cursor.getLong(albumIdColumn)
 
-                val artworkUri = Uri.parse("content://media/external/audio/albumart")
-                val albumArtUri = ContentUris.withAppendedId(artworkUri, albumId)
-
+                val contentUri = ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    id
+                )
                 audios.add(
                     Audio(
                         id = id,
-                        album = albumArtUri,
+                        album = contentUri,
                         songTitle = title,
                         artisName = artist,
-                        duration = duration
+                        duration = duration,
                     )
                 )
             }
         }
-
         return audios
     }
 }
