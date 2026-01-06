@@ -15,16 +15,32 @@ class DefaultAudioRepository(
     private val context: Context
 ): AudioRepository{
 
-    override suspend fun getAudios(): List<Audio> {
+    override fun getAudios(
+        duration: Long,
+        size: Long
+    ): List<Audio> {
+
         val contentResolver = context.contentResolver
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.ALBUM_ID
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.SIZE
         )
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        val newSelection = if (duration == 0L && size == 0L){
+            "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        }else{
+            "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND " +
+                    "${MediaStore.Audio.Media.DURATION} <= ? AND " +
+                    "${MediaStore.Audio.Media.SIZE} <= ? "
+        }
+        val newSelectionArgs = if (duration == 0L && size == 0L){
+            emptyArray<String>()
+        }else{
+            arrayOf("$duration","$size")
+        }
 
         val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -36,8 +52,8 @@ class DefaultAudioRepository(
         contentResolver.query(
             collection,
             projection,
-            selection,
-            null,
+            newSelection,
+            newSelectionArgs,
             "${MediaStore.Audio.Media.TITLE} ASC"
         )?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
@@ -55,6 +71,7 @@ class DefaultAudioRepository(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     id
                 )
+
                 audios.add(
                     Audio(
                         id = id,
@@ -67,5 +84,19 @@ class DefaultAudioRepository(
             }
         }
         return audios
+    }
+
+    override suspend fun getAlbumArt(albumUri: android.net.Uri): ByteArray? {
+        return withContext(Dispatchers.IO) {
+            val retriever = MediaMetadataRetriever()
+            try {
+                retriever.setDataSource(context, albumUri)
+                retriever.embeddedPicture
+            } catch (e: Exception) {
+                null
+            } finally {
+                retriever.release()
+            }
+        }
     }
 }

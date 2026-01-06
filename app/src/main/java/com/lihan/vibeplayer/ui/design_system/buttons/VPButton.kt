@@ -2,8 +2,11 @@ package com.lihan.vibeplayer.ui.design_system.buttons
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +24,7 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 fun VPButton(
     text: String,
     onClick: () -> Unit,
+    leadingIcon: @Composable (() -> Unit)?=null,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -35,11 +39,16 @@ fun VPButton(
             disabledContentColor = TextDisabled
         )
     ) {
+        if (leadingIcon != null){
+            leadingIcon.invoke()
+            Spacer(Modifier.width(8.dp))
+        }
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontWeight = FontWeight.Medium
-            )
+            ),
+            color = LocalContentColor.current
         )
     }
 }

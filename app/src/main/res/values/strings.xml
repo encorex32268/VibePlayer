@@ -24,5 +24,8 @@ your library and play songs</string>
     <string name="scan_music_scan_duration_60s">60s</string>
     <string name="scan_music_scan_size_100kb">100KB</string>
     <string name="scan_music_scan_size_500kb">500KB</string>
+    <string name="scan_music_scan_result">Scan complete — %1$d songs found</string>
+    <string name="playing_music_unknow">Unknow</string>
+    <string name="playing_music_album_image">AlbumImage</string>
 
 </resources>

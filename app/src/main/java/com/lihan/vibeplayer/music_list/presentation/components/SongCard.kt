@@ -1,9 +1,8 @@
 package com.lihan.vibeplayer.music_list.presentation.components
 
-import android.content.Context
 import android.media.MediaMetadataRetriever
-import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,20 +15,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.domain.util.toTimeString
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
@@ -40,6 +37,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun SongCard(
     audioUi: AudioUi,
+    onAudioClick: (AudioUi) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -64,17 +62,33 @@ fun SongCard(
     }
 
     Row(
-        modifier = modifier.padding(vertical = 12.dp),
+        modifier = modifier
+            .clickable{
+                onAudioClick(audioUi)
+            }
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = imageByteArray,
-            contentDescription = audioUi.songTitle,
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .size(64.dp),
-            placeholder = painterResource(R.drawable.song_image_default)
-        )
+        if (audioUi.album == null){
+            Image(
+                contentDescription = audioUi.songTitle,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .size(64.dp),
+                painter = painterResource(R.drawable.song_image_default)
+            )
+        }else{
+            AsyncImage(
+                model = imageByteArray,
+                contentDescription = audioUi.songTitle,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .size(64.dp),
+                placeholder = painterResource(R.drawable.song_image_default),
+                error = painterResource(R.drawable.song_image_default)
+            )
+        }
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -101,13 +115,7 @@ fun SongCard(
 
 }
 
-fun Long.toTimeString(): String{
-    val mins = this / 60 / 1000
-    val seconds = (this / 1000) % 60
-    return String.format(
-        "%02d:%02d",mins,seconds
-    )
-}
+
 
 @Preview
 @Composable
@@ -118,7 +126,10 @@ private fun SongCardPreview() {
                 songTitle = "505",
                 artisName = "Arctic Monkeys",
                 duration = 60_000
-            )
+            ),
+            onAudioClick = {
+
+            }
         )
     }
 }

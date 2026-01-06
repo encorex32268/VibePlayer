@@ -9,6 +9,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -27,6 +30,7 @@ import kotlin.math.sin
 
 @Composable
 fun RadarScanningView(
+    isActiveAnimation: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
@@ -40,6 +44,8 @@ fun RadarScanningView(
     val moreInnerCircleRadius =  with(density) { 16.dp.toPx() }
     val centerCircleRadius =  with(density) { 4.dp.toPx() }
 
+    var currentAngle by remember { mutableStateOf(105f) }
+
     val infiniteTransition = rememberInfiniteTransition()
     val animatable by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -51,6 +57,10 @@ fun RadarScanningView(
             ),
         )
     )
+
+    if (isActiveAnimation) {
+        currentAngle = animatable
+    }
 
     Canvas(modifier) {
 
@@ -87,7 +97,7 @@ fun RadarScanningView(
             radius = centerCircleRadius
         )
 
-        rotate(degrees = animatable , pivot = center){
+        rotate(degrees = currentAngle, pivot = center){
             drawArc(
                 brush = ScannerArcGradient,
                 startAngle = 0f,
@@ -119,7 +129,8 @@ fun RadarScanningView(
 private fun RadarScanningViewPreview() {
     VibePlayerTheme {
         RadarScanningView(
-            modifier = Modifier.size(300.dp)
+            modifier = Modifier.size(300.dp),
+            isActiveAnimation = false
         )
     }
 }

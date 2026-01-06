@@ -7,7 +7,6 @@ import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -33,15 +32,24 @@ class MusicListViewModel(
         )
 
 
+    fun onAction(action: MusicListAction){
+        when(action){
+            MusicListAction.OnScanAgainClick -> loadAudios()
+            else -> Unit
+        }
+    }
+
     private fun loadAudios(){
         viewModelScope.launch {
             _state.update { it.copy(
                 isScanning = true
             ) }
-            delay(5000)
+            delay(1000)
 
             _state.update { it.copy(
-                audios = audioRepository.getAudios().map { audio -> audio.toUi() },
+                audios = audioRepository
+                    .getAudios()
+                    .map { audio -> audio.toUi() },
                 isScanning = false
             ) }
 

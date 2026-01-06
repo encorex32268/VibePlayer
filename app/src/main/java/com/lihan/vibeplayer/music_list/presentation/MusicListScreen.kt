@@ -24,12 +24,27 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 @Composable
 fun MusicListScreenRoot(
+    onNavigateToPlay: (Long) -> Unit,
+    onNavigateToScan: () -> Unit,
     viewModel: MusicListViewModel
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     MusicListScreen(
-        state = state
+        state = state,
+        onAction = { action ->
+            when(action){
+                MusicListAction.OnScanClick -> onNavigateToScan()
+                is MusicListAction.OnAudioClick -> {
+                    if (action.id == null){
+                        return@MusicListScreen
+                    }
+                    onNavigateToPlay(action.id)
+                }
+                else -> Unit
+            }
+            viewModel.onAction(action)
+        }
     )
 
 }
@@ -37,6 +52,7 @@ fun MusicListScreenRoot(
 @Composable
 fun MusicListScreen(
     state: MusicListState,
+    onAction: (MusicListAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     VPSurface {
@@ -49,7 +65,7 @@ fun MusicListScreen(
                     .fillMaxWidth()
                     .padding(vertical = 10.dp, horizontal = 16.dp),
                 onScanClick = {
-                    //TODO: Scan Click
+                    onAction(MusicListAction.OnScanClick)
                 }
             )
             when{
@@ -58,7 +74,15 @@ fun MusicListScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                state.audios.isNotEmpty() -> {
+                state.audios.isEmpty() && !state.isScanning -> {
+                    EmptyView(
+                        onScanAgainClick = {
+                            onAction(MusicListAction.OnScanAgainClick)
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                else -> {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -68,17 +92,15 @@ fun MusicListScreen(
                         items(state.audios){ audioUi ->
                             SongCard(
                                 audioUi = audioUi,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                onAudioClick = {
+                                    onAction(
+                                        MusicListAction.OnAudioClick(it.id)
+                                    )
+                                }
                             )
                         }
                     }
-                }
-                else -> {
-                    EmptyView(
-                        onScanAgainClick = {
-
-                        }
-                    )
                 }
             }
 
@@ -93,7 +115,10 @@ fun MusicListScreen(
 private fun MusicListScreenPreview() {
     VibePlayerTheme {
         MusicListScreen(
-            state = MusicListState()
+            state = MusicListState(),
+            onAction = {
+
+            }
         )
     }
 }

@@ -13,34 +13,76 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.exoplayer.ExoPlayer
+import coil3.compose.AsyncImage
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
+import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 @Composable
+fun PlayingScreenRoot(
+    audioId: Long,
+    onBack: () -> Unit,
+    viewModel: PlayingViewModel
+){
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+
+    LaunchedEffect(audioId) {
+        viewModel.onAction(
+            PlayingAction.OnSetCurrentAudio(audioId)
+        )
+    }
+
+    PlayingScreen(
+        state = state,
+        onAction = { action ->
+            when(action){
+                PlayingAction.OnBackClick -> onBack()
+                else -> Unit
+            }
+            viewModel.onAction(action)
+        }
+    )
+}
+
+@Composable
 fun PlayingScreen(
+    state: PlayingState,
+    onAction: (PlayingAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -49,7 +91,7 @@ fun PlayingScreen(
             CircleIconButton(
                 icon = ImageVector.vectorResource(R.drawable.arrow_left),
                 onClick = {
-                    //TODO: Playing Back
+                    onAction(PlayingAction.OnBackClick)
                 }
             )
         }
@@ -58,20 +100,34 @@ fun PlayingScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            Image(
-                modifier = Modifier.size(320.dp),
-                imageVector = ImageVector.vectorResource(R.drawable.song_image_default),
-                contentDescription = ""
-            )
+            if (state.imageByteArray == null){
+                Image(
+                    contentDescription = stringResource(R.string.playing_music_album_image),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .size(320.dp),
+                    painter = painterResource(R.drawable.song_image_default)
+                )
+            }else{
+                AsyncImage(
+                    model = state.imageByteArray,
+                    contentDescription = stringResource(R.string.playing_music_album_image),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .size(320.dp),
+                    placeholder = painterResource(R.drawable.song_image_default),
+                    error = painterResource(R.drawable.song_image_default)
+                )
+            }
+
             Spacer(Modifier.height(20.dp))
-            //TODO: Song Info
             Text(
-                text = "505",
+                text = state.currentAudio?.songTitle?: stringResource(R.string.playing_music_unknow),
                 style = MaterialTheme.typography.titleLarge,
                 color = TextPrimary
             )
             Text(
-                text = "Arctic Monkeys",
+                text = state.currentAudio?.artisName?: stringResource(R.string.playing_music_unknow),
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary
             )
@@ -93,22 +149,32 @@ fun PlayingScreen(
         ) {
             CircleIconButton(
                 icon = ImageVector.vectorResource(R.drawable.skip_previous),
-                onClick = {}
+                onClick = {
+                    onAction(PlayingAction.OnSkipPreviousClick)
+                }
             )
             IconButton(
                 modifier = Modifier
                     .clip(CircleShape)
                     .background(color = Color.White , shape = CircleShape),
-                onClick = {}
+                onClick = {
+                    onAction(PlayingAction.OnPlayClick)
+                }
             ) {
                 Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.play),
+                    imageVector = if (state.isPlaying){
+                        ImageVector.vectorResource(R.drawable.pause)
+                    }else{
+                        ImageVector.vectorResource(R.drawable.play)
+                    },
                     contentDescription = null
                 )
             }
             CircleIconButton(
                 icon = ImageVector.vectorResource(R.drawable.skip_next),
-                onClick = {}
+                onClick = {
+                    onAction(PlayingAction.OnSkipNextClick)
+                }
             )
         }
     }
@@ -120,6 +186,16 @@ fun PlayingScreen(
 @Composable
 private fun PlayingScreenPreview() {
     VibePlayerTheme {
-        PlayingScreen()
+        PlayingScreen(
+            state = PlayingState(
+                isPlaying = false,
+                currentAudio = AudioUi(
+                    songTitle = "This is song's title.",
+                    artisName = "ArtisName",
+                    duration = 10_000
+                )
+            ),
+            onAction = {}
+        )
     }
 }

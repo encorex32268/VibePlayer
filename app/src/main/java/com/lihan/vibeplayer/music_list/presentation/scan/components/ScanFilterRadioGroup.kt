@@ -1,6 +1,7 @@
-package com.lihan.vibeplayer.scan.presentation.components
+package com.lihan.vibeplayer.music_list.presentation.scan.components
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ fun ScanFilterRadioGroup(
     title: String,
     selected: String,
     radioSelects: List<String>,
+    onSelect: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -60,14 +62,17 @@ fun ScanFilterRadioGroup(
                             },
                             shape = RoundedCornerShape(100)
                         )
-                        .weight(1f),
+                        .weight(1f)
+                        .clickable{
+                            onSelect(text)
+                        },
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start
                 ){
                     VPRadioButton(
                         selected = isSelected,
                         onClick = {
-                            //OnSelected
+                            onSelect(text)
                         }
                     )
                     Text(
@@ -92,7 +97,8 @@ private fun ScanFilterRadioGroupPreview() {
             selected = "30s",
             radioSelects = listOf(
                 "30s","60s"
-            )
+            ),
+            onSelect = {}
         )
 
     }
