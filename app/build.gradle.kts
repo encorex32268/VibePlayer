@@ -73,4 +73,7 @@ dependencies {
     //Exoplayer
     implementation(libs.exoplayer)
     implementation(libs.exoplayer.dash)
+
+    //SplashScreen
+    implementation(libs.splash.core)
 }
