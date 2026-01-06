@@ -8,7 +8,9 @@ import android.os.Build
 import android.provider.MediaStore
 import com.lihan.vibeplayer.music_list.domain.Audio
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 class DefaultAudioRepository(
@@ -93,6 +95,8 @@ class DefaultAudioRepository(
                 retriever.setDataSource(context, albumUri)
                 retriever.embeddedPicture
             } catch (e: Exception) {
+                ensureActive()
+                e.printStackTrace()
                 null
             } finally {
                 retriever.release()

@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.ExoPlayer
 import coil3.compose.AsyncImage
 import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
@@ -53,17 +55,24 @@ fun PlayingScreenRoot(
     viewModel: PlayingViewModel
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val exoPlayerState by viewModel.exoPlayer.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    ObserveEvent(viewModel.uiEvent) { event ->
+        when(event){
+            PlayUiEvent.OnAudioNotFound -> {
+                //TODO Error Handle
+            }
+        }
+    }
 
     LaunchedEffect(audioId) {
-        viewModel.onAction(
-            PlayingAction.OnSetCurrentAudio(audioId)
-        )
+        viewModel.onAction(PlayingAction.OnSetupPlayer(audioId , context))
     }
 
     PlayingScreen(
         state = state,
+        exoPlayerState = exoPlayerState,
         onAction = { action ->
             when(action){
                 PlayingAction.OnBackClick -> onBack()
@@ -77,9 +86,17 @@ fun PlayingScreenRoot(
 @Composable
 fun PlayingScreen(
     state: PlayingState,
+    exoPlayerState: ExoPlayer?,
     onAction: (PlayingAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val progress by remember {
+        derivedStateOf {
+            val duration = state.currentAudio?.duration?:0L .toFloat()
+            exoPlayerState?.currentPosition?.toFloat()?:0f.coerceAtMost(duration.toFloat())
+        }
+    }
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -100,25 +117,15 @@ fun PlayingScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            if (state.imageByteArray == null){
-                Image(
-                    contentDescription = stringResource(R.string.playing_music_album_image),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .size(320.dp),
-                    painter = painterResource(R.drawable.song_image_default)
-                )
-            }else{
-                AsyncImage(
-                    model = state.imageByteArray,
-                    contentDescription = stringResource(R.string.playing_music_album_image),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .size(320.dp),
-                    placeholder = painterResource(R.drawable.song_image_default),
-                    error = painterResource(R.drawable.song_image_default)
-                )
-            }
+            AsyncImage(
+                model = state.imageByteArray,
+                contentDescription = stringResource(R.string.playing_music_album_image),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .size(320.dp),
+                placeholder = painterResource(R.drawable.song_image_default),
+                error = painterResource(R.drawable.song_image_default)
+            )
 
             Spacer(Modifier.height(20.dp))
             Text(
@@ -134,7 +141,7 @@ fun PlayingScreen(
         }
         LinearProgressIndicator(
             modifier = Modifier.fillMaxWidth(),
-            progress = { 0.3f },
+            progress = { progress },
             color = Color.White,
             trackColor = SurfaceBG,
             strokeCap = StrokeCap.Round
@@ -195,7 +202,8 @@ private fun PlayingScreenPreview() {
                     duration = 10_000
                 )
             ),
-            onAction = {}
+            onAction = {},
+            exoPlayerState = null
         )
     }
 }
