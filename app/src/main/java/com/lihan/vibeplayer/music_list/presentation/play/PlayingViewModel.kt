@@ -1,7 +1,6 @@
 package com.lihan.vibeplayer.music_list.presentation.play
 
 import android.content.Context
-import androidx.compose.ui.util.fastFlatMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -23,8 +22,6 @@ class PlayingViewModel(
     private val audioRepository: AudioRepository
 ) : ViewModel() {
 
-    private var hasInitialLoadedData = false
-
     private val _uiEvent = Channel<PlayUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
@@ -32,17 +29,7 @@ class PlayingViewModel(
     val exoPlayer = _exoPlayer.asStateFlow()
 
     private val _state = MutableStateFlow(PlayingState())
-    val state = _state
-        .onStart {
-            if (!hasInitialLoadedData) {
-
-                hasInitialLoadedData = true
-            }
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
-            PlayingState()
-        )
+    val state = _state.asStateFlow()
 
 
     fun onAction(action: PlayingAction) {
@@ -52,7 +39,6 @@ class PlayingViewModel(
             is PlayingAction.OnSetupPlayer -> onSetupPlayer(action.id, action.context)
             PlayingAction.OnSkipNextClick -> onSkipNextClick()
             PlayingAction.OnSkipPreviousClick -> onSkipPreviousClick()
-            else -> Unit
         }
     }
 
@@ -111,7 +97,6 @@ class PlayingViewModel(
                 MediaItem.fromUri(audioUi.album!!)
 
             }
-
 
         val exoPlayer = ExoPlayer
             .Builder(context)

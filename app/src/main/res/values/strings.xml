@@ -14,6 +14,7 @@ your library and play songs</string>
     <string name="main_not_found_title">No music found</string>
     <string name="main_not_found_description">Try scanning again or check your folders.</string>
     <string name="main_not_found_scan_again">Scan again</string>
+    <string name="main_floating_action_button_scroll_to_top">ScrollToTop</string>
     <string name="main_scanning_view_scanning">Scanning your device for music...</string>
     <string name="scan_music_title">Scan Music</string>
     <string name="scan_music_filter_ignore_duration_less_than">Ignore duration less than</string>

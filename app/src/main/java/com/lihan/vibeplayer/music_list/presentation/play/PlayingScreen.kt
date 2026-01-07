@@ -1,7 +1,8 @@
 package com.lihan.vibeplayer.music_list.presentation.play
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,19 +46,22 @@ import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
-import com.lihan.vibeplayer.ui.theme.SurfaceBG
+import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun PlayingScreenRoot(
     audioId: Long,
     onBack: () -> Unit,
-    viewModel: PlayingViewModel
+    viewModel: PlayingViewModel = koinViewModel()
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val exoPlayerState by viewModel.exoPlayer.collectAsStateWithLifecycle()
+    val exoPlayer by viewModel.exoPlayer.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     ObserveEvent(viewModel.uiEvent) { event ->
@@ -72,7 +78,7 @@ fun PlayingScreenRoot(
 
     PlayingScreen(
         state = state,
-        exoPlayerState = exoPlayerState,
+        exoPlayer = exoPlayer,
         onAction = { action ->
             when(action){
                 PlayingAction.OnBackClick -> onBack()
@@ -86,19 +92,42 @@ fun PlayingScreenRoot(
 @Composable
 fun PlayingScreen(
     state: PlayingState,
-    exoPlayerState: ExoPlayer?,
+    exoPlayer: ExoPlayer?,
     onAction: (PlayingAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
+    var currentPosition by remember {
+        mutableLongStateOf(0L)
+    }
+    var currentDuration by remember {
+        mutableLongStateOf(0L)
+    }
     val progress by remember {
         derivedStateOf {
-            val duration = state.currentAudio?.duration?:0L .toFloat()
-            exoPlayerState?.currentPosition?.toFloat()?:0f.coerceAtMost(duration.toFloat())
+            if (currentDuration > 0) currentPosition.toFloat() / currentDuration else 0f
         }
     }
+    LaunchedEffect(exoPlayer) {
+        if (exoPlayer!=null){
+            while (isActive){
+                if (exoPlayer.isPlaying){
+                    currentPosition = exoPlayer.currentPosition
+                    //Change Song
+                    if (exoPlayer.duration != currentDuration && exoPlayer.duration > 0) {
+                        currentDuration = exoPlayer.duration
+                    }
+                }
+                delay(500L)
+            }
+        }
+    }
+
+
+
+
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize()
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -143,8 +172,9 @@ fun PlayingScreen(
             modifier = Modifier.fillMaxWidth(),
             progress = { progress },
             color = Color.White,
-            trackColor = SurfaceBG,
-            strokeCap = StrokeCap.Round
+            trackColor = SurfaceOutline,
+            strokeCap = StrokeCap.Round,
+            gapSize = 0.dp
         )
         Spacer(modifier = Modifier.height(20.dp))
         Row(
@@ -160,13 +190,15 @@ fun PlayingScreen(
                     onAction(PlayingAction.OnSkipPreviousClick)
                 }
             )
-            IconButton(
+            Box(
                 modifier = Modifier
+                    .size(60.dp)
+                    .clickable{
+                        onAction(PlayingAction.OnPlayClick)
+                    }
                     .clip(CircleShape)
-                    .background(color = Color.White , shape = CircleShape),
-                onClick = {
-                    onAction(PlayingAction.OnPlayClick)
-                }
+                    .background(color = Color.White),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = if (state.isPlaying){
@@ -174,7 +206,8 @@ fun PlayingScreen(
                     }else{
                         ImageVector.vectorResource(R.drawable.play)
                     },
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = Color.Black
                 )
             }
             CircleIconButton(
@@ -193,6 +226,7 @@ fun PlayingScreen(
 @Composable
 private fun PlayingScreenPreview() {
     VibePlayerTheme {
+        val context = LocalContext.current
         PlayingScreen(
             state = PlayingState(
                 isPlaying = false,
@@ -203,7 +237,8 @@ private fun PlayingScreenPreview() {
                 )
             ),
             onAction = {},
-            exoPlayerState = null
+            exoPlayer = null
+
         )
     }
 }

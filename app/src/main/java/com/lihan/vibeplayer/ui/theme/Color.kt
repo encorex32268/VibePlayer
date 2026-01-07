@@ -1,6 +1,5 @@
 package com.lihan.vibeplayer.ui.theme
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
@@ -21,6 +20,7 @@ val TextPrimary = Color(0xFFFFFFFF)
 val TextSecondary = Color(0xFFA7BBD1)
 val TextDisabled = Color(0xFF4C647C)
 val SurfaceBG = Color(0xFF0A131D)
+val SurfaceOutline = Color(0xFF1A2F47)
 val Accent = Color(0xFFF1FF95)
 
 

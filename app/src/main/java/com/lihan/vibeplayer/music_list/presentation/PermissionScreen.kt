@@ -183,13 +183,13 @@ fun PermissionScreen(
                 text = stringResource(R.string.permission_allow_button),
                 onClick = {
                     if (isPermanentlyDenied && !shouldShowRationale){
-                        // 權限被永久拒絕，顯示引導到設定頁的對話框
+                        //Denied Again Not Show Rationale
                         showSettingsDialog = true
                     } else if (shouldShowRationale){
-                        // 第一次被拒絕且有 Rationale，顯示說明對話框
+                        //Show Rationale
                         isShowRationaleDialog = true
                     } else {
-                        // 第一次請求權限
+                        //First Time
                         hasRequestedPermission = true
                         audioPermissionState.launchPermissionRequest()
                     }

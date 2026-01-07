@@ -3,12 +3,10 @@ package com.lihan.vibeplayer.music_list.data
 import android.content.ContentUris
 import android.content.Context
 import android.media.MediaMetadataRetriever
-import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import com.lihan.vibeplayer.music_list.domain.Audio
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext

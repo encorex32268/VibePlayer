@@ -46,10 +46,12 @@ class MusicListViewModel(
             ) }
             delay(1000)
 
+            val audios = audioRepository
+                .getAudios()
+                .map { audio -> audio.toUi() }
+
             _state.update { it.copy(
-                audios = audioRepository
-                    .getAudios()
-                    .map { audio -> audio.toUi() },
+                audios = audios,
                 isScanning = false
             ) }
 

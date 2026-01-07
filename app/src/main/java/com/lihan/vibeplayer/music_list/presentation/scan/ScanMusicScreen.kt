@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,12 +48,13 @@ import com.lihan.vibeplayer.ui.theme.TextDisabled
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
 fun ScanMusicScreenRoot(
     onBack: () -> Unit,
-    viewModel: ScanMusicViewModel
+    viewModel: ScanMusicViewModel = koinViewModel()
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -95,6 +99,7 @@ fun ScanMusicScreen(
         modifier = modifier.fillMaxSize(),
         snackbarHost = {
             SnackbarHost(
+                modifier = Modifier.width(400.dp).fillMaxWidth(),
                 hostState = snackbarHostState
             )
         },
@@ -104,7 +109,9 @@ fun ScanMusicScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
             ){
                 CircleIconButton(
                     modifier = Modifier.align(Alignment.CenterStart),
@@ -116,15 +123,19 @@ fun ScanMusicScreen(
                 Text(
                     modifier = Modifier.align(Alignment.Center),
                     text = stringResource(R.string.scan_music_title),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
                     color = TextPrimary
                 )
             }
             Column(
                 modifier = Modifier
+                    .widthIn(max = 400.dp)
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .align(Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -189,7 +200,7 @@ private fun ScanMusicScreenPreview() {
     LaunchedEffect(Unit){
         scope.launch {
             snackbarState.showSnackbar(
-                message = "qwerasdad"
+                message = "Scan complete — 128 songs found."
             )
         }
     }

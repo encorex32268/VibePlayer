@@ -68,7 +68,7 @@ dependencies {
     implementation(libs.navigation.compose)
 
     //Coil3
-    implementation(libs.bundles.coil3.bundle)
+    implementation(libs.bundles.coil3)
 
     //Exoplayer
     implementation(libs.exoplayer)
@@ -76,4 +76,7 @@ dependencies {
 
     //SplashScreen
     implementation(libs.splash.core)
+
+    //Koin
+    implementation(libs.bundles.koin)
 }
