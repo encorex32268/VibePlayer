@@ -44,7 +44,7 @@ class PlayingViewModel(
 
     private fun onSetupPlayer(id: Long, context: Context) {
         //get all audios
-        val audios = audioRepository.getAudios().map { it.toUi() }
+        val audios = audioRepository.getAllAudios().map { it.toUi() }
         //find current audio
         val findAudio = audios.find { audio ->
             audio.id == id

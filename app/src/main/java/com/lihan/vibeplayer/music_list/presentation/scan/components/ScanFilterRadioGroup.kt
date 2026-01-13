@@ -21,6 +21,7 @@ import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.ui.design_system.buttons.VPRadioButton
 import com.lihan.vibeplayer.ui.theme.ButtonPrimary30
 import com.lihan.vibeplayer.ui.theme.TextDisabled
+import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
@@ -78,7 +79,8 @@ fun ScanFilterRadioGroup(
                     Text(
                         text = text,
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            color = TextPrimary
                         ),
                     )
                 }

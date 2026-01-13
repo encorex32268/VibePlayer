@@ -1,6 +1,7 @@
 package com.lihan.vibeplayer.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -27,30 +28,26 @@ val Typography = Typography(
         fontFamily = HostGrotesk,
         fontWeight = FontWeight.Medium,
         fontSize = 28.sp,
-        lineHeight = 32.sp,
-        color = TextPrimary
+        lineHeight = 32.sp
     ),
     titleMedium = TextStyle(
         fontFamily = HostGrotesk,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
         lineHeight = 24.sp,
-        color = TextPrimary
     ),
 
     bodyLarge = TextStyle(
         fontFamily = HostGrotesk,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        lineHeight = 22.sp,
-        color = TextPrimary
+        lineHeight = 22.sp
     ),
     bodyMedium = TextStyle(
         fontFamily = HostGrotesk,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
-        lineHeight = 18.sp,
-        color = TextPrimary
+        lineHeight = 18.sp
     )
     /* Other default text styles to override
     titleLarge = TextStyle(

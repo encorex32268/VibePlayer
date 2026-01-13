@@ -27,6 +27,7 @@ import com.lihan.vibeplayer.music_list.presentation.MusicListScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.PermissionScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.play.PlayingScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicScreenRoot
+import com.lihan.vibeplayer.music_list.presentation.search.SearchScreenRoot
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
@@ -81,6 +82,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToPlay = { playId ->
                                     navController.navigate(Route.PlayMusic(playId))
+                                },
+                                onNavigateToSearch = {
+                                    navController.navigate(Route.Search)
                                 }
                             )
                         }
@@ -97,6 +101,14 @@ class MainActivity : ComponentActivity() {
                             val audioId = entry.toRoute<Route.PlayMusic>().id
                             PlayingScreenRoot(
                                 audioId = audioId,
+                                onBack = {
+                                    navController.navigateUp()
+                                }
+                            )
+                        }
+
+                        composable<Route.Search>{
+                            SearchScreenRoot(
                                 onBack = {
                                     navController.navigateUp()
                                 }

@@ -25,6 +25,7 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 @Composable
 fun MusicListScreenTopBar(
     onScanClick: () -> Unit,
+    onSearchClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -56,6 +57,10 @@ fun MusicListScreenTopBar(
             icon = ImageVector.vectorResource(R.drawable.scan),
             onClick = onScanClick
         )
+        CircleIconButton(
+            icon = ImageVector.vectorResource(R.drawable.search),
+            onClick = onSearchClick
+        )
     }
 
 }
@@ -65,7 +70,8 @@ fun MusicListScreenTopBar(
 private fun MusicListScreenTopBarPreview() {
     VibePlayerTheme {
         MusicListScreenTopBar(
-            onScanClick = {}
+            onScanClick = {},
+            onSearchClick = {}
         )
     }
 }

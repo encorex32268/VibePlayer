@@ -53,7 +53,7 @@ class ScanMusicViewModel(
             val duration = currentState.secondSelect.replace("s","").toLongOrNull()?:0L
             val size = currentState.sizeSelect.replace("KB","").toInt().kb
 
-            val audios = audioRepository.getAudios(
+            val audios = audioRepository.getAudiosBySizeAndDuration(
                 duration = duration * 1_000,
                 size = size
             )

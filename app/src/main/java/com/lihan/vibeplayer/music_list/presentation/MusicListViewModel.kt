@@ -35,8 +35,16 @@ class MusicListViewModel(
     fun onAction(action: MusicListAction){
         when(action){
             MusicListAction.OnScanAgainClick -> loadAudios()
+            MusicListAction.OnShuffleClick -> onShuffleClick()
             else -> Unit
         }
+    }
+
+    private fun onShuffleClick(){
+        val shuffledAudios = state.value.audios.shuffled()
+        _state.update { it.copy(
+            audios = shuffledAudios
+        ) }
     }
 
     private fun loadAudios(){
@@ -47,7 +55,7 @@ class MusicListViewModel(
             delay(1000)
 
             val audios = audioRepository
-                .getAudios()
+                .getAllAudios()
                 .map { audio -> audio.toUi() }
 
             _state.update { it.copy(

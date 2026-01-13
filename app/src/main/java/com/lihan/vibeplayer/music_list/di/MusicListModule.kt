@@ -5,6 +5,7 @@ import com.lihan.vibeplayer.music_list.domain.AudioRepository
 import com.lihan.vibeplayer.music_list.presentation.MusicListViewModel
 import com.lihan.vibeplayer.music_list.presentation.play.PlayingViewModel
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicViewModel
+import com.lihan.vibeplayer.music_list.presentation.search.SearchViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -21,5 +22,6 @@ val musicListModule = module {
     viewModelOf(::MusicListViewModel)
     viewModelOf(::ScanMusicViewModel)
     viewModelOf(::PlayingViewModel)
+    viewModelOf(::SearchViewModel)
 
 }

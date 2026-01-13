@@ -16,11 +16,12 @@ val Pink40 = Color(0xFF7D5260)
 val ButtonPrimary = Color(0xFFDE84FF)
 val ButtonPrimary30 = Color(0x4DDE84FF)
 val ButtonHover28 = Color(0x471A2735)
+val ButtonHover = Color(0xFF1A2735)
 val TextPrimary = Color(0xFFFFFFFF)
 val TextSecondary = Color(0xFFA7BBD1)
 val TextDisabled = Color(0xFF4C647C)
 val SurfaceBG = Color(0xFF0A131D)
-val SurfaceOutline = Color(0xFF1A2F47)
+val SurfaceOutline = Color(0xFF1A2735)
 val Accent = Color(0xFFF1FF95)
 
 

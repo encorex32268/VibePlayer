@@ -3,6 +3,7 @@ package com.lihan.vibeplayer.music_list.presentation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.music_list.presentation.components.EmptyView
+import com.lihan.vibeplayer.music_list.presentation.components.ListFunctionSection
 import com.lihan.vibeplayer.music_list.presentation.components.MusicListScreenTopBar
 import com.lihan.vibeplayer.music_list.presentation.components.ScanningView
 import com.lihan.vibeplayer.music_list.presentation.components.SongCard
@@ -45,6 +47,7 @@ import org.koin.androidx.compose.koinViewModel
 fun MusicListScreenRoot(
     onNavigateToPlay: (Long) -> Unit,
     onNavigateToScan: () -> Unit,
+    onNavigateToSearch: () -> Unit,
     viewModel: MusicListViewModel = koinViewModel()
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -54,6 +57,7 @@ fun MusicListScreenRoot(
         onAction = { action ->
             when(action){
                 MusicListAction.OnScanClick -> onNavigateToScan()
+                MusicListAction.OnSearchClick -> onNavigateToSearch()
                 is MusicListAction.OnAudioClick -> {
                     if (action.id == null){
                         return@MusicListScreen
@@ -107,7 +111,7 @@ fun MusicListScreen(
                 )
             }
         }
-    ) {
+    ) { it -> it
         VPSurface {
             Column(
                 modifier = modifier
@@ -119,6 +123,9 @@ fun MusicListScreen(
                         .padding(vertical = 10.dp, horizontal = 16.dp),
                     onScanClick = {
                         onAction(MusicListAction.OnScanClick)
+                    },
+                    onSearchClick = {
+                        onAction(MusicListAction.OnSearchClick)
                     }
                 )
                 when{
@@ -136,30 +143,45 @@ fun MusicListScreen(
                         )
                     }
                     else -> {
-                        LazyColumn(
+                        Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(16.dp),
-                            contentPadding = PaddingValues(8.dp),
-                            state = listState
-                        ) {
-                            itemsIndexed(state.audios){ index, audioUi ->
-                                if (index != 0){
-                                    HorizontalDivider(
-                                        color = SurfaceOutline,
-                                        thickness = 1.dp
+                                .padding(horizontal = 16.dp),
+                        ){
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(8.dp),
+                                state = listState
+                            ) {
+                                item {
+                                    ListFunctionSection(
+                                        isTablet = false,
+                                        songListSize = state.audios.size,
+                                        onShuffleClick = {
+                                            onAction(MusicListAction.OnShuffleClick)
+                                        },
+                                        onPlayClick = {}
                                     )
                                 }
-                                SongCard(
-                                    audioUi = audioUi,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onAudioClick = {
-                                        onAction(
-                                            MusicListAction.OnAudioClick(it.id)
+                                itemsIndexed(state.audios){ index, audioUi ->
+                                    if (index != 0){
+                                        HorizontalDivider(
+                                            color = SurfaceOutline,
+                                            thickness = 1.dp
                                         )
                                     }
-                                )
+                                    SongCard(
+                                        audioUi = audioUi,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onAudioClick = {
+                                            onAction(
+                                                MusicListAction.OnAudioClick(it.id)
+                                            )
+                                        }
+                                    )
+                                }
                             }
+
                         }
                     }
                 }

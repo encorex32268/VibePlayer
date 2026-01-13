@@ -15,6 +15,9 @@ your library and play songs</string>
     <string name="main_not_found_description">Try scanning again or check your folders.</string>
     <string name="main_not_found_scan_again">Scan again</string>
     <string name="main_floating_action_button_scroll_to_top">ScrollToTop</string>
+    <string name="main_list_function_shuffle">Shuffle</string>
+    <string name="main_list_function_play">Play</string>
+    <string name="main_list_function_songs_size">%1$d Songs</string>
     <string name="main_scanning_view_scanning">Scanning your device for music...</string>
     <string name="scan_music_title">Scan Music</string>
     <string name="scan_music_filter_ignore_duration_less_than">Ignore duration less than</string>
@@ -28,5 +31,8 @@ your library and play songs</string>
     <string name="scan_music_scan_result">Scan complete — %1$d songs found</string>
     <string name="playing_music_unknow">Unknow</string>
     <string name="playing_music_album_image">AlbumImage</string>
+    <string name="search">Search</string>
+    <string name="search_cancel">Cancel</string>
+    <string name="search_no_results_found">No results found</string>
 
 </resources>

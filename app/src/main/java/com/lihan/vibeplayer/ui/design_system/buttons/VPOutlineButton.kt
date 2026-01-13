@@ -1,42 +1,50 @@
 package com.lihan.vibeplayer.ui.design_system.buttons
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.ui.theme.ButtonHover28
 import com.lihan.vibeplayer.ui.theme.ButtonPrimary
+import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextDisabled
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 @Composable
-fun VPButton(
+fun VPOutlineButton(
     text: String,
     onClick: () -> Unit,
     leadingIcon: @Composable (() -> Unit)?=null,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    Button(
+    OutlinedButton(
         modifier = modifier,
         onClick = onClick,
         enabled = enabled,
-        colors = ButtonColors(
-            containerColor = ButtonPrimary,
+        colors = ButtonDefaults.outlinedButtonColors(
             contentColor = TextPrimary,
-            disabledContainerColor = ButtonHover28,
             disabledContentColor = TextDisabled
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = SurfaceOutline
         )
     ) {
         if (leadingIcon != null){
@@ -54,17 +62,17 @@ fun VPButton(
 
 @Preview
 @Composable
-private fun VPButtonPreview() {
+private fun VPOutlineButtonPreview() {
     VibePlayerTheme {
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            VPButton(
+            VPOutlineButton(
                 text = "Button",
                 enabled = true,
                 onClick = {}
             )
-            VPButton(
+            VPOutlineButton(
                 text = "Button",
                 enabled = false,
                 onClick = {}
