@@ -22,6 +22,8 @@ val TextSecondary = Color(0xFFA7BBD1)
 val TextDisabled = Color(0xFF4C647C)
 val SurfaceBG = Color(0xFF0A131D)
 val SurfaceOutline = Color(0xFF1A2735)
+val SurfaceHigher = Color(0xFF1A2735)
+val SurfaceOnSurface = Color(0x26FFFFFF)
 val Accent = Color(0xFFF1FF95)
 
 
