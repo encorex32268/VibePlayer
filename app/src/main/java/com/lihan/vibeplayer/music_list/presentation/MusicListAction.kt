@@ -12,4 +12,5 @@ sealed interface MusicListAction {
     data object OnShuffleClick: MusicListAction
     data object OnPlayClick: MusicListAction
     data object OnSkipNextClick: MusicListAction
+    data object OnSkipPreviousClick: MusicListAction
 }

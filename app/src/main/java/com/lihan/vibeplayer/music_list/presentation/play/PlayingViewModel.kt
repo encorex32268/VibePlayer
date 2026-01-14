@@ -97,7 +97,6 @@ class PlayingViewModel(
                 MediaItem.fromUri(audioUi.album!!)
 
             }
-
         val exoPlayer = ExoPlayer
             .Builder(context)
             .build()

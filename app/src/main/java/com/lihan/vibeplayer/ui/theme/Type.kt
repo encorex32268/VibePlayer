@@ -48,6 +48,12 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 18.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = HostGrotesk,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.sp
     )
     /* Other default text styles to override
     titleLarge = TextStyle(

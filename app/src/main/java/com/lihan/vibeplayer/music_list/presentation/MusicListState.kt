@@ -6,5 +6,6 @@ data class MusicListState(
     val isScanning: Boolean = true,
     val audios: List<AudioUi> = emptyList(),
     val playingAudioUi: AudioUi?=null,
-    val isPlaying: Boolean = false
+    val isPlaying: Boolean = false,
+    val playbackProgress: Float = 0f,
 )

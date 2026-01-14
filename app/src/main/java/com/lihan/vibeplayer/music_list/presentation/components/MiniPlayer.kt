@@ -51,35 +51,15 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun MiniPlayer(
-    audioUi: AudioUi,
     isPlaying: Boolean,
-    progress: () -> Float,
+    audioUi: AudioUi,
+    playbackProgress: () -> Float,
     onMiniPlayerClick: () -> Unit,
     onPlayClick: () -> Unit,
     onSkipNextClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    albumImage: ByteArray?=null
 ) {
-    val context = LocalContext.current
-    var imageByteArray by remember {
-        mutableStateOf<ByteArray?>(null)
-    }
-    LaunchedEffect(audioUi.album) {
-        if (audioUi.album != null) {
-            val data = withContext(Dispatchers.IO) {
-                val retriever = MediaMetadataRetriever()
-                try {
-                    retriever.setDataSource(context, audioUi.album)
-                    retriever.embeddedPicture
-                } catch (e: Exception) {
-                    null
-                } finally {
-                    retriever.release()
-                }
-            }
-            imageByteArray = data
-        }
-    }
-
     Row(
         modifier = modifier
             .clickable{
@@ -93,25 +73,15 @@ fun MiniPlayer(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if (audioUi.album == null) {
-            Image(
-                contentDescription = audioUi.songTitle,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .size(64.dp),
-                painter = painterResource(R.drawable.song_image_default)
-            )
-        } else {
-            AsyncImage(
-                model = imageByteArray,
-                contentDescription = audioUi.songTitle,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .size(64.dp),
-                placeholder = painterResource(R.drawable.song_image_default),
-                error = painterResource(R.drawable.song_image_default)
-            )
-        }
+        AsyncImage(
+            model = albumImage,
+            contentDescription = audioUi.songTitle,
+            modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .size(64.dp),
+            placeholder = painterResource(R.drawable.song_image_default),
+            error = painterResource(R.drawable.song_image_default)
+        )
 
         Column {
             Row(
@@ -173,7 +143,7 @@ fun MiniPlayer(
             Spacer(modifier = Modifier.height(16.dp))
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth(),
-                progress = progress,
+                progress = playbackProgress,
                 color = Color.White,
                 trackColor = SurfaceOnSurface,
                 strokeCap = StrokeCap.Round,
@@ -201,7 +171,7 @@ private fun MiniPlayerPreview() {
             onPlayClick = {},
             onSkipNextClick = {},
             onMiniPlayerClick = {},
-            progress = { 0.5f }
+            playbackProgress = { 0.5f }
         )
     }
 }

@@ -40,6 +40,7 @@ import com.lihan.vibeplayer.music_list.presentation.components.EmptyView
 import com.lihan.vibeplayer.music_list.presentation.components.ListFunctionSection
 import com.lihan.vibeplayer.music_list.presentation.components.MiniPlayer
 import com.lihan.vibeplayer.music_list.presentation.components.MusicListScreenTopBar
+import com.lihan.vibeplayer.music_list.presentation.components.PlayerBottomBar
 import com.lihan.vibeplayer.music_list.presentation.components.ScanningView
 import com.lihan.vibeplayer.music_list.presentation.components.SongCard
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
@@ -61,21 +62,13 @@ fun MusicListScreenRoot(
     viewModel: MusicListViewModel = koinViewModel()
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val exoPlayer by viewModel.exoPlayer.collectAsStateWithLifecycle()
 
     MusicListScreen(
-        exoPlayer = exoPlayer,
         state = state,
         onAction = { action ->
             when(action){
                 MusicListAction.OnScanClick -> onNavigateToScan()
                 MusicListAction.OnSearchClick -> onNavigateToSearch()
-                is MusicListAction.OnMiniPlayerClick -> {
-                    if (action.id == null){
-                        return@MusicListScreen
-                    }
-                    onNavigateToPlay(action.id)
-                }
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -86,7 +79,6 @@ fun MusicListScreenRoot(
 
 @Composable
 fun MusicListScreen(
-    exoPlayer: ExoPlayer?,
     state: MusicListState,
     onAction: (MusicListAction) -> Unit,
     modifier: Modifier = Modifier
@@ -98,32 +90,6 @@ fun MusicListScreen(
     val isShowFloatingActionButton by remember {
         derivedStateOf {
             listState.firstVisibleItemIndex >= 10
-        }
-    }
-
-    var currentPosition by remember {
-        mutableLongStateOf(0L)
-    }
-    var currentDuration by remember {
-        mutableLongStateOf(0L)
-    }
-    val progress by remember {
-        derivedStateOf {
-            if (currentDuration > 0) currentPosition.toFloat() / currentDuration else 0f
-        }
-    }
-    LaunchedEffect(exoPlayer) {
-        if (exoPlayer!=null){
-            while (isActive){
-                if (exoPlayer.isPlaying){
-                    currentPosition = exoPlayer.currentPosition
-                    //Change Song
-                    if (exoPlayer.duration != currentDuration && exoPlayer.duration > 0) {
-                        currentDuration = exoPlayer.duration
-                    }
-                }
-                delay(500L)
-            }
         }
     }
 
@@ -161,24 +127,20 @@ fun MusicListScreen(
                     targetOffsetY = { fullHeight -> fullHeight }
                 ) + fadeOut()
             ) {
-                if (state.playingAudioUi != null){
-                    MiniPlayer(
-                        audioUi = state.playingAudioUi,
-                        isPlaying = state.isPlaying,
-                        progress = { progress },
-                        onPlayClick = {
-                            onAction(MusicListAction.OnPlayClick)
-                        },
-                        onSkipNextClick = {
-                            onAction(MusicListAction.OnSkipNextClick)
-                        },
-                        onMiniPlayerClick = {
-                            onAction(
-                                MusicListAction.OnMiniPlayerClick(state.playingAudioUi.id)
-                            )
-                        }
-                    )
-                }
+                PlayerBottomBar(
+                    playingAudioUi = state.playingAudioUi,
+                    isPlaying = state.isPlaying,
+                    playbackProgress = { state.playbackProgress },
+                    onPlayClick = {
+                        onAction(MusicListAction.OnPlayClick)
+                    },
+                    onSkipNextClick = {
+                        onAction(MusicListAction.OnSkipNextClick)
+                    },
+                    onSkipPreviousClick = {
+                        onAction(MusicListAction.OnSkipPreviousClick)
+                    }
+                )
             }
         }
     ) { it -> it
@@ -272,7 +234,6 @@ fun MusicListScreen(
 private fun MusicListScreenPreview() {
     VibePlayerTheme {
         MusicListScreen(
-            exoPlayer = null,
             state = MusicListState(
                 isScanning = false,
                 audios = (0..20).map {
