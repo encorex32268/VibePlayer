@@ -10,3 +10,11 @@ fun Long.toTimeString(): String{
         "%02d:%02d",mins,seconds
     )
 }
+
+fun Long.toTimeStringWithoutZero(): String{
+    val mins = this / 60 / 1000
+    val seconds = (this / 1000) % 60
+    return String.format(
+        "%2d:%02d",mins,seconds
+    )
+}

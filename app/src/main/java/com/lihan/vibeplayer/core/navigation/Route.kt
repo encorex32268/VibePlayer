@@ -15,8 +15,5 @@ sealed interface Route {
     data object ScanMusic: Route
 
     @Serializable
-    data class PlayMusic(val id: Long): Route
-
-    @Serializable
     data object Search: Route
 }

@@ -1,7 +1,6 @@
 package com.lihan.vibeplayer.music_list.presentation.components
 
-import android.media.MediaMetadataRetriever
-import androidx.compose.foundation.Image
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,18 +19,12 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,8 +39,6 @@ import com.lihan.vibeplayer.ui.theme.SurfaceOnSurface
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Composable
 fun MiniPlayer(
@@ -58,11 +49,10 @@ fun MiniPlayer(
     onPlayClick: () -> Unit,
     onSkipNextClick: () -> Unit,
     modifier: Modifier = Modifier,
-    albumImage: ByteArray?=null
 ) {
     Row(
         modifier = modifier
-            .clickable{
+            .clickable {
                 onMiniPlayerClick()
             }
             .background(
@@ -74,7 +64,7 @@ fun MiniPlayer(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         AsyncImage(
-            model = albumImage,
+            model = audioUi.albumImage,
             contentDescription = audioUi.songTitle,
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
@@ -162,10 +152,11 @@ private fun MiniPlayerPreview() {
     VibePlayerTheme {
         MiniPlayer(
             audioUi = AudioUi(
+                id = 1,
                 songTitle = "Song Title",
                 artisName = "Artist Name",
-                album = null,
-                duration = 200000,
+                album = Uri.EMPTY,
+                duration = 1000
             ),
             isPlaying = true,
             onPlayClick = {},

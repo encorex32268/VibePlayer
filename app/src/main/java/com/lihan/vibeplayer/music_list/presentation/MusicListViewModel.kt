@@ -1,20 +1,18 @@
 package com.lihan.vibeplayer.music_list.presentation
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
-import com.lihan.vibeplayer.music_list.domain.ExoPlayerService
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -23,7 +21,7 @@ import kotlinx.coroutines.launch
 
 class MusicListViewModel(
     private val audioRepository: AudioRepository,
-    private val exoPlayerService: ExoPlayerService
+    private val exoPlayer: ExoPlayer
 ): ViewModel(){
 
     private var hasInitialLoadedData = false
@@ -51,20 +49,32 @@ class MusicListViewModel(
             is MusicListAction.OnAudioUiClick -> onAudioClick(action.audioUi)
             MusicListAction.OnPlayClick -> onPlayClick()
             MusicListAction.OnSkipNextClick -> onSkipNextClick()
+            MusicListAction.OnSkipPreviousClick -> onSkipPreviousClick()
+            is MusicListAction.OnSeek -> onSeekTo(action.position)
             else -> Unit
         }
     }
 
+    private fun onSeekTo(position: Long){
+        exoPlayer.seekTo(position)
+        _state.update { it.copy(
+            currentPosition = position
+        ) }
+    }
+
+    private fun onSkipPreviousClick(){
+        exoPlayer.seekToPreviousMediaItem()
+    }
     private fun onSkipNextClick(){
-        exoPlayerService.seekToNextMediaItem()
+        exoPlayer.seekToNextMediaItem()
     }
 
     private fun onPlayClick(){
         val isPlaying = state.value.isPlaying
         if (isPlaying) {
-            exoPlayerService.pause()
+            exoPlayer.pause()
         } else {
-            exoPlayerService.play()
+            exoPlayer.play()
         }
     }
 
@@ -72,7 +82,20 @@ class MusicListViewModel(
         _state.update { it.copy(
             playingAudioUi = audioUi
         ) }
-        exoPlayerService.playByIndex(0)
+        val mediaItems = exoPlayer.getAllMediaItems()
+
+        val audioIndex = mediaItems.indexOf(
+            mediaItems.find {
+                it.mediaId == audioUi.id.toString()
+            }
+        )
+
+        exoPlayer.setMediaItems(
+            exoPlayer.getAllMediaItems(),
+            audioIndex,
+            0L
+        )
+        exoPlayer.prepare()
     }
 
     private fun onShuffleClick(){
@@ -91,14 +114,21 @@ class MusicListViewModel(
 
             val audios = audioRepository
                 .getAllAudios()
-                .map { audio -> audio.toUi() }
+                .map { audio ->
+                    async {
+                        val audioUi = audio.toUi()
+                        val albumImage = audioRepository.getAlbumArt(audioUi.album)
+                        audioUi.copy(albumImage = albumImage)
+                    }
+                }.awaitAll()
+
 
             //set player List
-            exoPlayerService.setPlayList(
-                mediaItems = audios
-                    .filterNot { it.album == null }
+            exoPlayer.setMediaItems(
+                audios
                     .map {
                         MediaItem.Builder()
+                            .setMediaId(it.id.toString())
                             .setUri(it.album)
                             .build()
                     }
@@ -114,14 +144,88 @@ class MusicListViewModel(
     }
 
     private fun observerPlayer(){
-        exoPlayerService.isPlaying
-            .onEach { isPlaying ->
-                _state.update { it.copy(isPlaying = isPlaying) }
-            }.launchIn(viewModelScope)
+        exoPlayer.addListener(
+            object : Player.Listener {
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    _state.update { it.copy(
+                        isPlaying = isPlaying
+                    ) }
+                }
 
-        exoPlayerService.playbackProgress.onEach { playbackProgress ->
-            _state.update { it.copy(playbackProgress = playbackProgress) }
-        }.launchIn(viewModelScope)
+                override fun onEvents(player: Player, events: Player.Events) {
+                   when{
+                       events.contains(Player.EVENT_TRACKS_CHANGED) -> {
+                           val currentId = exoPlayer.currentMediaItem?.mediaId
+                           if (currentId != null){
+                               val currentAudio = state.value.audios.find {
+                                   it.id.toString() == currentId
+                               }
+                               _state.update { it.copy(
+                                   playingAudioUi = currentAudio
+                               ) }
+                           }
+                       }
+                       events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) -> {
+
+                      }
+                   }
+                }
+
+                override fun onRepeatModeChanged(repeatMode: Int) {
+                    when(repeatMode){
+                        Player.REPEAT_MODE_OFF -> {}
+                        Player.REPEAT_MODE_ALL -> {}
+                        Player.REPEAT_MODE_ONE -> {}
+                    }
+                }
+
+                override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+
+                }
+
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    when(playbackState){
+                        Player.STATE_READY -> {
+                            val currentPosition = exoPlayer.currentPosition
+                            val duration = exoPlayer.duration
+
+                            _state.update { it.copy(
+                                currentPosition = currentPosition,
+                                duration = duration,
+                            ) }
+                        }
+                        else -> Unit
+                    }
+
+                }
+            }
+        )
+        viewModelScope.launch{
+            while (isActive){
+                if (exoPlayer.isPlaying){
+                    val currentPosition = exoPlayer.currentPosition
+                    val duration = exoPlayer.duration
+
+                    _state.update { it.copy(
+                        currentPosition = currentPosition,
+                        duration = duration,
+                    ) }
+
+                    delay(500L)
+                } else {
+
+                    delay(1000L)
+                }
+            }
+        }
+    }
+
+    fun ExoPlayer.getAllMediaItems(): List<MediaItem>{
+        val items = mutableListOf<MediaItem>()
+        for (i in 0 until this.mediaItemCount){
+            items.add(this.getMediaItemAt(i))
+        }
+        return items
     }
 
 }

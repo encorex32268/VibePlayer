@@ -1,5 +1,7 @@
 package com.lihan.vibeplayer.music_list.domain
 
+import android.net.Uri
+
 interface AudioRepository {
 
     fun getAllAudios(): List<Audio>
@@ -11,5 +13,5 @@ interface AudioRepository {
 
     fun getAudiosByTitle(text: String): List<Audio>
 
-    suspend fun getAlbumArt(albumUri: android.net.Uri): ByteArray?
+    suspend fun getAlbumArt(albumUri: Uri): ByteArray?
 }

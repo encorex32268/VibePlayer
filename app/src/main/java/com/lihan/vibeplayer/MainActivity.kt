@@ -18,14 +18,12 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.lihan.vibeplayer.core.navigation.Route
 import com.lihan.vibeplayer.music_list.presentation.MusicListScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.PermissionScreenRoot
-import com.lihan.vibeplayer.music_list.presentation.play.PlayingScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.search.SearchScreenRoot
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
@@ -80,9 +78,6 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToScan = {
                                     navController.navigate(Route.ScanMusic)
                                 },
-                                onNavigateToPlay = { playId ->
-                                    navController.navigate(Route.PlayMusic(playId))
-                                },
                                 onNavigateToSearch = {
                                     navController.navigate(Route.Search)
                                 }
@@ -97,15 +92,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable<Route.PlayMusic> { entry ->
-                            val audioId = entry.toRoute<Route.PlayMusic>().id
-                            PlayingScreenRoot(
-                                audioId = audioId,
-                                onBack = {
-                                    navController.navigateUp()
-                                }
-                            )
-                        }
 
                         composable<Route.Search>{
                             SearchScreenRoot(

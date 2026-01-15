@@ -1,5 +1,7 @@
 package com.lihan.vibeplayer.core.presentation.components
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -8,6 +10,7 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,7 +25,8 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 fun CircleIconButton(
     icon: ImageVector,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     IconButton(
         modifier = modifier.clip(CircleShape),
@@ -30,9 +34,10 @@ fun CircleIconButton(
         colors = IconButtonColors(
             containerColor = ButtonHover28,
             contentColor = TextSecondary,
-            disabledContainerColor = ButtonHover28,
+            disabledContainerColor = Color.Transparent,
             disabledContentColor = TextDisabled
-        )
+        ),
+        enabled = enabled
     ) {
         Icon(
             modifier = Modifier.size(20.dp),
@@ -47,9 +52,18 @@ fun CircleIconButton(
 @Composable
 private fun CircleIconButtonPreview() {
     VibePlayerTheme {
-        CircleIconButton(
-            icon = ImageVector.vectorResource(R.drawable.scan),
-            onClick = {}
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            CircleIconButton(
+                icon = ImageVector.vectorResource(R.drawable.scan),
+                onClick = {}
+            )
+            CircleIconButton(
+                icon = ImageVector.vectorResource(R.drawable.scan),
+                onClick = {},
+                enabled = false
+            )
+        }
     }
 }

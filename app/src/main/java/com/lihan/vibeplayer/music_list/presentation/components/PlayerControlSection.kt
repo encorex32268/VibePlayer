@@ -1,0 +1,99 @@
+package com.lihan.vibeplayer.music_list.presentation.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
+
+@Composable
+fun PlayerControlSection(
+    isPlaying: Boolean,
+    isEnabledShuffle: Boolean,
+    isEnabledRepeat: Boolean,
+    onPlayClick: () -> Unit,
+    onSkipPreviousClick: () -> Unit,
+    onSkipNextClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ){
+        CircleIconButton(
+            icon = ImageVector.vectorResource(R.drawable.shuffle),
+            onClick = onSkipPreviousClick,
+            enabled = isEnabledShuffle
+        )
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
+        ) {
+            CircleIconButton(
+                icon = ImageVector.vectorResource(R.drawable.skip_previous),
+                onClick = onSkipPreviousClick
+            )
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .clickable{
+                        onPlayClick()
+                    }
+                    .clip(CircleShape)
+                    .background(color = Color.White),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isPlaying){
+                        ImageVector.vectorResource(R.drawable.pause)
+                    }else{
+                        ImageVector.vectorResource(R.drawable.play)
+                    },
+                    contentDescription = null,
+                    tint = Color.Black
+                )
+            }
+            CircleIconButton(
+                icon = ImageVector.vectorResource(R.drawable.skip_next),
+                onClick = onSkipNextClick
+            )
+        }
+        CircleIconButton(
+            icon = if (isEnabledRepeat){
+                ImageVector.vectorResource(R.drawable.repeat_one)
+            }else{
+                ImageVector.vectorResource(R.drawable.repeat_off)
+            },
+            onClick = onSkipPreviousClick,
+            enabled = isEnabledRepeat
+        )
+
+    }
+
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun PlayerControlSectionPreview() {
+
+}

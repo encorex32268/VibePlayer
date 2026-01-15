@@ -1,11 +1,10 @@
 package com.lihan.vibeplayer.music_list.di
 
+import androidx.media3.exoplayer.ExoPlayer
 import com.lihan.vibeplayer.music_list.data.DefaultAudioRepository
-import com.lihan.vibeplayer.music_list.data.DefaultExoPlayerService
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
-import com.lihan.vibeplayer.music_list.domain.ExoPlayerService
+import com.lihan.vibeplayer.music_list.domain.ExoPlayerFactory
 import com.lihan.vibeplayer.music_list.presentation.MusicListViewModel
-import com.lihan.vibeplayer.music_list.presentation.play.PlayingViewModel
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicViewModel
 import com.lihan.vibeplayer.music_list.presentation.search.SearchViewModel
 import org.koin.android.ext.koin.androidApplication
@@ -23,14 +22,13 @@ val musicListModule = module {
     }.bind<AudioRepository>()
 
     single {
-        DefaultExoPlayerService(
+        ExoPlayerFactory.build(
             context = androidApplication()
         )
-    }.bind<ExoPlayerService>()
+    }.bind<ExoPlayer>()
 
     viewModelOf(::MusicListViewModel)
     viewModelOf(::ScanMusicViewModel)
-    viewModelOf(::PlayingViewModel)
     viewModelOf(::SearchViewModel)
 
 }

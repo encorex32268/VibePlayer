@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.input.TextFieldState
@@ -28,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.music_list.presentation.components.SongCard
-import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.search.components.SearchBar
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextDisabled

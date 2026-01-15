@@ -2,7 +2,6 @@ package com.lihan.vibeplayer.music_list.presentation.search.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,21 +27,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.focusRestorer
-import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.ui.design_system.buttons.VPTextButton
-import com.lihan.vibeplayer.ui.theme.ButtonHover
 import com.lihan.vibeplayer.ui.theme.ButtonHover28
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextDisabled
