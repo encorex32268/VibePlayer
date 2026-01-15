@@ -122,7 +122,7 @@ fun MusicListScreen(
                     PlayerBottomBar(
                         audioUi = state.playingAudioUi,
                         isPlaying = state.isPlaying,
-                        isEnabledRepeat = state.isEnabledRepeat,
+                        repeatModeStatus = state.repeatModeStatus,
                         isEnabledShuffle = state.isEnabledShuffle,
                         duration = state.duration,
                         currentPosition = { state.currentPosition },
@@ -137,6 +137,12 @@ fun MusicListScreen(
                         },
                         onSeek = {
                             onAction(MusicListAction.OnSeek(it))
+                        },
+                        onRepeatClick = {
+                            onAction(MusicListAction.OnRepeatClick)
+                        },
+                        onShuffleClick = {
+                            onAction(MusicListAction.OnShuffleClick)
                         }
                     )
                 }
@@ -193,7 +199,7 @@ fun MusicListScreen(
                                         isTablet = false,
                                         songListSize = state.audios.size,
                                         onShuffleClick = {
-                                            onAction(MusicListAction.OnShuffleClick)
+                                            onAction(MusicListAction.OnPlayListShuffleClick)
                                         },
                                         onPlayClick = {
                                             onAction(

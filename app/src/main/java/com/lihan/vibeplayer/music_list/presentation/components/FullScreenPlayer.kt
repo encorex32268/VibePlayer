@@ -43,6 +43,7 @@ import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.domain.util.toTimeStringWithoutZero
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextPrimary
@@ -52,7 +53,7 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 @Composable
 fun FullScreenPlayer(
     isPlaying: Boolean,
-    isEnabledRepeat: Boolean,
+    repeatModeStatus: RepeatModeStatus,
     isEnabledShuffle: Boolean,
     audioUi: AudioUi,
     currentPosition: Long,
@@ -62,16 +63,18 @@ fun FullScreenPlayer(
     onSkipPreviousClick: () -> Unit,
     onSkipNextClick: () -> Unit,
     onPlayClick: () -> Unit,
+    onRepeatClick: () -> Unit,
+    onShuffleClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var sliderValue by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
 
-    val displayPosition by remember(isDragging){
+    val displayPosition by remember(isDragging) {
         derivedStateOf {
-            if (isDragging){
+            if (isDragging) {
                 (sliderValue * audioUi.duration).toLong()
-            }else{
+            } else {
                 currentPosition
             }
         }
@@ -87,17 +90,19 @@ fun FullScreenPlayer(
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.CenterStart
-        ){
+        ) {
             CircleIconButton(
                 icon = ImageVector.vectorResource(R.drawable.chevron_down),
                 onClick = onCollapseClick
             )
         }
         Column(
-            modifier = Modifier.fillMaxWidth().weight(1f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
             AsyncImage(
                 model = audioUi.albumImage,
                 contentDescription = stringResource(R.string.playing_music_album_image),
@@ -110,13 +115,13 @@ fun FullScreenPlayer(
 
             Spacer(Modifier.height(20.dp))
             Text(
-                text = audioUi.songTitle.ifEmpty {  stringResource(R.string.playing_music_unknow) },
+                text = audioUi.songTitle.ifEmpty { stringResource(R.string.playing_music_unknow) },
                 style = MaterialTheme.typography.titleLarge,
                 color = TextPrimary,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = audioUi.artisName.ifEmpty {  stringResource(R.string.playing_music_unknow) },
+                text = audioUi.artisName.ifEmpty { stringResource(R.string.playing_music_unknow) },
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary,
                 textAlign = TextAlign.Center,
@@ -124,9 +129,9 @@ fun FullScreenPlayer(
         }
         Box {
             Slider(
-                value = if (isDragging){
+                value = if (isDragging) {
                     sliderValue
-                }else{
+                } else {
                     progress()
                 },
                 onValueChange = { newValue ->
@@ -159,7 +164,7 @@ fun FullScreenPlayer(
                     .alpha(
                         if (isDragging) 1f else 0f
                     )
-                    .background(TextPrimary,RoundedCornerShape(100))
+                    .background(TextPrimary, RoundedCornerShape(100))
                     .padding(horizontal = 4.dp),
             ) {
                 Text(
@@ -175,11 +180,13 @@ fun FullScreenPlayer(
         Spacer(modifier = Modifier.height(20.dp))
         PlayerControlSection(
             isPlaying = isPlaying,
-            isEnabledRepeat = isEnabledRepeat,
+            repeatModeStatus = repeatModeStatus,
             isEnabledShuffle = isEnabledShuffle,
             onPlayClick = onPlayClick,
             onSkipNextClick = onSkipNextClick,
-            onSkipPreviousClick = onSkipPreviousClick
+            onSkipPreviousClick = onSkipPreviousClick,
+            onRepeatClick = onRepeatClick,
+            onShuffleClick = onShuffleClick
         )
     }
 }
@@ -207,7 +214,9 @@ private fun FullScreenPlayerPreview() {
             onSeek = {},
             currentPosition = 2000,
             isEnabledShuffle = true,
-            isEnabledRepeat = true
+            repeatModeStatus = RepeatModeStatus.Off,
+            onRepeatClick = {},
+            onShuffleClick = {}
         )
     }
 }

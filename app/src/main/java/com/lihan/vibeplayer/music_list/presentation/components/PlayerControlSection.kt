@@ -21,15 +21,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
+import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 
 @Composable
 fun PlayerControlSection(
     isPlaying: Boolean,
     isEnabledShuffle: Boolean,
-    isEnabledRepeat: Boolean,
+    repeatModeStatus: RepeatModeStatus,
     onPlayClick: () -> Unit,
     onSkipPreviousClick: () -> Unit,
     onSkipNextClick: () -> Unit,
+    onRepeatClick: () -> Unit,
+    onShuffleClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -38,8 +41,8 @@ fun PlayerControlSection(
     ){
         CircleIconButton(
             icon = ImageVector.vectorResource(R.drawable.shuffle),
-            onClick = onSkipPreviousClick,
-            enabled = isEnabledShuffle
+            onClick = onShuffleClick,
+            isDisabled = !isEnabledShuffle
         )
         Row(
             modifier = Modifier
@@ -78,15 +81,14 @@ fun PlayerControlSection(
             )
         }
         CircleIconButton(
-            icon = if (isEnabledRepeat){
-                ImageVector.vectorResource(R.drawable.repeat_one)
-            }else{
-                ImageVector.vectorResource(R.drawable.repeat_off)
-            },
-            onClick = onSkipPreviousClick,
-            enabled = isEnabledRepeat
+            icon = when(repeatModeStatus){
+                RepeatModeStatus.Off ->  ImageVector.vectorResource(R.drawable.repeat_off)
+                RepeatModeStatus.One -> ImageVector.vectorResource(R.drawable.repeat_one)
+                RepeatModeStatus.All -> ImageVector.vectorResource(R.drawable.repeat)
+            } ,
+            onClick = onRepeatClick,
+            isDisabled = repeatModeStatus == RepeatModeStatus.Off
         )
-
     }
 
 }

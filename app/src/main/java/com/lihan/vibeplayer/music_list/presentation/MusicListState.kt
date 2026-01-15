@@ -1,10 +1,10 @@
 package com.lihan.vibeplayer.music_list.presentation
 
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 
 data class MusicListState(
     val isScanning: Boolean = true,
-    val isEnabledRepeat: Boolean = false,
     val isEnabledShuffle: Boolean = false,
     val audios: List<AudioUi> = emptyList(),
     val playingAudioUi: AudioUi?=null,
@@ -12,4 +12,5 @@ data class MusicListState(
     val currentPosition: Long = 0L,
     val duration: Long = 0L,
     val progress: Float = 0f,
+    val repeatModeStatus: RepeatModeStatus = RepeatModeStatus.Off
 )

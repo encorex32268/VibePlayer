@@ -26,23 +26,26 @@ fun CircleIconButton(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    isDisabled: Boolean = false
 ) {
+    val containerColor = if (isDisabled) Color.Transparent  else ButtonHover28
+    val contentColor = if (isDisabled) TextDisabled else TextSecondary
+    val iconTintColor = if (isDisabled) TextDisabled else TextSecondary
     IconButton(
         modifier = modifier.clip(CircleShape),
         onClick = onClick,
         colors = IconButtonColors(
-            containerColor = ButtonHover28,
-            contentColor = TextSecondary,
+            containerColor = containerColor,
+            contentColor = contentColor,
             disabledContainerColor = Color.Transparent,
             disabledContentColor = TextDisabled
-        ),
-        enabled = enabled
+        )
     ) {
         Icon(
             modifier = Modifier.size(20.dp),
             imageVector = icon,
-            contentDescription = "scan"
+            contentDescription = "scan",
+            tint = iconTintColor
         )
     }
 
@@ -62,7 +65,7 @@ private fun CircleIconButtonPreview() {
             CircleIconButton(
                 icon = ImageVector.vectorResource(R.drawable.scan),
                 onClick = {},
-                enabled = false
+                isDisabled = true
             )
         }
     }

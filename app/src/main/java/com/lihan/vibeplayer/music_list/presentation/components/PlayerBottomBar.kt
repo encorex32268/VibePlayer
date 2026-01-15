@@ -18,12 +18,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 @Composable
 fun PlayerBottomBar(
     isPlaying: Boolean,
-    isEnabledRepeat: Boolean,
+    repeatModeStatus: RepeatModeStatus,
     isEnabledShuffle: Boolean,
     audioUi: AudioUi,
     currentPosition: () -> Long,
@@ -32,6 +33,8 @@ fun PlayerBottomBar(
     onPlayClick: () -> Unit,
     onSkipNextClick: () -> Unit,
     onSkipPreviousClick: () -> Unit,
+    onRepeatClick: () -> Unit,
+    onShuffleClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isExpand by remember { mutableStateOf(false) }
@@ -77,8 +80,10 @@ fun PlayerBottomBar(
                     isExpand = false
                 },
                 onSeek = onSeek,
-                isEnabledRepeat = isEnabledRepeat,
-                isEnabledShuffle = isEnabledShuffle
+                repeatModeStatus = repeatModeStatus,
+                onRepeatClick = onRepeatClick,
+                isEnabledShuffle = isEnabledShuffle,
+                onShuffleClick = onShuffleClick
             )
 
         } else {
@@ -120,8 +125,10 @@ private fun PlayerBottomBarPreview() {
             onSkipPreviousClick = {},
             onSkipNextClick = {},
             onSeek = {},
-            isEnabledRepeat = false,
-            isEnabledShuffle = false
+            repeatModeStatus = RepeatModeStatus.Off,
+            isEnabledShuffle = false,
+            onRepeatClick = {},
+            onShuffleClick = {}
         )
     }
 

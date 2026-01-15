@@ -8,6 +8,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -45,14 +46,33 @@ class MusicListViewModel(
     fun onAction(action: MusicListAction){
         when(action){
             MusicListAction.OnScanAgainClick -> loadAudios()
-            MusicListAction.OnShuffleClick -> onShuffleClick()
+            MusicListAction.OnPlayListShuffleClick -> onPlayListShuffleClick()
             is MusicListAction.OnAudioUiClick -> onAudioClick(action.audioUi)
             MusicListAction.OnPlayClick -> onPlayClick()
             MusicListAction.OnSkipNextClick -> onSkipNextClick()
             MusicListAction.OnSkipPreviousClick -> onSkipPreviousClick()
             is MusicListAction.OnSeek -> onSeekTo(action.position)
+            MusicListAction.OnRepeatClick -> onRepeatModeClick()
+            MusicListAction.OnShuffleClick -> onShuffleClick()
             else -> Unit
         }
+    }
+
+    private fun onShuffleClick(){
+        val isShuffleEnabled = exoPlayer.shuffleModeEnabled
+        exoPlayer.shuffleModeEnabled = !isShuffleEnabled
+    }
+
+
+    private fun onRepeatModeClick(){
+        val currentRepeatMode = exoPlayer.repeatMode
+        val newRepeatMode = when(currentRepeatMode){
+            Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+            Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+            Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_OFF
+            else -> Player.REPEAT_MODE_OFF
+        }
+        exoPlayer.repeatMode = newRepeatMode
     }
 
     private fun onSeekTo(position: Long){
@@ -98,7 +118,7 @@ class MusicListViewModel(
         exoPlayer.prepare()
     }
 
-    private fun onShuffleClick(){
+    private fun onPlayListShuffleClick(){
         val shuffledAudios = state.value.audios.shuffled()
         _state.update { it.copy(
             audios = shuffledAudios
@@ -172,15 +192,22 @@ class MusicListViewModel(
                 }
 
                 override fun onRepeatModeChanged(repeatMode: Int) {
-                    when(repeatMode){
-                        Player.REPEAT_MODE_OFF -> {}
-                        Player.REPEAT_MODE_ALL -> {}
-                        Player.REPEAT_MODE_ONE -> {}
+                    val repeatModeStatus = when(repeatMode){
+                        Player.REPEAT_MODE_OFF -> RepeatModeStatus.Off
+                        Player.REPEAT_MODE_ALL -> RepeatModeStatus.All
+                        Player.REPEAT_MODE_ONE -> RepeatModeStatus.One
+                        else -> RepeatModeStatus.Off
                     }
+                    _state.update { it.copy(
+                        repeatModeStatus = repeatModeStatus
+                    ) }
                 }
 
-                override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
 
+                override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+                    _state.update { it.copy(
+                        isEnabledShuffle = shuffleModeEnabled
+                    ) }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
