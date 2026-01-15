@@ -14,9 +14,7 @@
 .cxx
 local.properties
 
-/.idea/firebender
-/.idea/deploymentTargetSelector.xml
-
-/.idea
+.idea/
 
 .idea/firebender/
+.idea/deploymentTargetSelector.xml
