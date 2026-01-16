@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -26,12 +27,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.music_list.presentation.components.EmptyView
 import com.lihan.vibeplayer.music_list.presentation.components.ListFunctionSection
 import com.lihan.vibeplayer.music_list.presentation.components.MusicListScreenTopBar
@@ -54,8 +57,28 @@ fun MusicListScreenRoot(
     viewModel: MusicListViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    ObserveEvent(viewModel.uiEvent) { uiEvent ->
+        when(uiEvent){
+            is MusicListUiEvent.OnRepeatModeChange -> {
+                snackbarHostState.showSnackbar(
+                    message = uiEvent.uiText.asStringAsync(context)
+                )
+            }
+            is MusicListUiEvent.OnShuffleEnabledChange -> {
+                snackbarHostState.showSnackbar(
+                    message = uiEvent.uiText.asStringAsync(context)
+                )
+            }
+            else -> Unit
+        }
+    }
 
     MusicListScreen(
+        snackbarHostState = snackbarHostState,
         state = state,
         onAction = { action ->
             when (action) {
@@ -71,6 +94,7 @@ fun MusicListScreenRoot(
 
 @Composable
 fun MusicListScreen(
+    snackbarHostState: SnackbarHostState,
     state: MusicListState,
     onAction: (MusicListAction) -> Unit,
     modifier: Modifier = Modifier
@@ -120,6 +144,7 @@ fun MusicListScreen(
                     ) + fadeOut()
                 ) {
                     PlayerBottomBar(
+                        snackbarHostState = snackbarHostState,
                         audioUi = state.playingAudioUi,
                         isPlaying = state.isPlaying,
                         repeatModeStatus = state.repeatModeStatus,
@@ -199,13 +224,11 @@ fun MusicListScreen(
                                         isTablet = false,
                                         songListSize = state.audios.size,
                                         onShuffleClick = {
-                                            onAction(MusicListAction.OnPlayListShuffleClick)
+                                            onAction(MusicListAction.OnFunctionShuffleClick)
                                         },
                                         onPlayClick = {
                                             onAction(
-                                                MusicListAction.OnAudioUiClick(
-                                                    state.audios.first()
-                                                )
+                                                MusicListAction.OnFunctionPlayClick
                                             )
                                         }
                                     )
@@ -226,7 +249,7 @@ fun MusicListScreen(
                                         audioUi = audioUi,
                                         modifier = Modifier.fillMaxWidth(),
                                         onAudioClick = {
-                                            onAction(MusicListAction.OnAudioUiClick(audioUi))
+                                            onAction(MusicListAction.OnSongClick(audioUi))
                                         }
                                     )
                                 }
@@ -261,6 +284,7 @@ private fun MusicListScreenPreview() {
                     )
                 }
             ),
+            snackbarHostState = remember { SnackbarHostState() },
             onAction = {
 
             }

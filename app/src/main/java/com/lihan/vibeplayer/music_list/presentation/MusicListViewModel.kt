@@ -4,17 +4,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ShuffleOrder
+import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -26,6 +32,9 @@ class MusicListViewModel(
 ): ViewModel(){
 
     private var hasInitialLoadedData = false
+
+    private val _uiEvent = Channel<MusicListUiEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
 
     private val _state = MutableStateFlow(MusicListState())
     val state = _state
@@ -46,22 +55,54 @@ class MusicListViewModel(
     fun onAction(action: MusicListAction){
         when(action){
             MusicListAction.OnScanAgainClick -> loadAudios()
-            MusicListAction.OnPlayListShuffleClick -> onPlayListShuffleClick()
-            is MusicListAction.OnAudioUiClick -> onAudioClick(action.audioUi)
+            MusicListAction.OnFunctionShuffleClick -> onPlayListShuffleClick()
+            is MusicListAction.OnFunctionPlayClick -> onFunctionPlayClick()
             MusicListAction.OnPlayClick -> onPlayClick()
             MusicListAction.OnSkipNextClick -> onSkipNextClick()
             MusicListAction.OnSkipPreviousClick -> onSkipPreviousClick()
             is MusicListAction.OnSeek -> onSeekTo(action.position)
             MusicListAction.OnRepeatClick -> onRepeatModeClick()
             MusicListAction.OnShuffleClick -> onShuffleClick()
+            is MusicListAction.OnSongClick -> onSongClick(action.audioUi)
             else -> Unit
         }
     }
 
-    private fun onShuffleClick(){
-        val isShuffleEnabled = exoPlayer.shuffleModeEnabled
-        exoPlayer.shuffleModeEnabled = !isShuffleEnabled
+    private fun onSongClick(audioUi: AudioUi){
+        _state.update { it.copy(
+            playingAudioUi = audioUi
+        ) }
+        val currentMediaItems = exoPlayer.getAllMediaItems()
+        val index = currentMediaItems.indexOf(
+            currentMediaItems.find { it.mediaId == audioUi.id.toString() }
+        )
+        exoPlayer.setMediaItems(
+            exoPlayer.getAllMediaItems(),
+            index,
+            0L
+        )
+        exoPlayer.prepare()
     }
+
+    private fun onShuffleClick(){
+        exoPlayer.shuffleModeEnabled = !exoPlayer.shuffleModeEnabled
+        if (exoPlayer.shuffleModeEnabled) {
+            val totalCount = exoPlayer.mediaItemCount
+            if (totalCount > 0) {
+                val currentIndex = exoPlayer.currentMediaItemIndex
+
+                val shuffleIndices = (0 until totalCount).filter { it != currentIndex }.shuffled()
+
+                val newOrder = (listOf(currentIndex) + shuffleIndices).toIntArray()
+
+                exoPlayer.shuffleOrder = ShuffleOrder.DefaultShuffleOrder(
+                    newOrder,
+                    System.currentTimeMillis()
+                )
+            }
+        }
+    }
+
 
 
     private fun onRepeatModeClick(){
@@ -98,31 +139,31 @@ class MusicListViewModel(
         }
     }
 
-    private fun onAudioClick(audioUi: AudioUi){
-        _state.update { it.copy(
-            playingAudioUi = audioUi
-        ) }
-        val mediaItems = exoPlayer.getAllMediaItems()
-
-        val audioIndex = mediaItems.indexOf(
-            mediaItems.find {
-                it.mediaId == audioUi.id.toString()
-            }
-        )
-
+    private fun onFunctionPlayClick(){
         exoPlayer.setMediaItems(
             exoPlayer.getAllMediaItems(),
-            audioIndex,
+            0,
             0L
         )
         exoPlayer.prepare()
+        exoPlayer.play()
     }
 
     private fun onPlayListShuffleClick(){
-        val shuffledAudios = state.value.audios.shuffled()
+        val shuffledList = state.value.audios.shuffled()
         _state.update { it.copy(
-            audios = shuffledAudios
+            audios = shuffledList
         ) }
+
+        val currentMediaItems = exoPlayer.getAllMediaItems().associateBy { it.mediaId }
+        val newMediaItems = shuffledList.mapNotNull { audio ->
+            currentMediaItems[audio.id.toString()]
+        }
+        exoPlayer.setMediaItems(
+            newMediaItems,
+            0,
+            0L
+        )
     }
 
     private fun loadAudios(){
@@ -198,13 +239,41 @@ class MusicListViewModel(
                         Player.REPEAT_MODE_ONE -> RepeatModeStatus.One
                         else -> RepeatModeStatus.Off
                     }
+
+                    viewModelScope.launch {
+                        _uiEvent.send(
+                            MusicListUiEvent.OnRepeatModeChange(
+                                repeatModeStatus.toUiText()
+                            )
+                        )
+                    }
+
                     _state.update { it.copy(
                         repeatModeStatus = repeatModeStatus
                     ) }
                 }
 
+                override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                    updateShuffledList()
+                }
 
                 override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+                    updateShuffledList()
+
+                    viewModelScope.launch {
+                        _uiEvent.send(
+                            MusicListUiEvent.OnShuffleEnabledChange(
+                                UiText.StringResource(
+                                    if (shuffleModeEnabled){
+                                        R.string.main_shuffle_enabled
+                                    }else{
+                                        R.string.main_shuffle_off
+                                    }
+                                )
+                            )
+                        )
+                    }
+
                     _state.update { it.copy(
                         isEnabledShuffle = shuffleModeEnabled
                     ) }
@@ -253,6 +322,47 @@ class MusicListViewModel(
             items.add(this.getMediaItemAt(i))
         }
         return items
+    }
+
+    private fun updateShuffledList(){
+        val items = if (exoPlayer.shuffleModeEnabled) {
+            getShuffledMediaItems()
+        } else {
+            (0 until exoPlayer.mediaItemCount).map { exoPlayer.getMediaItemAt(it) }
+        }
+
+        val audioMap = state.value.audios.associateBy { it.id.toString() }
+
+        val newAudioUis = items.mapNotNull { mediaItem ->
+            audioMap[mediaItem.mediaId]
+        }
+
+        _state.update { it.copy(
+            audios = newAudioUis
+        ) }
+    }
+
+    private fun getShuffledMediaItems(): List<MediaItem> {
+        val timeline = exoPlayer.currentTimeline
+        if (timeline.isEmpty){
+            return emptyList()
+        }
+        val shuffledList = mutableListOf<MediaItem>()
+
+        var currentIndex = timeline.getFirstWindowIndex(true)
+
+        while (currentIndex != -1) {
+            val mediaItem = exoPlayer.getMediaItemAt(currentIndex)
+            shuffledList.add(mediaItem)
+
+            currentIndex = timeline.getNextWindowIndex(
+                currentIndex,
+                Player.REPEAT_MODE_OFF,
+                true
+            )
+        }
+
+        return shuffledList
     }
 
 }

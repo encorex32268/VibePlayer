@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalPermissionsApi::class)
 
-package com.lihan.vibeplayer.music_list.presentation
+package com.lihan.vibeplayer.music_list.presentation.permission
 
 import android.Manifest
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,19 +60,19 @@ fun PermissionScreen(
     onNavigateToSetting: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var shouldShowRationale by remember {
+    var shouldShowRationale by rememberSaveable {
         mutableStateOf(false)
     }
-    var isShowRationaleDialog by remember {
+    var isShowRationaleDialog by rememberSaveable {
         mutableStateOf(false)
     }
-    var isPermanentlyDenied by remember {
+    var isPermanentlyDenied by rememberSaveable {
         mutableStateOf(false)
     }
-    var showSettingsDialog by remember {
+    var showSettingsDialog by rememberSaveable {
         mutableStateOf(false)
     }
-    var hasRequestedPermission by remember {
+    var hasRequestedPermission by rememberSaveable {
         mutableStateOf(false)
     }
 

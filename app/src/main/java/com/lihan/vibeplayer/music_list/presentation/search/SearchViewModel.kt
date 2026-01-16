@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class SearchViewModel(
     private val audioRepository: AudioRepository
@@ -54,32 +57,39 @@ class SearchViewModel(
     }
 
     private fun observerTextFieldState() {
-        snapshotFlow {
-            state.value.textFieldState.text.toString()
-        }
-            .onEach { text ->
-                if (text.trim().isNotEmpty()) {
-                    _state.update { it.copy(isSearching = true) }
-                }else{
-                    _state.update { it.copy(
-                        searchedAudios = emptyList()
-                    ) }
-                }
+        viewModelScope.launch {
+            snapshotFlow {
+                state.value.textFieldState.text.toString()
             }
-            .filter { it.trim().isNotEmpty() }
-            .debounce(500L)
-            .onEach { text ->
-                val result = audioRepository
-                    .getAudiosByTitle(text)
-                    .map { it.toUi() }
+                .onEach { text ->
+                    if (text.trim().isNotEmpty()) {
+                        _state.update { it.copy(isSearching = true) }
+                    }else{
+                        _state.update { it.copy(
+                            searchedAudios = emptyList()
+                        ) }
+                    }
+                }
+                .filter { it.trim().isNotEmpty() }
+                .debounce(500L)
+                .onEach { text ->
+                    val result = audioRepository
+                        .getAudiosByTitle(text)
+                        .map { audio ->
+                            async {
+                                val audioUi = audio.toUi()
+                                val albumImage = audioRepository.getAlbumArt(audioUi.album)
+                                audioUi.copy(albumImage = albumImage)
+                            }
+                        }.awaitAll()
 
-                _state.update {
-                    it.copy(
-                        searchedAudios = result,
-                        isSearching = false
-                    )
-                }
-            }
-            .launchIn(viewModelScope)
+                    _state.update {
+                        it.copy(
+                            searchedAudios = result,
+                            isSearching = false
+                        )
+                    }
+                }.launchIn(this)
+        }
     }
 }

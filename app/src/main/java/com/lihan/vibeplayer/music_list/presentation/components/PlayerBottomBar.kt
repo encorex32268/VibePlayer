@@ -9,6 +9,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -17,12 +20,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 @Composable
 fun PlayerBottomBar(
+    snackbarHostState: SnackbarHostState,
     isPlaying: Boolean,
     repeatModeStatus: RepeatModeStatus,
     isEnabledShuffle: Boolean,
@@ -69,6 +74,7 @@ fun PlayerBottomBar(
     ) { targetIsExpand ->
         if (targetIsExpand) {
             FullScreenPlayer(
+                snackbarHostState = snackbarHostState,
                 isPlaying = isPlaying,
                 audioUi = audioUi,
                 progress = { progress },
@@ -89,6 +95,9 @@ fun PlayerBottomBar(
         } else {
 
             MiniPlayer(
+                modifier = Modifier
+                    .widthIn(max = 480.dp)
+                    .fillMaxWidth(),
                 audioUi = audioUi,
                 isPlaying = isPlaying,
                 playbackProgress = { progress },
@@ -128,7 +137,8 @@ private fun PlayerBottomBarPreview() {
             repeatModeStatus = RepeatModeStatus.Off,
             isEnabledShuffle = false,
             onRepeatClick = {},
-            onShuffleClick = {}
+            onShuffleClick = {},
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 
