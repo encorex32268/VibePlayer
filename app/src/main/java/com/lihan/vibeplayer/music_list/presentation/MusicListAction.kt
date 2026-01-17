@@ -15,4 +15,9 @@ sealed interface MusicListAction {
     data object OnRepeatClick: MusicListAction
     data object OnShuffleClick: MusicListAction
     data class OnSongClick(val audioUi: AudioUi): MusicListAction
+
+    data object OnExpandClick: MusicListAction
+    data object OnCollapseClick: MusicListAction
+    data object OnHideModeChangedBanner: MusicListAction
+
 }

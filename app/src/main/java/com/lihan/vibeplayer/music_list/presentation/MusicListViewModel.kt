@@ -13,6 +13,7 @@ import com.lihan.vibeplayer.music_list.domain.AudioRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
@@ -32,6 +33,10 @@ class MusicListViewModel(
 ): ViewModel(){
 
     private var hasInitialLoadedData = false
+
+    private var skipInitialMediaTransition = true
+
+    private var progressJob: Job?=null
 
     private val _uiEvent = Channel<MusicListUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -55,7 +60,7 @@ class MusicListViewModel(
     fun onAction(action: MusicListAction){
         when(action){
             MusicListAction.OnScanAgainClick -> loadAudios()
-            MusicListAction.OnFunctionShuffleClick -> onPlayListShuffleClick()
+            MusicListAction.OnFunctionShuffleClick -> onFunctionShuffleClick()
             is MusicListAction.OnFunctionPlayClick -> onFunctionPlayClick()
             MusicListAction.OnPlayClick -> onPlayClick()
             MusicListAction.OnSkipNextClick -> onSkipNextClick()
@@ -64,8 +69,28 @@ class MusicListViewModel(
             MusicListAction.OnRepeatClick -> onRepeatModeClick()
             MusicListAction.OnShuffleClick -> onShuffleClick()
             is MusicListAction.OnSongClick -> onSongClick(action.audioUi)
+            MusicListAction.OnExpandClick -> onExpandClick()
+            MusicListAction.OnCollapseClick -> onCollapseClick()
+            MusicListAction.OnHideModeChangedBanner -> onHideModeChangedBanner()
             else -> Unit
         }
+    }
+
+    private fun onHideModeChangedBanner(){
+        _state.update { it.copy(
+            modeStatusBanner = null
+        ) }
+    }
+
+    private fun onExpandClick(){
+        _state.update { it.copy(
+            isExpandPlayer = true
+        ) }
+    }
+    private fun onCollapseClick(){
+        _state.update { it.copy(
+            isExpandPlayer = false
+        ) }
     }
 
     private fun onSongClick(audioUi: AudioUi){
@@ -87,19 +112,15 @@ class MusicListViewModel(
     private fun onShuffleClick(){
         exoPlayer.shuffleModeEnabled = !exoPlayer.shuffleModeEnabled
         if (exoPlayer.shuffleModeEnabled) {
-            val totalCount = exoPlayer.mediaItemCount
-            if (totalCount > 0) {
-                val currentIndex = exoPlayer.currentMediaItemIndex
+            val items = getShuffledMediaItems()
+            val audioMap = state.value.audios.associateBy { it.id.toString() }
 
-                val shuffleIndices = (0 until totalCount).filter { it != currentIndex }.shuffled()
-
-                val newOrder = (listOf(currentIndex) + shuffleIndices).toIntArray()
-
-                exoPlayer.shuffleOrder = ShuffleOrder.DefaultShuffleOrder(
-                    newOrder,
-                    System.currentTimeMillis()
-                )
+            val newAudioUis = items.mapNotNull { mediaItem ->
+                audioMap[mediaItem.mediaId]
             }
+            _state.update { it.copy(
+                audios = newAudioUis
+            ) }
         }
     }
 
@@ -149,21 +170,18 @@ class MusicListViewModel(
         exoPlayer.play()
     }
 
-    private fun onPlayListShuffleClick(){
-        val shuffledList = state.value.audios.shuffled()
-        _state.update { it.copy(
-            audios = shuffledList
-        ) }
+    private fun onFunctionShuffleClick(){
+        exoPlayer.shuffleModeEnabled = true
 
-        val currentMediaItems = exoPlayer.getAllMediaItems().associateBy { it.mediaId }
-        val newMediaItems = shuffledList.mapNotNull { audio ->
-            currentMediaItems[audio.id.toString()]
-        }
-        exoPlayer.setMediaItems(
-            newMediaItems,
-            0,
-            0L
+        exoPlayer.seekToDefaultPosition(
+            exoPlayer.shuffleOrder.firstIndex
         )
+        exoPlayer.prepare()
+        exoPlayer.play()
+
+        _state.update { it.copy(
+            isExpandPlayer = true
+        ) }
     }
 
     private fun loadAudios(){
@@ -211,25 +229,41 @@ class MusicListViewModel(
                     _state.update { it.copy(
                         isPlaying = isPlaying
                     ) }
+                    if (!isPlaying){
+                        progressJob?.cancel()
+                    }
+                    progressJob = viewModelScope.launch {
+                        while (isActive){
+                            val currentPosition = exoPlayer.currentPosition
+                            val duration = exoPlayer.duration
+
+                            _state.update { it.copy(
+                                currentPosition = currentPosition,
+                                duration = duration,
+                            ) }
+                            delay(300L)
+                        }
+                    }
                 }
 
                 override fun onEvents(player: Player, events: Player.Events) {
-                   when{
-                       events.contains(Player.EVENT_TRACKS_CHANGED) -> {
-                           val currentId = exoPlayer.currentMediaItem?.mediaId
-                           if (currentId != null){
-                               val currentAudio = state.value.audios.find {
-                                   it.id.toString() == currentId
-                               }
-                               _state.update { it.copy(
-                                   playingAudioUi = currentAudio
-                               ) }
-                           }
-                       }
-                       events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) -> {
-
-                      }
-                   }
+                    if (skipInitialMediaTransition && events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
+                        skipInitialMediaTransition = false
+                       return
+                    }
+                    when {
+                        events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) -> {
+                            val currentId = exoPlayer.currentMediaItem?.mediaId
+                            if (currentId != null) {
+                                val currentAudio = state.value.audios.find {
+                                    it.id.toString() == currentId
+                                }
+                                _state.update { it.copy(
+                                    playingAudioUi = currentAudio
+                                ) }
+                            }
+                        }
+                    }
                 }
 
                 override fun onRepeatModeChanged(repeatMode: Int) {
@@ -240,15 +274,8 @@ class MusicListViewModel(
                         else -> RepeatModeStatus.Off
                     }
 
-                    viewModelScope.launch {
-                        _uiEvent.send(
-                            MusicListUiEvent.OnRepeatModeChange(
-                                repeatModeStatus.toUiText()
-                            )
-                        )
-                    }
-
                     _state.update { it.copy(
+                        modeStatusBanner = repeatModeStatus.toUiText(),
                         repeatModeStatus = repeatModeStatus
                     ) }
                 }
@@ -259,23 +286,12 @@ class MusicListViewModel(
 
                 override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
                     updateShuffledList()
-
-                    viewModelScope.launch {
-                        _uiEvent.send(
-                            MusicListUiEvent.OnShuffleEnabledChange(
-                                UiText.StringResource(
-                                    if (shuffleModeEnabled){
-                                        R.string.main_shuffle_enabled
-                                    }else{
-                                        R.string.main_shuffle_off
-                                    }
-                                )
-                            )
-                        )
-                    }
-
                     _state.update { it.copy(
-                        isEnabledShuffle = shuffleModeEnabled
+                        isEnabledShuffle = shuffleModeEnabled,
+                        modeStatusBanner = when(shuffleModeEnabled){
+                            true -> UiText.StringResource(R.string.main_shuffle_enabled)
+                            false -> UiText.StringResource(R.string.main_shuffle_off)
+                        }
                     ) }
                 }
 
@@ -296,24 +312,6 @@ class MusicListViewModel(
                 }
             }
         )
-        viewModelScope.launch{
-            while (isActive){
-                if (exoPlayer.isPlaying){
-                    val currentPosition = exoPlayer.currentPosition
-                    val duration = exoPlayer.duration
-
-                    _state.update { it.copy(
-                        currentPosition = currentPosition,
-                        duration = duration,
-                    ) }
-
-                    delay(500L)
-                } else {
-
-                    delay(1000L)
-                }
-            }
-        }
     }
 
     fun ExoPlayer.getAllMediaItems(): List<MediaItem>{
@@ -340,6 +338,7 @@ class MusicListViewModel(
         _state.update { it.copy(
             audios = newAudioUis
         ) }
+
     }
 
     private fun getShuffledMediaItems(): List<MediaItem> {

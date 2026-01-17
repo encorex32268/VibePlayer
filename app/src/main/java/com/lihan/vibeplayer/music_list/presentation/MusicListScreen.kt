@@ -9,8 +9,11 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -22,12 +25,16 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,28 +64,8 @@ fun MusicListScreenRoot(
     viewModel: MusicListViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    ObserveEvent(viewModel.uiEvent) { uiEvent ->
-        when(uiEvent){
-            is MusicListUiEvent.OnRepeatModeChange -> {
-                snackbarHostState.showSnackbar(
-                    message = uiEvent.uiText.asStringAsync(context)
-                )
-            }
-            is MusicListUiEvent.OnShuffleEnabledChange -> {
-                snackbarHostState.showSnackbar(
-                    message = uiEvent.uiText.asStringAsync(context)
-                )
-            }
-            else -> Unit
-        }
-    }
 
     MusicListScreen(
-        snackbarHostState = snackbarHostState,
         state = state,
         onAction = { action ->
             when (action) {
@@ -94,7 +81,6 @@ fun MusicListScreenRoot(
 
 @Composable
 fun MusicListScreen(
-    snackbarHostState: SnackbarHostState,
     state: MusicListState,
     onAction: (MusicListAction) -> Unit,
     modifier: Modifier = Modifier
@@ -107,6 +93,9 @@ fun MusicListScreen(
             listState.firstVisibleItemIndex >= 10
         }
     }
+    val density = LocalDensity.current
+
+    var miniPlayerHeight by remember { mutableStateOf(0.dp) }
 
     Scaffold(
         containerColor = SurfaceBG,
@@ -135,6 +124,9 @@ fun MusicListScreen(
         bottomBar = {
             if (state.playingAudioUi != null){
                 AnimatedVisibility(
+                    modifier = Modifier.onSizeChanged{
+                        miniPlayerHeight = with(density){ it.height.toDp() }
+                    },
                     visible = true,
                     enter = slideInVertically(
                         initialOffsetY = { fullHeight -> fullHeight }
@@ -144,11 +136,12 @@ fun MusicListScreen(
                     ) + fadeOut()
                 ) {
                     PlayerBottomBar(
-                        snackbarHostState = snackbarHostState,
                         audioUi = state.playingAudioUi,
-                        isPlaying = state.isPlaying,
+                        modeStatusBanner = state.modeStatusBanner,
                         repeatModeStatus = state.repeatModeStatus,
+                        isPlaying = state.isPlaying,
                         isEnabledShuffle = state.isEnabledShuffle,
+                        isExpandPlayer = state.isExpandPlayer,
                         duration = state.duration,
                         currentPosition = { state.currentPosition },
                         onPlayClick = {
@@ -168,6 +161,15 @@ fun MusicListScreen(
                         },
                         onShuffleClick = {
                             onAction(MusicListAction.OnShuffleClick)
+                        },
+                        onExpandClick = {
+                            onAction(MusicListAction.OnExpandClick)
+                        },
+                        onCollapseClick = {
+                            onAction(MusicListAction.OnCollapseClick)
+                        },
+                        onHideModeChangedBanner = {
+                            onAction(MusicListAction.OnHideModeChangedBanner)
                         }
                     )
                 }
@@ -253,6 +255,9 @@ fun MusicListScreen(
                                         }
                                     )
                                 }
+                                item {
+                                    Spacer(Modifier.height(miniPlayerHeight))
+                                }
                             }
 
                         }
@@ -284,7 +289,6 @@ private fun MusicListScreenPreview() {
                     )
                 }
             ),
-            snackbarHostState = remember { SnackbarHostState() },
             onAction = {
 
             }

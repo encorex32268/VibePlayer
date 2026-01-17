@@ -21,16 +21,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 @Composable
 fun PlayerBottomBar(
-    snackbarHostState: SnackbarHostState,
+    isExpandPlayer: Boolean,
     isPlaying: Boolean,
-    repeatModeStatus: RepeatModeStatus,
     isEnabledShuffle: Boolean,
+    modeStatusBanner: UiText?,
+    repeatModeStatus: RepeatModeStatus,
     audioUi: AudioUi,
     currentPosition: () -> Long,
     duration: Long,
@@ -40,12 +42,14 @@ fun PlayerBottomBar(
     onSkipPreviousClick: () -> Unit,
     onRepeatClick: () -> Unit,
     onShuffleClick: () -> Unit,
+    onCollapseClick: () -> Unit,
+    onExpandClick: () -> Unit,
+    onHideModeChangedBanner: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var isExpand by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = isExpand) {
-        isExpand = false
+    BackHandler(enabled = isExpandPlayer) {
+        onCollapseClick()
     }
 
     val progress by remember(currentPosition()) {
@@ -62,7 +66,7 @@ fun PlayerBottomBar(
                 indication = null,
                 interactionSource = null
             ),
-        targetState = isExpand,
+        targetState = isExpandPlayer,
         transitionSpec = {
             ContentTransform(
                 targetContentEnter = slideInVertically(animationSpec = tween(300)),
@@ -74,22 +78,21 @@ fun PlayerBottomBar(
     ) { targetIsExpand ->
         if (targetIsExpand) {
             FullScreenPlayer(
-                snackbarHostState = snackbarHostState,
                 isPlaying = isPlaying,
+                isEnabledShuffle = isEnabledShuffle,
+                modeStatusBanner = modeStatusBanner,
+                repeatModeStatus = repeatModeStatus,
                 audioUi = audioUi,
                 progress = { progress },
                 currentPosition = currentPosition(),
                 onPlayClick = onPlayClick,
                 onSkipNextClick = onSkipNextClick,
                 onSkipPreviousClick = onSkipPreviousClick,
-                onCollapseClick = {
-                    isExpand = false
-                },
+                onCollapseClick = onCollapseClick,
                 onSeek = onSeek,
-                repeatModeStatus = repeatModeStatus,
                 onRepeatClick = onRepeatClick,
-                isEnabledShuffle = isEnabledShuffle,
-                onShuffleClick = onShuffleClick
+                onShuffleClick = onShuffleClick,
+                onHideModeChangedBanner = onHideModeChangedBanner,
             )
 
         } else {
@@ -103,9 +106,7 @@ fun PlayerBottomBar(
                 playbackProgress = { progress },
                 onPlayClick = onPlayClick,
                 onSkipNextClick = onSkipNextClick,
-                onMiniPlayerClick = {
-                    isExpand = true
-                }
+                onMiniPlayerClick = onExpandClick
             )
         }
     }
@@ -127,6 +128,7 @@ private fun PlayerBottomBarPreview() {
                 duration = 10_000,
                 id = 1
             ),
+            modeStatusBanner = UiText.DynamicString("Test"),
             duration = 1000,
             isPlaying = false,
             currentPosition = {1000},
@@ -134,11 +136,14 @@ private fun PlayerBottomBarPreview() {
             onSkipPreviousClick = {},
             onSkipNextClick = {},
             onSeek = {},
-            repeatModeStatus = RepeatModeStatus.Off,
             isEnabledShuffle = false,
             onRepeatClick = {},
             onShuffleClick = {},
-            snackbarHostState = remember { SnackbarHostState() }
+            isExpandPlayer = true,
+            onExpandClick = {},
+            onCollapseClick = {},
+            onHideModeChangedBanner = {},
+            repeatModeStatus = RepeatModeStatus.Off
         )
     }
 
