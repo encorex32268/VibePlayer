@@ -44,7 +44,7 @@ fun PlayerControlSection(
         CircleIconButton(
             icon = ImageVector.vectorResource(R.drawable.shuffle),
             onClick = onShuffleClick,
-            isDisabled = !isEnabledShuffle
+            isDisabledStyle = !isEnabledShuffle
         )
         Row(
             modifier = Modifier
@@ -89,7 +89,7 @@ fun PlayerControlSection(
                 RepeatModeStatus.All -> ImageVector.vectorResource(R.drawable.repeat)
             } ,
             onClick = onRepeatClick,
-            isDisabled = repeatModeStatus == RepeatModeStatus.Off
+            isDisabledStyle = repeatModeStatus == RepeatModeStatus.Off
         )
     }
 }

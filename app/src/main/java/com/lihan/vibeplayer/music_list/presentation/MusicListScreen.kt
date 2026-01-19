@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,13 +19,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,6 +45,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
@@ -45,17 +53,23 @@ import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.music_list.presentation.components.EmptyView
 import com.lihan.vibeplayer.music_list.presentation.components.ListFunctionSection
 import com.lihan.vibeplayer.music_list.presentation.components.MusicListScreenTopBar
+import com.lihan.vibeplayer.music_list.presentation.components.MusicListTabRow
+import com.lihan.vibeplayer.music_list.presentation.components.PLAYLIST
 import com.lihan.vibeplayer.music_list.presentation.components.PlayerBottomBar
+import com.lihan.vibeplayer.music_list.presentation.components.SONGS
 import com.lihan.vibeplayer.music_list.presentation.components.ScanningView
 import com.lihan.vibeplayer.music_list.presentation.components.SongCard
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.music_list.presentation.util.tabIndicatorOffset
 import com.lihan.vibeplayer.ui.design_system.buttons.VPFloatingActionButton
 import com.lihan.vibeplayer.ui.design_system.surface.VPSurface
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
+import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+
 
 @Composable
 fun MusicListScreenRoot(
@@ -96,6 +110,13 @@ fun MusicListScreen(
     val density = LocalDensity.current
 
     var miniPlayerHeight by remember { mutableStateOf(0.dp) }
+
+    val horizontalPager = rememberPagerState(
+        pageCount = { 2 }
+    )
+    val tabsWidth = remember {
+        mutableStateMapOf<Int, Dp>()
+    }
 
     Scaffold(
         containerColor = SurfaceBG,
@@ -194,75 +215,35 @@ fun MusicListScreen(
                         onAction(MusicListAction.OnSearchClick)
                     }
                 )
-                when {
-                    state.isScanning -> {
-                        ScanningView(
-                            modifier = Modifier.fillMaxSize()
-                        )
+                MusicListTabRow(
+                    selectedTabIndex = horizontalPager.currentPage,
+                    onTabClick = {
+                        scope.launch {
+                            horizontalPager.scrollToPage(it)
+                        }
                     }
+                )
 
-                    state.audios.isEmpty() && !state.isScanning -> {
-                        EmptyView(
-                            onScanAgainClick = {
-                                onAction(MusicListAction.OnScanAgainClick)
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-
-                    else -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp),
-                        ) {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(8.dp),
-                                state = listState
-                            ) {
-                                item{
-                                    ListFunctionSection(
-                                        isTablet = false,
-                                        songListSize = state.audios.size,
-                                        onShuffleClick = {
-                                            onAction(MusicListAction.OnFunctionShuffleClick)
-                                        },
-                                        onPlayClick = {
-                                            onAction(
-                                                MusicListAction.OnFunctionPlayClick
-                                            )
-                                        }
-                                    )
-                                }
-                                itemsIndexed(
-                                    items = state.audios,
-                                    key = { _, audioUi ->
-                                        audioUi.id
-                                    }
-                                ) { index, audioUi ->
-                                    if (index != 0) {
-                                        HorizontalDivider(
-                                            color = SurfaceOutline,
-                                            thickness = 1.dp
-                                        )
-                                    }
-                                    SongCard(
-                                        audioUi = audioUi,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        onAudioClick = {
-                                            onAction(MusicListAction.OnSongClick(audioUi))
-                                        }
-                                    )
-                                }
-                                item {
-                                    Spacer(Modifier.height(miniPlayerHeight))
-                                }
-                            }
-
+                HorizontalPager(
+                    state = horizontalPager,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    when (page) {
+                        SONGS -> {
+                            SongsScreen(
+                                state = state,
+                                listState = listState,
+                                onAction = onAction,
+                                miniPlayerHeight = miniPlayerHeight
+                            )
+                        }
+                        PLAYLIST -> {
+                            PlayListScreen()
                         }
                     }
                 }
+
+
 
             }
 
