@@ -6,28 +6,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -40,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -49,23 +35,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
-import com.lihan.vibeplayer.core.presentation.ObserveEvent
-import com.lihan.vibeplayer.music_list.presentation.components.EmptyView
-import com.lihan.vibeplayer.music_list.presentation.components.ListFunctionSection
 import com.lihan.vibeplayer.music_list.presentation.components.MusicListScreenTopBar
 import com.lihan.vibeplayer.music_list.presentation.components.MusicListTabRow
 import com.lihan.vibeplayer.music_list.presentation.components.PLAYLIST
 import com.lihan.vibeplayer.music_list.presentation.components.PlayerBottomBar
 import com.lihan.vibeplayer.music_list.presentation.components.SONGS
-import com.lihan.vibeplayer.music_list.presentation.components.ScanningView
-import com.lihan.vibeplayer.music_list.presentation.components.SongCard
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
-import com.lihan.vibeplayer.music_list.presentation.util.tabIndicatorOffset
 import com.lihan.vibeplayer.ui.design_system.buttons.VPFloatingActionButton
 import com.lihan.vibeplayer.ui.design_system.surface.VPSurface
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
-import com.lihan.vibeplayer.ui.theme.SurfaceOutline
-import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -75,6 +53,7 @@ import org.koin.androidx.compose.koinViewModel
 fun MusicListScreenRoot(
     onNavigateToScan: () -> Unit,
     onNavigateToSearch: () -> Unit,
+    onNavigateToAddSongs: (String) -> Unit,
     viewModel: MusicListViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -85,6 +64,7 @@ fun MusicListScreenRoot(
             when (action) {
                 MusicListAction.OnScanClick -> onNavigateToScan()
                 MusicListAction.OnSearchClick -> onNavigateToSearch()
+                MusicListAction.OnNavigateToAddSongs -> onNavigateToAddSongs(state.createPlaylistTextFieldState.text.toString())
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -114,9 +94,6 @@ fun MusicListScreen(
     val horizontalPager = rememberPagerState(
         pageCount = { 2 }
     )
-    val tabsWidth = remember {
-        mutableStateMapOf<Int, Dp>()
-    }
 
     Scaffold(
         containerColor = SurfaceBG,
@@ -238,7 +215,10 @@ fun MusicListScreen(
                             )
                         }
                         PLAYLIST -> {
-                            PlayListScreen()
+                            PlayListScreen(
+                                state = state,
+                                onAction = onAction
+                            )
                         }
                     }
                 }

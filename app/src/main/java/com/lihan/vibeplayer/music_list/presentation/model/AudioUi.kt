@@ -8,7 +8,8 @@ data class AudioUi(
     val songTitle: String,
     val artisName: String,
     val duration: Long,
-    val albumImage: ByteArray? = null
+    val albumImage: ByteArray? = null,
+    val isSelected: Boolean = false,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

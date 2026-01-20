@@ -16,4 +16,7 @@ sealed interface Route {
 
     @Serializable
     data object Search: Route
+
+    @Serializable
+    data class AddSongs(val title: String): Route
 }

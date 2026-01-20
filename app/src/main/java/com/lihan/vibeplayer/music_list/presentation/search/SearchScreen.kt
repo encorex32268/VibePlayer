@@ -1,8 +1,10 @@
 package com.lihan.vibeplayer.music_list.presentation.search
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -26,7 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.music_list.presentation.components.SongCard
-import com.lihan.vibeplayer.music_list.presentation.search.components.SearchBar
+import com.lihan.vibeplayer.music_list.presentation.components.SearchBar
+import com.lihan.vibeplayer.ui.design_system.buttons.VPTextButton
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextDisabled
 import com.lihan.vibeplayer.ui.theme.TextSecondary
@@ -65,15 +68,24 @@ fun SearchScreen(
             .fillMaxSize()
             .padding(vertical = 10.dp,horizontal = 16.dp)
     ) {
-        SearchBar(
-            textFieldState = state.textFieldState,
-            onCancelClick = {
-                onAction(SearchAction.OnCancelClick)
-            },
-            onCloseClick = {
-                onAction(SearchAction.OnCloseClick)
-            }
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            SearchBar(
+                textFieldState = state.textFieldState,
+                onCloseClick = {
+                    onAction(SearchAction.OnCloseClick)
+                }
+            )
+            VPTextButton(
+                text = stringResource(R.string.search_cancel),
+                onClick = {
+                    onAction(SearchAction.OnCancelClick)
+                }
+            )
+        }
         when{
             state.isSearching -> {
                 Box(

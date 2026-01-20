@@ -46,15 +46,26 @@ fun HeartIcon(
         Icon(
             modifier = Modifier
                 .size(36.dp)
+                .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
                 .drawWithContent{
                     drawContent()
-                    drawRect(
-                        size = androidx.compose.ui.geometry.Size(
-                            width = (size.width/2f),
-                            height = size.height
-                        ),
-                        color = ButtonPrimary.copy(alpha = 0.5f)
+
+                    drawArc(
+                        startAngle = -90f,
+                        sweepAngle = 180f,
+                        color =  ButtonPrimary.copy(alpha = 0.5f),
+                        useCenter = true,
+                        blendMode = BlendMode.SrcAtop,
                     )
+
+                    drawArc(
+                        startAngle = 90f,
+                        sweepAngle = 180f,
+                        color =  ButtonPrimary,
+                        useCenter = true,
+                        blendMode = BlendMode.SrcAtop,
+                    )
+
                 },
             imageVector =  ImageVector.vectorResource(R.drawable.heart),
             contentDescription = null,
@@ -66,7 +77,7 @@ fun HeartIcon(
 }
 
 
-@Preview
+@Preview(showBackground = true, backgroundColor = 0xFF0A131D)
 @Composable
 private fun PlaylistGradientIconPreview() {
     VibePlayerTheme {

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 
 }
 
@@ -79,5 +80,10 @@ dependencies {
 
     //Koin
     implementation(libs.bundles.koin)
+
+    //Room
+    implementation(libs.bundles.room)
+    ksp(libs.room.compiler)
+    annotationProcessor(libs.room.compiler)
 
 }

@@ -19,5 +19,8 @@ sealed interface MusicListAction {
     data object OnExpandClick: MusicListAction
     data object OnCollapseClick: MusicListAction
     data object OnHideModeChangedBanner: MusicListAction
+    data object OnCreatePlaylistCancelClick: MusicListAction
+    data object OnCreatePlaylistAddClick: MusicListAction
+    data object OnNavigateToAddSongs: MusicListAction
 
 }

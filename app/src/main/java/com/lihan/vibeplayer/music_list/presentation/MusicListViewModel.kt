@@ -1,12 +1,13 @@
 package com.lihan.vibeplayer.music_list.presentation
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.ShuffleOrder
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
@@ -20,6 +21,11 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -46,7 +52,8 @@ class MusicListViewModel(
         .onStart {
             if (!hasInitialLoadedData){
                 loadAudios()
-                observerPlayer()
+                observePlayer()
+                observeSearchTextField()
                 hasInitialLoadedData = true
             }
         }.stateIn(
@@ -54,8 +61,6 @@ class MusicListViewModel(
             SharingStarted.WhileSubscribed(5_000),
             MusicListState()
         )
-
-
 
     fun onAction(action: MusicListAction){
         when(action){
@@ -72,9 +77,27 @@ class MusicListViewModel(
             MusicListAction.OnExpandClick -> onExpandClick()
             MusicListAction.OnCollapseClick -> onCollapseClick()
             MusicListAction.OnHideModeChangedBanner -> onHideModeChangedBanner()
+            MusicListAction.OnCreatePlaylistAddClick -> onCreatePlaylistAddClick()
+            MusicListAction.OnNavigateToAddSongs,
+            MusicListAction.OnCreatePlaylistCancelClick -> onCreatePlaylistCancel()
             else -> Unit
         }
     }
+
+
+    private fun onCreatePlaylistAddClick(){
+        _state.update { it.copy(
+            isCreatePlaylistSheetShow = true
+        ) }
+    }
+
+    private fun onCreatePlaylistCancel(){
+        _state.update { it.copy(
+            isCreatePlaylistSheetShow = false,
+            createPlaylistTextFieldState = TextFieldState()
+        ) }
+    }
+
 
     private fun onHideModeChangedBanner(){
         _state.update { it.copy(
@@ -222,7 +245,17 @@ class MusicListViewModel(
         }
     }
 
-    private fun observerPlayer(){
+    private fun observeSearchTextField() {
+        snapshotFlow {
+            _state.value.createPlaylistTextFieldState.text.toString()
+        }.onEach { text ->
+            _state.update { it.copy(
+                isCreateButtonEnabled = text.isNotEmpty()
+            ) }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun observePlayer(){
         exoPlayer.addListener(
             object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -313,6 +346,7 @@ class MusicListViewModel(
             }
         )
     }
+
 
     fun ExoPlayer.getAllMediaItems(): List<MediaItem>{
         val items = mutableListOf<MediaItem>()

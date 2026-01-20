@@ -1,4 +1,4 @@
-package com.lihan.vibeplayer.music_list.presentation.search.components
+package com.lihan.vibeplayer.music_list.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.ui.design_system.buttons.VPTextButton
+import com.lihan.vibeplayer.ui.theme.ButtonHover
 import com.lihan.vibeplayer.ui.theme.ButtonHover28
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextDisabled
@@ -48,7 +49,6 @@ import kotlinx.coroutines.delay
 @Composable
 fun SearchBar(
     textFieldState: TextFieldState,
-    onCancelClick: () -> Unit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -123,13 +123,13 @@ fun SearchBar(
                 cursorBrush = SolidColor(TextSecondary),
                 modifier = Modifier
                     .focusRequester(focusRequester)
+                    .background(
+                        color = ButtonHover28,
+                        shape = RoundedCornerShape(100)
+                    )
                     .border(
                         width = 1.dp,
                         color = SurfaceOutline,
-                        shape = RoundedCornerShape(100)
-                    )
-                    .background(
-                        color = ButtonHover28,
                         shape = RoundedCornerShape(100)
                     )
                     .weight(1f)
@@ -140,17 +140,12 @@ fun SearchBar(
 
             )
         }
-
-        VPTextButton(
-            text = stringResource(R.string.search_cancel),
-            onClick = onCancelClick
-        )
     }
 
 }
 
 
-@Preview
+@Preview(showBackground = true, backgroundColor = 0xFF0A131D )
 @Composable
 private fun SearchBarPreview() {
     VibePlayerTheme {
@@ -159,7 +154,6 @@ private fun SearchBarPreview() {
         ) {
             SearchBar(
                 textFieldState = TextFieldState(),
-                onCancelClick = {},
                 onCloseClick = {}
             )
 
@@ -167,7 +161,6 @@ private fun SearchBarPreview() {
                 textFieldState = TextFieldState(
                     initialText = "Les"
                 ),
-                onCancelClick = {},
                 onCloseClick = {}
             )
         }

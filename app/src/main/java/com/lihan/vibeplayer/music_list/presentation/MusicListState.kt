@@ -1,7 +1,9 @@
 package com.lihan.vibeplayer.music_list.presentation
 
+import androidx.compose.foundation.text.input.TextFieldState
 import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.music_list.presentation.model.Playlist
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 
 data class MusicListState(
@@ -15,5 +17,9 @@ data class MusicListState(
     val duration: Long = 0L,
     val progress: Float = 0f,
     val modeStatusBanner: UiText?=null,
-    val repeatModeStatus: RepeatModeStatus = RepeatModeStatus.Off
+    val repeatModeStatus: RepeatModeStatus = RepeatModeStatus.Off,
+    val playlists: List<Playlist> = emptyList(),
+    val isCreatePlaylistSheetShow: Boolean = false,
+    val createPlaylistTextFieldState: TextFieldState = TextFieldState(),
+    val isCreateButtonEnabled: Boolean = false
 )

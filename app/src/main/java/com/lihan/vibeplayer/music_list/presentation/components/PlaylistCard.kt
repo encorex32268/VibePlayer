@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -18,14 +19,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
-import com.lihan.vibeplayer.ui.theme.SurfaceBG
+import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
@@ -34,7 +37,7 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 fun PlaylistCard(
     title: String,
     count: Int,
-    coverImage: @Composable () -> Unit,
+    playlistCardStyle: PlaylistCardStyle,
     onMenuDotsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -49,7 +52,25 @@ fun PlaylistCard(
                 .size(64.dp),
             contentAlignment = Alignment.Center
         ){
-            coverImage()
+            when(playlistCardStyle){
+                PlaylistCardStyle.Favourites -> {
+                    HeartIcon()
+                }
+                PlaylistCardStyle.NoCover -> {
+                    PlaylistGradientIcon()
+                }
+                is PlaylistCardStyle.HasCover -> {
+                    AsyncImage(
+                        model = playlistCardStyle.byteArray,
+                        contentDescription = title,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .size(64.dp),
+                        placeholder = painterResource(R.drawable.playlist_gradient),
+                        error = painterResource(R.drawable.playlist_gradient)
+                    )
+                }
+            }
         }
         Column(
             modifier = Modifier.weight(1f),
@@ -78,7 +99,7 @@ fun PlaylistCard(
 }
 
 
-@Preview(showBackground = true, backgroundColor = 0xFF0A131D)
+@Preview
 @Composable
 private fun PlaylistCardPreview() {
     VibePlayerTheme {
@@ -89,7 +110,13 @@ private fun PlaylistCardPreview() {
                 title = "Friday Chill",
                 count = 222,
                 onMenuDotsClick = {},
-                coverImage = {}
+                playlistCardStyle = PlaylistCardStyle.Favourites
+            )
+            PlaylistCard(
+                title = "Friday Chill",
+                count = 222,
+                onMenuDotsClick = {},
+                playlistCardStyle = PlaylistCardStyle.NoCover
             )
         }
     }

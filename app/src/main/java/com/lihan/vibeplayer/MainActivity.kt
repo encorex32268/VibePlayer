@@ -10,6 +10,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -23,6 +24,8 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.lihan.vibeplayer.core.navigation.Route
 import com.lihan.vibeplayer.music_list.presentation.MusicListScreenRoot
+import com.lihan.vibeplayer.music_list.presentation.addsong.AddSongsScreenRoot
+import com.lihan.vibeplayer.music_list.presentation.addsong.AddSongsViewModel
 import com.lihan.vibeplayer.music_list.presentation.permission.PermissionScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.search.SearchScreenRoot
@@ -80,6 +83,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToSearch = {
                                     navController.navigate(Route.Search)
+                                },
+                                onNavigateToAddSongs = { title ->
+                                    navController.navigate(Route.AddSongs(title))
                                 }
                             )
                         }
@@ -98,6 +104,16 @@ class MainActivity : ComponentActivity() {
                                 onBack = {
                                     navController.navigateUp()
                                 }
+                            )
+                        }
+
+                        composable<Route.AddSongs>{
+                            val viewModel = viewModels<AddSongsViewModel>()
+                            AddSongsScreenRoot(
+                                onBack = {
+                                    navController.navigateUp()
+                                },
+                                viewModel = viewModel.value
                             )
                         }
                     }

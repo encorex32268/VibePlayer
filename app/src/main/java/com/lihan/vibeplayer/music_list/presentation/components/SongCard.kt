@@ -4,10 +4,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +24,7 @@ import coil3.compose.AsyncImage
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.domain.util.toTimeString
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.ui.design_system.buttons.VPRadioButton
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
@@ -29,7 +33,9 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 fun SongCard(
     audioUi: AudioUi,
     onAudioClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSelectable: Boolean = false,
+    onSelect: ((AudioUi) -> Unit) ? = null,
 ) {
     Row(
         modifier = modifier
@@ -39,6 +45,15 @@ fun SongCard(
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if(isSelectable){
+            VPRadioButton(
+                selected = audioUi.isSelected,
+                onClick = {
+                    onSelect?.invoke(audioUi)
+                }
+            )
+            Spacer(Modifier.width(12.dp))
+        }
         AsyncImage(
             model = audioUi.albumImage,
             contentDescription = audioUi.songTitle,
