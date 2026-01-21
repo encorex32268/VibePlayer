@@ -1,5 +1,6 @@
 package com.lihan.vibeplayer.music_list.presentation
 
+import android.net.Uri
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
@@ -9,20 +10,25 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.domain.LocalDataRepository
 import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -32,17 +38,19 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 
 class MusicListViewModel(
     private val audioRepository: AudioRepository,
-    private val exoPlayer: ExoPlayer
-): ViewModel(){
+    private val exoPlayer: ExoPlayer,
+    private val localDataRepository: LocalDataRepository
+) : ViewModel() {
 
     private var hasInitialLoadedData = false
 
     private var skipInitialMediaTransition = true
 
-    private var progressJob: Job?=null
+    private var progressJob: Job? = null
 
     private val _uiEvent = Channel<MusicListUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -50,8 +58,9 @@ class MusicListViewModel(
     private val _state = MutableStateFlow(MusicListState())
     val state = _state
         .onStart {
-            if (!hasInitialLoadedData){
+            if (!hasInitialLoadedData) {
                 loadAudios()
+                loadPlaylists()
                 observePlayer()
                 observeSearchTextField()
                 hasInitialLoadedData = true
@@ -62,9 +71,11 @@ class MusicListViewModel(
             MusicListState()
         )
 
-    fun onAction(action: MusicListAction){
-        when(action){
-            MusicListAction.OnScanAgainClick -> loadAudios()
+    fun onAction(action: MusicListAction) {
+        when (action) {
+            MusicListAction.OnScanAgainClick -> {
+                viewModelScope.launch{ loadAudios() }
+            }
             MusicListAction.OnFunctionShuffleClick -> onFunctionShuffleClick()
             is MusicListAction.OnFunctionPlayClick -> onFunctionPlayClick()
             MusicListAction.OnPlayClick -> onPlayClick()
@@ -80,46 +91,60 @@ class MusicListViewModel(
             MusicListAction.OnCreatePlaylistAddClick -> onCreatePlaylistAddClick()
             MusicListAction.OnNavigateToAddSongs,
             MusicListAction.OnCreatePlaylistCancelClick -> onCreatePlaylistCancel()
+
             else -> Unit
         }
     }
 
 
-    private fun onCreatePlaylistAddClick(){
-        _state.update { it.copy(
-            isCreatePlaylistSheetShow = true
-        ) }
+    private fun onCreatePlaylistAddClick() {
+        _state.update {
+            it.copy(
+                isCreatePlaylistSheetShow = true
+            )
+        }
     }
 
-    private fun onCreatePlaylistCancel(){
-        _state.update { it.copy(
-            isCreatePlaylistSheetShow = false,
-            createPlaylistTextFieldState = TextFieldState()
-        ) }
+    private fun onCreatePlaylistCancel() {
+        _state.update {
+            it.copy(
+                isCreatePlaylistSheetShow = false,
+                createPlaylistTextFieldState = TextFieldState()
+            )
+        }
     }
 
 
-    private fun onHideModeChangedBanner(){
-        _state.update { it.copy(
-            modeStatusBanner = null
-        ) }
+    private fun onHideModeChangedBanner() {
+        _state.update {
+            it.copy(
+                modeStatusBanner = null
+            )
+        }
     }
 
-    private fun onExpandClick(){
-        _state.update { it.copy(
-            isExpandPlayer = true
-        ) }
-    }
-    private fun onCollapseClick(){
-        _state.update { it.copy(
-            isExpandPlayer = false
-        ) }
+    private fun onExpandClick() {
+        _state.update {
+            it.copy(
+                isExpandPlayer = true
+            )
+        }
     }
 
-    private fun onSongClick(audioUi: AudioUi){
-        _state.update { it.copy(
-            playingAudioUi = audioUi
-        ) }
+    private fun onCollapseClick() {
+        _state.update {
+            it.copy(
+                isExpandPlayer = false
+            )
+        }
+    }
+
+    private fun onSongClick(audioUi: AudioUi) {
+        _state.update {
+            it.copy(
+                playingAudioUi = audioUi
+            )
+        }
         val currentMediaItems = exoPlayer.getAllMediaItems()
         val index = currentMediaItems.indexOf(
             currentMediaItems.find { it.mediaId == audioUi.id.toString() }
@@ -132,26 +157,31 @@ class MusicListViewModel(
         exoPlayer.prepare()
     }
 
-    private fun onShuffleClick(){
+    private fun onShuffleClick() {
         exoPlayer.shuffleModeEnabled = !exoPlayer.shuffleModeEnabled
         if (exoPlayer.shuffleModeEnabled) {
             val items = getShuffledMediaItems()
-            val audioMap = state.value.audios.associateBy { it.id.toString() }
+            val audioMap = if (state.value.audios.isEmpty()) {
+                hashMapOf()
+            } else {
+                state.value.audios.associateBy { it.id.toString() }
+            }
 
             val newAudioUis = items.mapNotNull { mediaItem ->
                 audioMap[mediaItem.mediaId]
             }
-            _state.update { it.copy(
-                audios = newAudioUis
-            ) }
+            _state.update {
+                it.copy(
+                    audios = newAudioUis
+                )
+            }
         }
     }
 
 
-
-    private fun onRepeatModeClick(){
+    private fun onRepeatModeClick() {
         val currentRepeatMode = exoPlayer.repeatMode
-        val newRepeatMode = when(currentRepeatMode){
+        val newRepeatMode = when (currentRepeatMode) {
             Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
             Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
             Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_OFF
@@ -160,21 +190,24 @@ class MusicListViewModel(
         exoPlayer.repeatMode = newRepeatMode
     }
 
-    private fun onSeekTo(position: Long){
+    private fun onSeekTo(position: Long) {
         exoPlayer.seekTo(position)
-        _state.update { it.copy(
-            currentPosition = position
-        ) }
+        _state.update {
+            it.copy(
+                currentPosition = position
+            )
+        }
     }
 
-    private fun onSkipPreviousClick(){
+    private fun onSkipPreviousClick() {
         exoPlayer.seekToPreviousMediaItem()
     }
-    private fun onSkipNextClick(){
+
+    private fun onSkipNextClick() {
         exoPlayer.seekToNextMediaItem()
     }
 
-    private fun onPlayClick(){
+    private fun onPlayClick() {
         val isPlaying = state.value.isPlaying
         if (isPlaying) {
             exoPlayer.pause()
@@ -183,7 +216,7 @@ class MusicListViewModel(
         }
     }
 
-    private fun onFunctionPlayClick(){
+    private fun onFunctionPlayClick() {
         exoPlayer.setMediaItems(
             exoPlayer.getAllMediaItems(),
             0,
@@ -193,7 +226,7 @@ class MusicListViewModel(
         exoPlayer.play()
     }
 
-    private fun onFunctionShuffleClick(){
+    private fun onFunctionShuffleClick() {
         exoPlayer.shuffleModeEnabled = true
 
         exoPlayer.seekToDefaultPosition(
@@ -202,78 +235,125 @@ class MusicListViewModel(
         exoPlayer.prepare()
         exoPlayer.play()
 
-        _state.update { it.copy(
-            isExpandPlayer = true
-        ) }
-    }
-
-    private fun loadAudios(){
-        viewModelScope.launch {
-            _state.update { it.copy(
-                isScanning = true
-            ) }
-            delay(1000)
-
-            val audios = audioRepository
-                .getAllAudios()
-                .map { audio ->
-                    async {
-                        val audioUi = audio.toUi()
-                        val albumImage = audioRepository.getAlbumArt(audioUi.album)
-                        audioUi.copy(albumImage = albumImage)
-                    }
-                }.awaitAll()
-
-
-            //set player List
-            exoPlayer.setMediaItems(
-                audios
-                    .map {
-                        MediaItem.Builder()
-                            .setMediaId(it.id.toString())
-                            .setUri(it.album)
-                            .build()
-                    }
+        _state.update {
+            it.copy(
+                isExpandPlayer = true
             )
-
-            _state.update { it.copy(
-                audios = audios,
-                isScanning = false
-            ) }
-
-
         }
     }
+
+    private fun loadAudios() {
+        viewModelScope.launch {
+            _state.update { it.copy(isScanning = true) }
+            audioRepository.getAllAudiosFlow().collect { audios ->
+
+                val hasImageAudios = coroutineScope {
+                    audios.map { audio ->
+                        async{
+                            val audioUi = audio.toUi()
+                            val albumImage = audioRepository.getAlbumArt(audioUi.album)
+                            audioUi.copy(albumImage = albumImage)
+                        }
+                    }
+                }
+
+                val mediaItems = audios.map { audioUi ->
+                    MediaItem.Builder()
+                        .setMediaId(audioUi.id.toString())
+                        .setUri(audioUi.album)
+                        .build()
+                }
+                exoPlayer.setMediaItems(mediaItems)
+
+                delay(300L)
+
+                _state.update { state ->
+                    state.copy(
+                        audios = hasImageAudios.awaitAll(),
+                        isScanning = false
+                    )
+                }
+            }
+
+        }
+
+    }
+
+
+    private fun loadPlaylists() {
+        viewModelScope.launch {
+            val favouritesPlaylist = localDataRepository.getFavouritesPlaylists().first()
+            val audios = localDataRepository.getAudios().first()
+            localDataRepository
+                .getPlaylists()
+                .collectLatest {
+                    val playlists = it.map { playlist ->
+                        val firstPlaylistSongId = playlist.audioIds.first()
+                        val findAudio =
+                            audios.find { audio -> audio.id.toString() == firstPlaylistSongId }
+
+                        val coverStyle = if (findAudio == null || findAudio.album == Uri.EMPTY) {
+                            PlaylistCardStyle.NoCover
+                        } else {
+                            val image = audioRepository.getAlbumArt(findAudio.album)
+                            if (image == null) {
+                                PlaylistCardStyle.NoCover
+                            } else {
+                                PlaylistCardStyle.HasCover(
+                                    byteArray = audioRepository.getAlbumArt(findAudio.album)
+                                )
+                            }
+                        }
+                        playlist.toUi(coverStyle)
+                    }
+                    _state.update { state ->
+                        state.copy(
+                            favouritesPlaylists = favouritesPlaylist,
+                            playlists = playlists
+                        )
+                    }
+                }
+
+        }
+
+    }
+
 
     private fun observeSearchTextField() {
         snapshotFlow {
             _state.value.createPlaylistTextFieldState.text.toString()
         }.onEach { text ->
-            _state.update { it.copy(
-                isCreateButtonEnabled = text.isNotEmpty()
-            ) }
+            _state.update {
+                it.copy(
+                    isCreateButtonEnabled = text.isNotEmpty()
+                )
+            }
         }.launchIn(viewModelScope)
     }
 
-    private fun observePlayer(){
+    private fun observePlayer() {
         exoPlayer.addListener(
             object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    _state.update { it.copy(
-                        isPlaying = isPlaying
-                    ) }
-                    if (!isPlaying){
+                    _state.update {
+                        it.copy(
+                            isPlaying = isPlaying
+                        )
+                    }
+                    if (!isPlaying) {
                         progressJob?.cancel()
                     }
                     progressJob = viewModelScope.launch {
-                        while (isActive){
+                        while (isActive) {
                             val currentPosition = exoPlayer.currentPosition
                             val duration = exoPlayer.duration
 
-                            _state.update { it.copy(
-                                currentPosition = currentPosition,
-                                duration = duration,
-                            ) }
+                            _state.update {
+                                it.copy(
+                                    currentPosition = currentPosition,
+                                    duration = duration,
+                                )
+                            }
                             delay(300L)
                         }
                     }
@@ -282,7 +362,7 @@ class MusicListViewModel(
                 override fun onEvents(player: Player, events: Player.Events) {
                     if (skipInitialMediaTransition && events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
                         skipInitialMediaTransition = false
-                       return
+                        return
                     }
                     when {
                         events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) -> {
@@ -291,26 +371,30 @@ class MusicListViewModel(
                                 val currentAudio = state.value.audios.find {
                                     it.id.toString() == currentId
                                 }
-                                _state.update { it.copy(
-                                    playingAudioUi = currentAudio
-                                ) }
+                                _state.update {
+                                    it.copy(
+                                        playingAudioUi = currentAudio
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
                 override fun onRepeatModeChanged(repeatMode: Int) {
-                    val repeatModeStatus = when(repeatMode){
+                    val repeatModeStatus = when (repeatMode) {
                         Player.REPEAT_MODE_OFF -> RepeatModeStatus.Off
                         Player.REPEAT_MODE_ALL -> RepeatModeStatus.All
                         Player.REPEAT_MODE_ONE -> RepeatModeStatus.One
                         else -> RepeatModeStatus.Off
                     }
 
-                    _state.update { it.copy(
-                        modeStatusBanner = repeatModeStatus.toUiText(),
-                        repeatModeStatus = repeatModeStatus
-                    ) }
+                    _state.update {
+                        it.copy(
+                            modeStatusBanner = repeatModeStatus.toUiText(),
+                            repeatModeStatus = repeatModeStatus
+                        )
+                    }
                 }
 
                 override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -319,26 +403,31 @@ class MusicListViewModel(
 
                 override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
                     updateShuffledList()
-                    _state.update { it.copy(
-                        isEnabledShuffle = shuffleModeEnabled,
-                        modeStatusBanner = when(shuffleModeEnabled){
-                            true -> UiText.StringResource(R.string.main_shuffle_enabled)
-                            false -> UiText.StringResource(R.string.main_shuffle_off)
-                        }
-                    ) }
+                    _state.update {
+                        it.copy(
+                            isEnabledShuffle = shuffleModeEnabled,
+                            modeStatusBanner = when (shuffleModeEnabled) {
+                                true -> UiText.StringResource(R.string.main_shuffle_enabled)
+                                false -> UiText.StringResource(R.string.main_shuffle_off)
+                            }
+                        )
+                    }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
-                    when(playbackState){
+                    when (playbackState) {
                         Player.STATE_READY -> {
                             val currentPosition = exoPlayer.currentPosition
                             val duration = exoPlayer.duration
 
-                            _state.update { it.copy(
-                                currentPosition = currentPosition,
-                                duration = duration,
-                            ) }
+                            _state.update {
+                                it.copy(
+                                    currentPosition = currentPosition,
+                                    duration = duration,
+                                )
+                            }
                         }
+
                         else -> Unit
                     }
 
@@ -348,36 +437,42 @@ class MusicListViewModel(
     }
 
 
-    fun ExoPlayer.getAllMediaItems(): List<MediaItem>{
+    fun ExoPlayer.getAllMediaItems(): List<MediaItem> {
         val items = mutableListOf<MediaItem>()
-        for (i in 0 until this.mediaItemCount){
+        for (i in 0 until this.mediaItemCount) {
             items.add(this.getMediaItemAt(i))
         }
         return items
     }
 
-    private fun updateShuffledList(){
+    private fun updateShuffledList() {
         val items = if (exoPlayer.shuffleModeEnabled) {
             getShuffledMediaItems()
         } else {
             (0 until exoPlayer.mediaItemCount).map { exoPlayer.getMediaItemAt(it) }
         }
 
-        val audioMap = state.value.audios.associateBy { it.id.toString() }
+        val audioMap = if (state.value.audios.isEmpty()) {
+            hashMapOf()
+        } else {
+            state.value.audios.associateBy { it.id.toString() }
+        }
 
         val newAudioUis = items.mapNotNull { mediaItem ->
             audioMap[mediaItem.mediaId]
         }
 
-        _state.update { it.copy(
-            audios = newAudioUis
-        ) }
+        _state.update {
+            it.copy(
+                audios = newAudioUis
+            )
+        }
 
     }
 
     private fun getShuffledMediaItems(): List<MediaItem> {
         val timeline = exoPlayer.currentTimeline
-        if (timeline.isEmpty){
+        if (timeline.isEmpty) {
             return emptyList()
         }
         val shuffledList = mutableListOf<MediaItem>()

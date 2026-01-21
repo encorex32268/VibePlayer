@@ -7,7 +7,7 @@ import androidx.room.TypeConverters
 
 @Database(
     version = 1,
-    entities = [AudioEntity::class, PlaylistEntity::class],
+    entities = [AudioEntity::class, PlaylistEntity::class,FavouritesPlaylistEntity::class],
     exportSchema = false
 )
 @TypeConverters(
@@ -18,4 +18,5 @@ import androidx.room.TypeConverters
 abstract class VibePlayerRoomDatabase: RoomDatabase() {
     abstract val audioDao: AudioDao
     abstract val playlistDao: PlaylistDao
+    abstract val favouritesPlaylistDao: FavouritesPlaylistDao
 }

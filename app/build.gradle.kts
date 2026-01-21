@@ -6,6 +6,9 @@ plugins {
     alias(libs.plugins.ksp)
 
 }
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
+}
 
 android {
     namespace = "com.lihan.vibeplayer"
@@ -84,6 +87,5 @@ dependencies {
     //Room
     implementation(libs.bundles.room)
     ksp(libs.room.compiler)
-    annotationProcessor(libs.room.compiler)
 
 }

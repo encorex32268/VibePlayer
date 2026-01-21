@@ -5,20 +5,33 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.os.Build
 import android.provider.MediaStore
+import com.lihan.vibeplayer.core.domain.LocalDataRepository
 import com.lihan.vibeplayer.music_list.domain.Audio
 import com.lihan.vibeplayer.music_list.domain.AudioRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 
 class DefaultAudioRepository(
-    private val context: Context
+    private val context: Context,
+    private val localDataRepository: LocalDataRepository
 ): AudioRepository{
 
-
-    override fun getAllAudios(): List<Audio> {
+    override fun getAllAudios(): List<Audio>{
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
         return getDeviceAudiosByQuery(selection,emptyArray())
+
+    }
+
+    override fun getAllAudiosFlow(): Flow<List<Audio>>{
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        val deviceAudios = getDeviceAudiosByQuery(selection,emptyArray())
+        return localDataRepository.getAudios()
+            .onStart {
+                localDataRepository.upsertAudios(deviceAudios)
+            }
     }
 
     override fun getAudiosBySizeAndDuration(
@@ -95,6 +108,7 @@ class DefaultAudioRepository(
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)

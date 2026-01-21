@@ -8,8 +8,8 @@ data class AudioUi(
     val songTitle: String,
     val artisName: String,
     val duration: Long,
-    val albumImage: ByteArray? = null,
     val isSelected: Boolean = false,
+    val albumImage: ByteArray? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -22,6 +22,7 @@ data class AudioUi(
         if (songTitle != other.songTitle) return false
         if (artisName != other.artisName) return false
         if (duration != other.duration) return false
+        if (isSelected != other.isSelected) return false
         if (albumImage != null) {
             if (other.albumImage == null) return false
             if (!albumImage.contentEquals(other.albumImage)) return false
@@ -36,6 +37,7 @@ data class AudioUi(
         result = 31 * result + songTitle.hashCode()
         result = 31 * result + artisName.hashCode()
         result = 31 * result + duration.hashCode()
+        result = 31 * result + isSelected.hashCode()
         result = 31 * result + (albumImage?.contentHashCode() ?: 0)
         return result
     }

@@ -1,6 +1,5 @@
 package com.lihan.vibeplayer.music_list.presentation.components
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,11 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,20 +42,20 @@ fun PlaylistCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .clip(CircleShape)
-                .size(64.dp),
-            contentAlignment = Alignment.Center
-        ){
-            when(playlistCardStyle){
-                PlaylistCardStyle.Favourites -> {
-                    HeartIcon()
-                }
-                PlaylistCardStyle.NoCover -> {
-                    PlaylistGradientIcon()
-                }
-                is PlaylistCardStyle.HasCover -> {
+        when(playlistCardStyle){
+            PlaylistCardStyle.Favourites -> {
+                HeartIcon()
+            }
+            PlaylistCardStyle.NoCover -> {
+                PlaylistGradientIcon()
+            }
+            is PlaylistCardStyle.HasCover -> {
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(64.dp),
+                    contentAlignment = Alignment.Center
+                ){
                     AsyncImage(
                         model = playlistCardStyle.byteArray,
                         contentDescription = title,
@@ -69,6 +65,7 @@ fun PlaylistCard(
                         placeholder = painterResource(R.drawable.playlist_gradient),
                         error = painterResource(R.drawable.playlist_gradient)
                     )
+
                 }
             }
         }
@@ -99,7 +96,7 @@ fun PlaylistCard(
 }
 
 
-@Preview
+@Preview(showBackground = true, backgroundColor = 0xFF0A131D)
 @Composable
 private fun PlaylistCardPreview() {
     VibePlayerTheme {

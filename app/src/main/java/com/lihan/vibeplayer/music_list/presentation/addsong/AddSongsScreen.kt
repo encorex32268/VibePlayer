@@ -12,12 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,22 +29,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.components.SearchBar
 import com.lihan.vibeplayer.music_list.presentation.components.SongCard
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
-import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicAction
-import com.lihan.vibeplayer.music_list.presentation.search.SearchAction
 import com.lihan.vibeplayer.ui.design_system.buttons.VPButton
+import com.lihan.vibeplayer.ui.design_system.buttons.VPRadioButton
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AddSongsScreenRoot(
     onBack: () -> Unit,
-    viewModel: AddSongsViewModel
+    title: String,
+    viewModel: AddSongsViewModel = koinViewModel()
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(title) {
+        viewModel.onAction(
+            AddSongsAction.OnSaveTitleName(title)
+        )
+    }
+
+    ObserveEvent(viewModel.uiEvent) { uiEvent ->
+        when(uiEvent){
+            AddSongsUiEvent.OnPlaylistSaved -> onBack()
+        }
+    }
 
     AddSongsScreen(
         state = state,
@@ -88,10 +102,10 @@ fun AddSongsScreen(
                     )
                     Text(
                         modifier = Modifier.align(Alignment.Center),
-                        text = if (state.selectedAudioUis.isEmpty()){
+                        text = if (state.selectedCount == 0){
                             stringResource(R.string.add_songs_title)
                         }else{
-                            stringResource(R.string.add_songs_selected,state.selectedAudioUis.size)
+                            stringResource(R.string.add_songs_selected,state.selectedCount)
                         },
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Medium
@@ -121,7 +135,7 @@ fun AddSongsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            RadioButton(
+                            VPRadioButton(
                                 selected = state.isSelectAll,
                                 onClick = {
                                     onAction(
@@ -137,12 +151,15 @@ fun AddSongsScreen(
                         }
                     }
                     items(
-                        state.audioUis
+                        items = state.audioUis,
+                        key = { it.id }
                     ){ audioUi ->
                         SongCard(
                             audioUi = audioUi,
                             isSelectable = true,
-                            onAudioClick = {},
+                            onAudioClick = {
+                                onAction(AddSongsAction.OnAudioSelected(audioUi))
+                            },
                             onSelect = { audioUi ->
                                 onAction(AddSongsAction.OnAudioSelected(audioUi))
                             }
@@ -152,7 +169,7 @@ fun AddSongsScreen(
                 }
 
             }
-            if(state.selectedAudioUis.isNotEmpty()){
+            if(state.selectedCount > 0){
                 VPButton(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -183,16 +200,6 @@ private fun AddSongsScreenPreview() {
         AddSongsScreen(
             state = AddSongsState(
                 audioUis = (0..20).map {
-                    AudioUi(
-                        id = it.toLong(),
-                        album = Uri.EMPTY,
-                        songTitle = "Song-${it}",
-                        artisName = "Artis-${it}",
-                        duration = it.toLong() * 10000,
-                        isSelected = it % 3 == 0
-                    )
-                },
-                selectedAudioUis = (0..20).map {
                     AudioUi(
                         id = it.toLong(),
                         album = Uri.EMPTY,

@@ -2,8 +2,9 @@ package com.lihan.vibeplayer.music_list.presentation
 
 import androidx.compose.foundation.text.input.TextFieldState
 import com.lihan.vibeplayer.core.presentation.util.UiText
+import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
-import com.lihan.vibeplayer.music_list.presentation.model.Playlist
+import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 
 data class MusicListState(
@@ -18,7 +19,8 @@ data class MusicListState(
     val progress: Float = 0f,
     val modeStatusBanner: UiText?=null,
     val repeatModeStatus: RepeatModeStatus = RepeatModeStatus.Off,
-    val playlists: List<Playlist> = emptyList(),
+    val playlists: List<PlaylistUi> = emptyList(),
+    val favouritesPlaylists: FavouritesPlaylist?=null,
     val isCreatePlaylistSheetShow: Boolean = false,
     val createPlaylistTextFieldState: TextFieldState = TextFieldState(),
     val isCreateButtonEnabled: Boolean = false

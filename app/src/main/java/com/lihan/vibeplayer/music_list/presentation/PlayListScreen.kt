@@ -64,8 +64,8 @@ fun PlayListScreen(
         }
         item {
             PlaylistCard(
-                title = "Favourites",
-                count = 2,
+                title = stringResource(R.string.playlist_favourites),
+                count = if (state.favouritesPlaylists == null || state.favouritesPlaylists.audioIds.isEmpty()) 0  else state.favouritesPlaylists.audioIds.size,
                 onMenuDotsClick = {},
                 playlistCardStyle = PlaylistCardStyle.Favourites
             )
@@ -98,8 +98,18 @@ fun PlayListScreen(
                 )
             }
         }else{
-            items(state.playlists){
+            items(
+                items = state.playlists,
+                key = { it.id }
+            ){ playlistUi ->
+                PlaylistCard(
+                    title = playlistUi.title,
+                    count = playlistUi.count,
+                    playlistCardStyle = playlistUi.style,
+                    onMenuDotsClick = {
 
+                    }
+                )
             }
         }
 

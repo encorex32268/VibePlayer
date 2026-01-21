@@ -16,11 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.toCoilUri
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.domain.util.toTimeString
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
@@ -55,7 +58,11 @@ fun SongCard(
             Spacer(Modifier.width(12.dp))
         }
         AsyncImage(
-            model = audioUi.albumImage,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(audioUi.albumImage)
+                .diskCacheKey("album_${audioUi.id}")
+                .memoryCacheKey("album_${audioUi.id}")
+                .build(),
             contentDescription = audioUi.songTitle,
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
@@ -99,17 +106,39 @@ fun SongCard(
 @Composable
 private fun SongCardPreview() {
     VibePlayerTheme {
-        SongCard(
-            audioUi = AudioUi(
-                id = 1,
-                album = android.net.Uri.EMPTY,
-                songTitle = "505",
-                artisName = "Arctic Monkeys",
-                duration = 60_000
-            ),
-            onAudioClick = {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            SongCard(
+                audioUi = AudioUi(
+                    id = 1,
+                    album = android.net.Uri.EMPTY,
+                    songTitle = "505",
+                    artisName = "Arctic Monkeys",
+                    duration = 60_000
+                ),
+                onAudioClick = {
 
-            }
-        )
+                }
+            )
+
+            SongCard(
+                audioUi = AudioUi(
+                    id = 1,
+                    album = android.net.Uri.EMPTY,
+                    songTitle = "505",
+                    artisName = "Arctic Monkeys",
+                    duration = 60_000,
+                    isSelected = true
+                ),
+                onAudioClick = {
+
+                },
+                isSelectable = true,
+                onSelect = {
+
+                }
+            )
+        }
     }
 }

@@ -8,4 +8,5 @@ sealed interface AddSongsAction {
     data class OnAudioSelected(val audioUi: AudioUi): AddSongsAction
     data object OnAllSelectedClick: AddSongsAction
     data object OnOKClick: AddSongsAction
+    data class OnSaveTitleName(val title: String): AddSongsAction
 }

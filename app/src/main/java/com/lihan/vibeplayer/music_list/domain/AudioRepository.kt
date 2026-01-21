@@ -1,10 +1,14 @@
 package com.lihan.vibeplayer.music_list.domain
 
 import android.net.Uri
+import kotlinx.coroutines.flow.Flow
 
 interface AudioRepository {
 
     fun getAllAudios(): List<Audio>
+
+
+    fun getAllAudiosFlow(): Flow<List<Audio>>
 
     fun getAudiosBySizeAndDuration(
         duration: Long,

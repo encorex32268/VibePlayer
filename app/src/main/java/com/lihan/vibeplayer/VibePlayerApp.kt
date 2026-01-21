@@ -10,6 +10,7 @@ import coil3.memory.MemoryCache
 import coil3.request.Options
 import coil3.request.crossfade
 import coil3.util.DebugLogger
+import com.lihan.vibeplayer.core.di.coreModule
 import com.lihan.vibeplayer.music_list.di.musicListModule
 import okio.Path.Companion.toPath
 import org.koin.android.ext.koin.androidContext
@@ -24,6 +25,7 @@ class VibePlayerApp : Application(), SingletonImageLoader.Factory{
             androidLogger(level = Level.DEBUG)
             androidContext(this@VibePlayerApp)
             modules(
+                coreModule,
                 musicListModule
             )
         }

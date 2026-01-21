@@ -53,5 +53,6 @@ your library and play songs</string>
     <string name="add_songs_select_all">Select All</string>
     <string name="add_songs_selected">%1$d Selected</string>
     <string name="ok">OK</string>
+    <string name="playlist_favourites">Favourites</string>
 
 </resources>

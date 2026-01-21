@@ -19,6 +19,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -107,13 +108,13 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable<Route.AddSongs>{
-                            val viewModel = viewModels<AddSongsViewModel>()
+                        composable<Route.AddSongs>{ entry ->
+                            val routeTitle = entry.toRoute<Route.AddSongs>().title
                             AddSongsScreenRoot(
+                                title = routeTitle,
                                 onBack = {
                                     navController.navigateUp()
-                                },
-                                viewModel = viewModel.value
+                                }
                             )
                         }
                     }
