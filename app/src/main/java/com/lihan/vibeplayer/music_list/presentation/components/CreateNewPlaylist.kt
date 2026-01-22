@@ -7,25 +7,24 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -65,10 +64,13 @@ fun CreateNewPlaylist(
         },
         modifier = modifier
             .widthIn(max = 480.dp)
-            .fillMaxWidth()
-            .padding(16.dp),
+            .fillMaxWidth(),
         containerColor = SurfaceHighest,
-        dragHandle = null
+        dragHandle = null,
+        shape = RoundedCornerShape(
+            topStart = 12.dp,
+            topEnd = 12.dp
+        )
     ) {
         Text(
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
@@ -110,6 +112,8 @@ fun CreateNewPlaylist(
                 fontWeight = FontWeight.Normal,
                 color = TextPrimary
             ),
+            lineLimits = TextFieldLineLimits.SingleLine,
+            inputTransformation = InputTransformation.maxLength(40),
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
@@ -165,12 +169,15 @@ fun CreateNewPlaylist(
 @Preview
 @Composable
 private fun CreateNewPlaylistPreview() {
+    val textFieldState = remember {
+        TextFieldState(initialText = "rrr")
+    }
     VibePlayerTheme {
         CreateNewPlaylist(
-            textFieldState = TextFieldState(initialText = "rrr"),
+            textFieldState = textFieldState,
             onCreateClick = {},
             onCancelClick = {},
-            isCreateButtonEnabled = false
+            isCreateButtonEnabled = textFieldState.text.isNotEmpty()
         )
     }
 }

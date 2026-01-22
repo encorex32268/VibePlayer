@@ -20,8 +20,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -31,6 +35,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -45,6 +50,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.domain.util.toTimeStringWithoutZero
@@ -103,7 +110,7 @@ fun FullScreenPlayer(
         }
     }
     LaunchedEffect(modeStatusBanner) {
-        if (modeStatusBanner!=null){
+        if (modeStatusBanner != null) {
             delay(1000)
             onHideModeChangedBanner()
         }
@@ -111,12 +118,11 @@ fun FullScreenPlayer(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(color = SurfaceBG)
-            .padding(horizontal = 16.dp),
+            .background(color = SurfaceBG),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             CircleIconButton(
@@ -127,7 +133,8 @@ fun FullScreenPlayer(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .weight(1f)
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -155,67 +162,69 @@ fun FullScreenPlayer(
                 textAlign = TextAlign.Center,
             )
         }
-        Box {
-            Slider(
-                value = if (isDragging) {
-                    sliderValue
-                } else {
-                    progress()
-                },
-                onValueChange = { newValue ->
-                    isDragging = true
-                    sliderValue = newValue
-                },
-                onValueChangeFinished = {
-                    isDragging = false
-                    onSeek((sliderValue * audioUi.duration).toLong())
-                },
-                track = { state ->
-                    SliderDefaults.Track(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(6.dp),
-                        sliderState = state,
-                        drawStopIndicator = null,
-                        thumbTrackGapSize = 0.dp,
-                        colors = SliderDefaults.colors(
-                            activeTrackColor = TextPrimary,
-                            inactiveTrackColor = SurfaceOutline
-                        ),
-                    )
-                },
-                thumb = {}
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .alpha(
-                        if (isDragging) 1f else 0f
-                    )
-                    .background(TextPrimary, RoundedCornerShape(100))
-                    .padding(horizontal = 4.dp),
-            ) {
-                Text(
-                    text = "${displayPosition.toTimeStringWithoutZero()}/${audioUi.duration.toTimeStringWithoutZero()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Normal,
-                    color = SurfaceBG
+
+        Slider(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            value = if (isDragging) {
+                sliderValue
+            } else {
+                progress()
+            },
+            onValueChange = { newValue ->
+                isDragging = true
+                sliderValue = newValue
+            },
+            onValueChangeFinished = {
+                isDragging = false
+                onSeek((sliderValue * audioUi.duration).toLong())
+            },
+            track = { state ->
+                SliderDefaults.Track(
+                    modifier = Modifier
+                        .height(6.dp),
+                    sliderState = state,
+                    drawStopIndicator = {},
+                    thumbTrackGapSize = 0.dp,
+                    colors = SliderDefaults.colors(
+                        activeTrackColor = TextPrimary,
+                        inactiveTrackColor = SurfaceOutline
+                    ),
                 )
+            },
+            thumb = {
+                Box(
+                    modifier = Modifier.width(1.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .wrapContentWidth(unbounded = true)
+                            .background(TextPrimary, RoundedCornerShape(100))
+                            .padding(horizontal = 4.dp),
+                        text = "${displayPosition.toTimeStringWithoutZero()}/${audioUi.duration.toTimeStringWithoutZero()}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Normal,
+                        color = SurfaceBG
+                    )
+
+                }
+
             }
-        }
+        )
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(20.dp),
             contentAlignment = Alignment.Center
-        ){
+        ) {
             Column {
                 AnimatedVisibility(
                     visible = modeStatusBanner != null,
                     enter = fadeIn(),
                     exit = fadeOut(),
                     content = {
-                        if (modeStatusBanner != null){
+                        if (modeStatusBanner != null) {
                             VPChip(
                                 enabled = false,
                                 text = modeStatusBanner.asString()
@@ -226,6 +235,7 @@ fun FullScreenPlayer(
             }
         }
         PlayerControlSection(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             isPlaying = isPlaying,
             repeatModeStatus = repeatModeStatus,
             isEnabledShuffle = isEnabledShuffle,

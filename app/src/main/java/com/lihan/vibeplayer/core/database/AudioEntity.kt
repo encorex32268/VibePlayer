@@ -1,4 +1,4 @@
-package com.lihan.vibeplayer.core.data.local
+package com.lihan.vibeplayer.core.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -10,5 +10,6 @@ data class AudioEntity(
     val albumUri: String,
     val songTitle: String,
     val artisName: String,
-    val duration: Long
+    val duration: Long,
+    val size: Long
 )

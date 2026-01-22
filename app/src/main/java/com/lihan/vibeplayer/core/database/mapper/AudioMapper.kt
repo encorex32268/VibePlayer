@@ -1,7 +1,7 @@
-package com.lihan.vibeplayer.core.data.mapper
+package com.lihan.vibeplayer.core.database.mapper
 
 import android.net.Uri
-import com.lihan.vibeplayer.core.data.local.AudioEntity
+import com.lihan.vibeplayer.core.database.AudioEntity
 import com.lihan.vibeplayer.music_list.domain.Audio
 
 fun AudioEntity.toDomain(): Audio{
@@ -10,16 +10,18 @@ fun AudioEntity.toDomain(): Audio{
         album = Uri.parse(this.albumUri),
         songTitle = songTitle,
         artisName = artisName,
-        duration = duration
+        duration = duration,
+        size = size
     )
 }
 
-fun Audio.toData(): AudioEntity{
+fun Audio.toData(): AudioEntity {
     return AudioEntity(
         id = id.toInt(),
         albumUri = album.toString(),
         songTitle = songTitle,
         artisName = artisName,
-        duration = duration
+        duration = duration,
+        size = size
     )
 }

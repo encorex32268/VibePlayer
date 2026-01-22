@@ -6,7 +6,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lihan.vibeplayer.music_list.domain.AudioRepository
+import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
-    private val audioRepository: AudioRepository
+    private val repository: MusicListRepository
 ) : ViewModel() {
     private var hasInitialLoadedData = false
 
@@ -73,12 +73,12 @@ class SearchViewModel(
                 .filter { it.trim().isNotEmpty() }
                 .debounce(500L)
                 .onEach { text ->
-                    val result = audioRepository
+                    val result = repository
                         .getAudiosByTitle(text)
                         .map { audio ->
                             async {
                                 val audioUi = audio.toUi()
-                                val albumImage = audioRepository.getAlbumArt(audioUi.album)
+                                val albumImage = repository.getAlbumArtImage(audioUi.album)
                                 audioUi.copy(albumImage = albumImage)
                             }
                         }.awaitAll()

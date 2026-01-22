@@ -1,4 +1,4 @@
-package com.lihan.vibeplayer.core.data.local
+package com.lihan.vibeplayer.core.database
 
 import androidx.room.TypeConverter
 

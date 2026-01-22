@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalPermissionsApi::class)
 
-package com.lihan.vibeplayer.music_list.presentation.permission
+package com.lihan.vibeplayer.permission
 
 import android.Manifest
 import androidx.compose.foundation.layout.Arrangement

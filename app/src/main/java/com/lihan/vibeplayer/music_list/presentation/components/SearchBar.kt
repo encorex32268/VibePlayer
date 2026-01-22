@@ -50,15 +50,14 @@ import kotlinx.coroutines.delay
 fun SearchBar(
     textFieldState: TextFieldState,
     onCloseClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null
 ) {
-
-    val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
         //wait for ui building
         delay(300L)
-        focusRequester.requestFocus()
+        focusRequester?.requestFocus()
     }
 
     val textSelectionColors = TextSelectionColors(
@@ -66,80 +65,79 @@ fun SearchBar(
         backgroundColor = TextSecondary
     )
 
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        CompositionLocalProvider(LocalTextSelectionColors provides textSelectionColors) {
-            BasicTextField(
-                state = textFieldState,
-                decorator = { innerTextField ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.search),
-                            contentDescription = stringResource(R.string.search),
-                            tint = TextSecondary
-                        )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                        ){
-                            if(textFieldState.text.toString().isEmpty()){
-                                Text(
-                                    text = stringResource(R.string.search),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = TextSecondary
-                                )
-                            }
-                            innerTextField()
+    CompositionLocalProvider(LocalTextSelectionColors provides textSelectionColors) {
+        BasicTextField(
+            state = textFieldState,
+            decorator = { innerTextField ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.search),
+                        contentDescription = stringResource(R.string.search),
+                        tint = TextSecondary
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ){
+                        if(textFieldState.text.toString().isEmpty()){
+                            Text(
+                                text = stringResource(R.string.search),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextSecondary
+                            )
                         }
-                        if (textFieldState.text.toString().isNotEmpty()){
-                            IconButton(
-                                modifier = Modifier.size(16.dp),
-                                onClick = {
-                                    onCloseClick()
-                                }
-                            ){
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = stringResource(R.string.search),
-                                    tint = TextDisabled
-                                )
+                        innerTextField()
+                    }
+                    if (textFieldState.text.toString().isNotEmpty()){
+                        IconButton(
+                            modifier = Modifier.size(16.dp),
+                            onClick = {
+                                onCloseClick()
                             }
+                        ){
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.search),
+                                tint = TextDisabled
+                            )
                         }
                     }
+                }
 
-                },
-                textStyle =  MaterialTheme.typography.bodyLarge.copy(
-                    color = TextPrimary
-                ),
-                lineLimits = TextFieldLineLimits.SingleLine,
-                cursorBrush = SolidColor(TextSecondary),
-                modifier = Modifier
-                    .focusRequester(focusRequester)
-                    .background(
-                        color = ButtonHover28,
-                        shape = RoundedCornerShape(100)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = SurfaceOutline,
-                        shape = RoundedCornerShape(100)
-                    )
-                    .weight(1f)
-                    .padding(
-                        vertical = 12.dp,
-                        horizontal = 16.dp
-                    )
+            },
+            textStyle =  MaterialTheme.typography.bodyLarge.copy(
+                color = TextPrimary
+            ),
+            lineLimits = TextFieldLineLimits.SingleLine,
+            cursorBrush = SolidColor(TextSecondary),
+            modifier = modifier
+                .then(
+                    if (focusRequester != null){
+                        Modifier.focusRequester(focusRequester)
+                    }else{
+                        Modifier
+                    }
+                )
+                .background(
+                    color = ButtonHover28,
+                    shape = RoundedCornerShape(100)
+                )
+                .border(
+                    width = 1.dp,
+                    color = SurfaceOutline,
+                    shape = RoundedCornerShape(100)
+                )
+                .padding(
+                    vertical = 12.dp,
+                    horizontal = 16.dp
+                )
 
-            )
-        }
+        )
     }
 
 }
@@ -154,14 +152,16 @@ private fun SearchBarPreview() {
         ) {
             SearchBar(
                 textFieldState = TextFieldState(),
-                onCloseClick = {}
+                onCloseClick = {},
+                focusRequester = remember { FocusRequester() }
             )
 
             SearchBar(
                 textFieldState = TextFieldState(
                     initialText = "Les"
                 ),
-                onCloseClick = {}
+                onCloseClick = {},
+                focusRequester = remember { FocusRequester() }
             )
         }
 

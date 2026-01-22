@@ -3,7 +3,7 @@ package com.lihan.vibeplayer.music_list.presentation.scan
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lihan.vibeplayer.core.domain.util.kb
-import com.lihan.vibeplayer.music_list.domain.AudioRepository
+import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ScanMusicViewModel(
-    private val audioRepository: AudioRepository
+    private val repository: MusicListRepository
 ): ViewModel() {
 
     private val _uiEvent = Channel<ScanMusicUiEvent>()
@@ -53,7 +53,7 @@ class ScanMusicViewModel(
             val duration = currentState.secondSelect.replace("s","").toLongOrNull()?:0L
             val size = currentState.sizeSelect.replace("KB","").toInt().kb
 
-            val audios = audioRepository.getAudiosBySizeAndDuration(
+            val audios = repository.getAudiosBySizeAndDuration(
                 duration = duration * 1_000,
                 size = size
             )

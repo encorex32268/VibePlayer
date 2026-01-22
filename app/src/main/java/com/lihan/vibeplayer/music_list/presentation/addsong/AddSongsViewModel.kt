@@ -6,8 +6,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lihan.vibeplayer.core.domain.LocalDataRepository
-import com.lihan.vibeplayer.music_list.domain.AudioRepository
+import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.domain.Playlist
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
@@ -15,6 +14,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
@@ -28,13 +28,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AddSongsViewModel(
-    private val audioRepository: AudioRepository,
-    private val localDataRepository: LocalDataRepository
+    private val repository: MusicListRepository
 ) : ViewModel() {
 
     private var hasInitialLoadedData = false
     private var playlistTitle = ""
-    private var originalAudios: List<AudioUi> = emptyList()
+
+    private var originAudioUi: List<AudioUi> = emptyList()
 
     private val _uiEvent = Channel<AddSongsUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -68,40 +68,101 @@ class AddSongsViewModel(
         snapshotFlow { _state.value.searchTextField.text.toString() }
             .debounce(500L)
             .onEach { text ->
-                val newAudios = if(text.trim().isEmpty()){
-                    originalAudios
-                }else{
-                    originalAudios.filter { it.songTitle.contains(text) }
+
+                val newAudios = if (text.isEmpty()) {
+                    originAudioUi
+                } else {
+                    originAudioUi.filter { it.songTitle.contains(text) }
                 }
 
-                _state.update { state -> state.copy(
-                    audioUis = newAudios
-                ) }
+                val isSelectAll = if (newAudios.isEmpty()) false else { newAudios.all { it.isSelected }  }
+
+                _state.update { state ->
+                    state.copy(
+                        audioUis = newAudios,
+                        isSelectAll = isSelectAll
+                    )
+                }
             }
             .launchIn(viewModelScope)
     }
 
-    private fun loadAudios() {
-        viewModelScope.launch{
-            val audios = audioRepository
-                .getAllAudiosFlow()
-                .first()
 
-            val hasImageAudios = audios.map { audio ->
-                async {
-                    val audioUi = audio.toUi()
-                    val albumImage = audioRepository.getAlbumArt(audioUi.album)
-                    audioUi.copy(albumImage = albumImage)
-                }
-            }.awaitAll()
+    private fun onAllSelectedClick() {
 
-            originalAudios = hasImageAudios
+        val newSelectAll = !state.value.isSelectAll
 
-            _state.update { state ->
-                state.copy(
-                    audioUis = originalAudios
+        val currentAudios = state.value.audioUis.map {
+            it.copy(
+                isSelected = newSelectAll
+            )
+        }
+
+        //Map All currentAudioList Id
+        //update audio's isSelected
+        val currentAudioIds = currentAudios.map { it.id }
+        originAudioUi = originAudioUi.map { audioUi ->
+            if (audioUi.id in currentAudioIds) {
+                audioUi.copy(
+                    isSelected = newSelectAll
                 )
+            } else {
+                audioUi
             }
+        }
+
+        val selectCount = originAudioUi.filter { audioUi ->
+            audioUi.isSelected
+        }.size
+
+        val isSelectAll = if (currentAudios.isEmpty()) false else currentAudios.all { it.isSelected }
+
+        _state.update {
+            it.copy(
+                isSelectAll = isSelectAll,
+                audioUis = currentAudios,
+                selectedCount = selectCount
+            )
+        }
+    }
+
+
+    private fun onAudioSelected(audioUi: AudioUi) {
+
+        val newAudios = state.value.audioUis.map { currentAudio ->
+            if (currentAudio.id == audioUi.id) {
+                currentAudio.copy(
+                    isSelected = !currentAudio.isSelected
+                )
+            } else {
+                currentAudio
+            }
+        }
+
+        originAudioUi = originAudioUi.map { currentAudio ->
+            if (currentAudio.id == audioUi.id) {
+                currentAudio.copy(
+                    isSelected = !currentAudio.isSelected
+                )
+            } else {
+                currentAudio
+            }
+        }
+
+        val allSelected = newAudios.all { it.isSelected }
+
+        val selectCount = originAudioUi.filter { audioUi ->
+            audioUi.isSelected
+        }.size
+
+        val isSelectAll = if (newAudios.isEmpty()) false else allSelected
+
+        _state.update {
+            it.copy(
+                audioUis = newAudios,
+                isSelectAll = isSelectAll,
+                selectedCount = selectCount
+            )
         }
     }
 
@@ -109,21 +170,38 @@ class AddSongsViewModel(
         playlistTitle = title
     }
 
-    private fun onAllSelectedClick() {
-        val newSelectAll = !state.value.isSelectAll
-        val newAudio = state.value.audioUis.map {
-            it.copy(
-                isSelected = newSelectAll
-            )
-        }
-        originalAudios = newAudio
-        _state.update {
-            it.copy(
-                isSelectAll = newSelectAll,
-                audioUis = newAudio
-            )
-        }
+    private fun loadAudios() {
+        repository
+            .getAllAudios()
+            .onEach { audios ->
+                val hasImageAudios = coroutineScope {
+                    audios.map { audio ->
+                        async{
+                            val audioUi = audio.toUi()
+                            val albumImage = repository.getAlbumArtImage(audioUi.album)
+                            audioUi.copy(albumImage = albumImage)
+                        }
+                    }
+                }.awaitAll()
+
+                originAudioUi = hasImageAudios
+
+                val isSelectAll = if (originAudioUi.isEmpty()) false else {
+                    originAudioUi.all { it.isSelected }
+                }
+
+                _state.update { state ->
+                    state.copy(
+                        audioUis = hasImageAudios,
+                        isSelectAll = isSelectAll
+                    )
+                }
+
+                println("LoadAudios ${originAudioUi.all { it.isSelected }}")
+
+            }.launchIn(viewModelScope)
     }
+
 
     private fun onCloseClick() {
         state.value.searchTextField.clearText()
@@ -135,7 +213,7 @@ class AddSongsViewModel(
                 .filter { it.isSelected }
                 .map { it.id.toString() }
 
-            localDataRepository.createPlaylist(
+            repository.createPlaylist(
                 playlist = Playlist(
                     title = playlistTitle,
                     audioIds = selectedAudios
@@ -147,29 +225,4 @@ class AddSongsViewModel(
             )
         }
     }
-
-    private fun onAudioSelected(audioUi: AudioUi) {
-        val newAudioUis = state.value.audioUis.map { currentAudio ->
-            if (currentAudio.id == audioUi.id) {
-                currentAudio.copy(
-                    isSelected = !currentAudio.isSelected
-                )
-            } else {
-                currentAudio
-            }
-        }
-
-        originalAudios = newAudioUis
-
-        val allSelected = newAudioUis.all { it.isSelected }
-
-        _state.update {
-            it.copy(
-                audioUis = newAudioUis,
-                isSelectAll = allSelected
-            )
-        }
-    }
-
-
 }

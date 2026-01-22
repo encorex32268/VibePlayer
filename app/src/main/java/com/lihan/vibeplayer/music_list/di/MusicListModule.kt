@@ -1,9 +1,9 @@
 package com.lihan.vibeplayer.music_list.di
 
 import androidx.media3.exoplayer.ExoPlayer
-import com.lihan.vibeplayer.music_list.data.DefaultAudioRepository
-import com.lihan.vibeplayer.music_list.domain.AudioRepository
+import com.lihan.vibeplayer.music_list.data.OfflineMusicListRepository
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerFactory
+import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.MusicListViewModel
 import com.lihan.vibeplayer.music_list.presentation.addsong.AddSongsViewModel
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicViewModel
@@ -16,12 +16,12 @@ import org.koin.dsl.module
 
 val musicListModule = module {
 
-    single{
-        DefaultAudioRepository(
+    single {
+        OfflineMusicListRepository(
             context = androidContext(),
-            localDataRepository = get()
+            db = get()
         )
-    }.bind<AudioRepository>()
+    }.bind<MusicListRepository>()
 
     single {
         ExoPlayerFactory.build(
@@ -30,8 +30,9 @@ val musicListModule = module {
     }.bind<ExoPlayer>()
 
     viewModelOf(::MusicListViewModel)
-    viewModelOf(::ScanMusicViewModel)
     viewModelOf(::SearchViewModel)
+    viewModelOf(::ScanMusicViewModel)
     viewModelOf(::AddSongsViewModel)
+
 
 }

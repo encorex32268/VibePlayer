@@ -18,8 +18,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +65,7 @@ fun SearchScreen(
     onAction: (SearchAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val focusRequester = remember { FocusRequester() }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -77,7 +80,8 @@ fun SearchScreen(
                 textFieldState = state.textFieldState,
                 onCloseClick = {
                     onAction(SearchAction.OnCloseClick)
-                }
+                },
+                focusRequester = focusRequester
             )
             VPTextButton(
                 text = stringResource(R.string.search_cancel),

@@ -1,6 +1,6 @@
-package com.lihan.vibeplayer.core.data.mapper
+package com.lihan.vibeplayer.core.database.mapper
 
-import com.lihan.vibeplayer.core.data.local.FavouritesPlaylistEntity
+import com.lihan.vibeplayer.core.database.FavouritesPlaylistEntity
 import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
 
 fun FavouritesPlaylistEntity.toDomain(): FavouritesPlaylist {

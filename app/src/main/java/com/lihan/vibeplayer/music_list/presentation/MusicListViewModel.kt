@@ -10,9 +10,9 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import com.lihan.vibeplayer.R
-import com.lihan.vibeplayer.core.domain.LocalDataRepository
 import com.lihan.vibeplayer.core.presentation.util.UiText
-import com.lihan.vibeplayer.music_list.domain.AudioRepository
+import com.lihan.vibeplayer.music_list.data.OfflineMusicListRepository
+import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
@@ -26,6 +26,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
@@ -41,19 +42,13 @@ import kotlinx.coroutines.launch
 import okhttp3.Dispatcher
 
 class MusicListViewModel(
-    private val audioRepository: AudioRepository,
     private val exoPlayer: ExoPlayer,
-    private val localDataRepository: LocalDataRepository
+    private val repository: MusicListRepository,
 ) : ViewModel() {
 
     private var hasInitialLoadedData = false
 
-    private var skipInitialMediaTransition = true
-
     private var progressJob: Job? = null
-
-    private val _uiEvent = Channel<MusicListUiEvent>()
-    val uiEvent = _uiEvent.receiveAsFlow()
 
     private val _state = MutableStateFlow(MusicListState())
     val state = _state
@@ -243,20 +238,19 @@ class MusicListViewModel(
     }
 
     private fun loadAudios() {
-        viewModelScope.launch {
-            _state.update { it.copy(isScanning = true) }
-            audioRepository.getAllAudiosFlow().collect { audios ->
-
+        _state.update { it.copy(isScanning = true) }
+        repository
+            .getAllAudios()
+            .onEach { audios ->
                 val hasImageAudios = coroutineScope {
                     audios.map { audio ->
                         async{
                             val audioUi = audio.toUi()
-                            val albumImage = audioRepository.getAlbumArt(audioUi.album)
+                            val albumImage = repository.getAlbumArtImage(audioUi.album)
                             audioUi.copy(albumImage = albumImage)
                         }
                     }
                 }
-
                 val mediaItems = audios.map { audioUi ->
                     MediaItem.Builder()
                         .setMediaId(audioUi.id.toString())
@@ -273,48 +267,47 @@ class MusicListViewModel(
                         isScanning = false
                     )
                 }
-            }
-
-        }
+            }.launchIn(viewModelScope)
 
     }
 
 
     private fun loadPlaylists() {
-        viewModelScope.launch {
-            val favouritesPlaylist = localDataRepository.getFavouritesPlaylists().first()
-            val audios = localDataRepository.getAudios().first()
-            localDataRepository
-                .getPlaylists()
-                .collectLatest {
-                    val playlists = it.map { playlist ->
-                        val firstPlaylistSongId = playlist.audioIds.first()
-                        val findAudio =
-                            audios.find { audio -> audio.id.toString() == firstPlaylistSongId }
 
-                        val coverStyle = if (findAudio == null || findAudio.album == Uri.EMPTY) {
-                            PlaylistCardStyle.NoCover
-                        } else {
-                            val image = audioRepository.getAlbumArt(findAudio.album)
-                            if (image == null) {
-                                PlaylistCardStyle.NoCover
-                            } else {
-                                PlaylistCardStyle.HasCover(
-                                    byteArray = audioRepository.getAlbumArt(findAudio.album)
-                                )
-                            }
-                        }
-                        playlist.toUi(coverStyle)
-                    }
-                    _state.update { state ->
-                        state.copy(
-                            favouritesPlaylists = favouritesPlaylist,
-                            playlists = playlists
+        combine(
+            flow = repository.getFavouritesPlaylist(),
+            flow2 = repository.getAllAudios(),
+            flow3 = repository.getAllPlaylist()
+        ){ favouritesPlaylist , audios , playlists ->
+
+            val playlists = playlists.map { playlist ->
+                val firstPlaylistSongId = playlist.audioIds.first()
+                val findAudio =
+                    audios.find { audio -> audio.id.toString() == firstPlaylistSongId }
+
+                val coverStyle = if (findAudio == null || findAudio.album == Uri.EMPTY) {
+                    PlaylistCardStyle.NoCover
+                } else {
+                    val image = repository.getAlbumArtImage(findAudio.album)
+                    if (image == null) {
+                        PlaylistCardStyle.NoCover
+                    } else {
+                        PlaylistCardStyle.HasCover(
+                            byteArray = repository.getAlbumArtImage(findAudio.album)
                         )
                     }
                 }
+                playlist.toUi(coverStyle)
+            }
+            _state.update { state ->
+                state.copy(
+                    favouritesPlaylists = favouritesPlaylist,
+                    playlists = playlists
+                )
+            }
 
-        }
+        }.launchIn(viewModelScope)
+
 
     }
 
@@ -360,24 +353,15 @@ class MusicListViewModel(
                 }
 
                 override fun onEvents(player: Player, events: Player.Events) {
-                    if (skipInitialMediaTransition && events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
-                        skipInitialMediaTransition = false
-                        return
-                    }
-                    when {
-                        events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) -> {
-                            val currentId = exoPlayer.currentMediaItem?.mediaId
-                            if (currentId != null) {
-                                val currentAudio = state.value.audios.find {
-                                    it.id.toString() == currentId
-                                }
-                                _state.update {
-                                    it.copy(
-                                        playingAudioUi = currentAudio
-                                    )
-                                }
-                            }
-                        }
+
+                    val currentMediaItem = exoPlayer.currentMediaItem
+                    val currentId = currentMediaItem?.mediaId
+
+                    if (currentId != null && currentId != state.value.playingAudioUi?.id?.toString() && state.value.playingAudioUi != null) {
+                        val currentAudio = state.value.audios.find { it.id.toString() == currentId }
+                        _state.update { it.copy(
+                            playingAudioUi = currentAudio
+                        ) }
                     }
                 }
 

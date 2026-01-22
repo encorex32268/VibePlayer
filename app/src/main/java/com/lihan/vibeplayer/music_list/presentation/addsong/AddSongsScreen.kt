@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -124,32 +125,30 @@ fun AddSongsScreen(
                         )
                     }
                 )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    VPRadioButton(
+                        selected = state.isSelectAll,
+                        onClick = {
+                            onAction(
+                                AddSongsAction.OnAllSelectedClick
+                            )
+                        }
+                    )
+                    Text(
+                        text = stringResource(R.string.add_songs_select_all),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary
+                    )
+                }
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 16.dp)
                 ) {
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            VPRadioButton(
-                                selected = state.isSelectAll,
-                                onClick = {
-                                    onAction(
-                                        AddSongsAction.OnAllSelectedClick
-                                    )
-                                }
-                            )
-                            Text(
-                                text = stringResource(R.string.add_songs_select_all),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = TextPrimary
-                            )
-                        }
-                    }
                     items(
                         items = state.audioUis,
                         key = { it.id }
@@ -172,6 +171,7 @@ fun AddSongsScreen(
             if(state.selectedCount > 0){
                 VPButton(
                     modifier = Modifier
+                        .widthIn(max = 480.dp)
                         .fillMaxWidth()
                         .align(Alignment.BottomCenter)
                         .padding(

@@ -3,66 +3,70 @@ package com.lihan.vibeplayer.music_list.data
 import android.content.ContentUris
 import android.content.Context
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import com.lihan.vibeplayer.core.domain.LocalDataRepository
+import com.lihan.vibeplayer.core.database.VibePlayerRoomDatabase
+import com.lihan.vibeplayer.core.database.mapper.toData
+import com.lihan.vibeplayer.core.database.mapper.toDomain
 import com.lihan.vibeplayer.music_list.domain.Audio
-import com.lihan.vibeplayer.music_list.domain.AudioRepository
+import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
+import com.lihan.vibeplayer.music_list.domain.MusicListRepository
+import com.lihan.vibeplayer.music_list.domain.Playlist
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 
-class DefaultAudioRepository(
+class OfflineMusicListRepository(
     private val context: Context,
-    private val localDataRepository: LocalDataRepository
-): AudioRepository{
+    private val db: VibePlayerRoomDatabase
+): MusicListRepository{
 
-    override fun getAllAudios(): List<Audio>{
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-        return getDeviceAudiosByQuery(selection,emptyArray())
-
-    }
-
-    override fun getAllAudiosFlow(): Flow<List<Audio>>{
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-        val deviceAudios = getDeviceAudiosByQuery(selection,emptyArray())
-        return localDataRepository.getAudios()
-            .onStart {
-                localDataRepository.upsertAudios(deviceAudios)
+    override fun getAllAudios(): Flow<List<Audio>> {
+        return db.audioDao.getAudios().onStart {
+            val audios = getDeviceAudiosByQuery(selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0")
+            db.audioDao.upsertAudioList(audios.map { it.toData() })
+        }.map {
+            it.map { audioEntity ->
+                audioEntity.toDomain()
             }
+        }
     }
 
-    override fun getAudiosBySizeAndDuration(
+    override suspend fun getAudiosBySizeAndDuration(
         duration: Long,
-        size: Long,
+        size: Long
     ): List<Audio> {
-        val selection =  "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND " +
-                "${MediaStore.Audio.Media.DURATION} <= ? AND " +
-                "${MediaStore.Audio.Media.SIZE} <= ? "
-
-        val selectionArgs = arrayOf("$duration","$size")
-
-        return getDeviceAudiosByQuery(selection,selectionArgs)
+        val audios = db.audioDao.getAudios().firstOrNull()?:emptyList()
+        return if (audios.isEmpty()){
+            emptyList()
+        }else{
+            audios.filter { audioEntity ->
+                audioEntity.duration <= duration && audioEntity.size <= size
+            }.map { it.toDomain() }
+        }
     }
 
-    override fun getAudiosByTitle(text: String): List<Audio> {
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND " +
-                "${MediaStore.Audio.Media.TITLE} LIKE ?"
-        val selectionArgs = arrayOf("%$text%")
-
-        return getDeviceAudiosByQuery(selection,selectionArgs)
-
+    override suspend fun getAudiosByTitle(text: String): List<Audio> {
+        val audios = db.audioDao.getAudios().firstOrNull()?:emptyList()
+        return if (audios.isEmpty()){
+            emptyList()
+        }else{
+            audios.filter { audioEntity ->
+                audioEntity.songTitle.contains(text)
+            }.map { it.toDomain() }
+        }
     }
 
-
-
-    override suspend fun getAlbumArt(albumUri: android.net.Uri): ByteArray? {
+    override suspend fun getAlbumArtImage(uri: Uri): ByteArray? {
         return withContext(Dispatchers.IO) {
             val retriever = MediaMetadataRetriever()
             try {
-                retriever.setDataSource(context, albumUri)
+                retriever.setDataSource(context, uri)
                 retriever.embeddedPicture
             } catch (e: Exception) {
                 ensureActive()
@@ -74,12 +78,28 @@ class DefaultAudioRepository(
         }
     }
 
+    override suspend fun createPlaylist(playlist: Playlist) {
+        db.playlistDao.create(
+            playlist.toData()
+        )
+    }
+
+    override fun getAllPlaylist(): Flow<List<Playlist>> {
+        return db.playlistDao.getPlaylists().map { it.map { playlistEntity ->
+            playlistEntity.toDomain()
+        } }
+    }
+
+    override fun getFavouritesPlaylist(): Flow<FavouritesPlaylist?> {
+        return db.favouritesPlaylistDao.getFavouritesPlaylist().map { it?.toDomain() }
+    }
 
 
     private fun getDeviceAudiosByQuery(
         selection: String,
-        selectionArgs: Array<String>
+        selectionArgs: Array<String> = arrayOf()
     ): List<Audio> {
+
         val contentResolver = context.contentResolver
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
@@ -95,6 +115,7 @@ class DefaultAudioRepository(
         } else {
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         }
+
         val audios = mutableListOf<Audio>()
 
         contentResolver.query(
@@ -108,13 +129,14 @@ class DefaultAudioRepository(
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-
+            val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val title = cursor.getString(titleColumn)
                 val artist = cursor.getString(artistColumn)
                 val duration = cursor.getLong(durationColumn)
+                val size = cursor.getLong(sizeColumn)
 
                 val contentUri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -128,10 +150,32 @@ class DefaultAudioRepository(
                         songTitle = title,
                         artisName = artist,
                         duration = duration,
+                        size = size
                     )
                 )
             }
         }
+
         return audios
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
