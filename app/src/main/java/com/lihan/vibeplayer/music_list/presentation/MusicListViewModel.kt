@@ -1,13 +1,15 @@
 package com.lihan.vibeplayer.music_list.presentation
 
 import android.net.Uri
-import androidx.compose.foundation.text.input.TextFieldState
+import androidx.annotation.OptIn
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
@@ -48,7 +50,7 @@ class MusicListViewModel(
                 loadAudios()
                 loadPlaylists()
                 observePlayer()
-                observeSearchTextField()
+                observeCreatePlaylistTextField()
                 hasInitialLoadedData = true
             }
         }.stateIn(
@@ -92,10 +94,10 @@ class MusicListViewModel(
     }
 
     private fun onCreatePlaylistCancel() {
+        state.value.createPlaylistTextFieldState.clearText()
         _state.update {
             it.copy(
-                isCreatePlaylistSheetShow = false,
-                createPlaylistTextFieldState = TextFieldState()
+                isCreatePlaylistSheetShow = false
             )
         }
     }
@@ -212,6 +214,7 @@ class MusicListViewModel(
         exoPlayer.play()
     }
 
+    @OptIn(UnstableApi::class)
     private fun onFunctionShuffleClick() {
         exoPlayer.shuffleModeEnabled = true
 
@@ -303,15 +306,17 @@ class MusicListViewModel(
     }
 
 
-    private fun observeSearchTextField() {
+    private fun observeCreatePlaylistTextField() {
         snapshotFlow {
             _state.value.createPlaylistTextFieldState.text.toString()
         }.onEach { text ->
+            println("observeCreatePlaylistTextField ${text}")
             _state.update {
                 it.copy(
-                    isCreateButtonEnabled = text.isNotEmpty()
+                    isCreateButtonEnabled = text.isNotEmpty() &&  text.length <= 40
                 )
             }
+            println("observeCreatePlaylistTextField ${text.isNotEmpty() &&  text.length <= 40}")
         }.launchIn(viewModelScope)
     }
 

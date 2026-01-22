@@ -113,7 +113,6 @@ fun CreateNewPlaylist(
                 color = TextPrimary
             ),
             lineLimits = TextFieldLineLimits.SingleLine,
-            inputTransformation = InputTransformation.maxLength(40),
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
@@ -136,7 +135,8 @@ fun CreateNewPlaylist(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
