@@ -21,7 +21,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
@@ -35,7 +34,8 @@ fun PlaylistCard(
     count: Int,
     playlistCardStyle: PlaylistCardStyle,
     onMenuDotsClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    imageCacheKey: String? = null
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -56,8 +56,9 @@ fun PlaylistCard(
                         .size(64.dp),
                     contentAlignment = Alignment.Center
                 ){
-                    AsyncImage(
+                    AudioAsyncImage(
                         model = playlistCardStyle.byteArray,
+                        cacheKey = imageCacheKey?:"",
                         contentDescription = title,
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
@@ -65,7 +66,6 @@ fun PlaylistCard(
                         placeholder = painterResource(R.drawable.playlist_gradient),
                         error = painterResource(R.drawable.playlist_gradient)
                     )
-
                 }
             }
         }
@@ -107,13 +107,15 @@ private fun PlaylistCardPreview() {
                 title = "Friday Chill",
                 count = 222,
                 onMenuDotsClick = {},
-                playlistCardStyle = PlaylistCardStyle.Favourites
+                playlistCardStyle = PlaylistCardStyle.Favourites,
+                imageCacheKey = ""
             )
             PlaylistCard(
                 title = "Friday Chill",
                 count = 222,
                 onMenuDotsClick = {},
-                playlistCardStyle = PlaylistCardStyle.NoCover
+                playlistCardStyle = PlaylistCardStyle.NoCover,
+                imageCacheKey = ""
             )
         }
     }

@@ -3,11 +3,9 @@
 package com.lihan.vibeplayer.music_list.presentation.components
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,26 +14,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -46,11 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,8 +45,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
-import coil3.compose.AsyncImage
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.domain.util.toTimeStringWithoutZero
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
@@ -69,9 +53,7 @@ import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import com.lihan.vibeplayer.ui.design_system.buttons.VPChip
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
-import com.lihan.vibeplayer.ui.theme.SurfaceHigher
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
-import com.lihan.vibeplayer.ui.theme.TextDisabled
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
@@ -138,8 +120,9 @@ fun FullScreenPlayer(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AsyncImage(
+            AudioAsyncImage(
                 model = audioUi.albumImage,
+                cacheKey = "album_${audioUi.id}",
                 contentDescription = stringResource(R.string.playing_music_album_image),
                 modifier = Modifier
                     .clip(RoundedCornerShape(10.dp))
@@ -147,7 +130,6 @@ fun FullScreenPlayer(
                 placeholder = painterResource(R.drawable.song_image_default),
                 error = painterResource(R.drawable.song_image_default)
             )
-
             Spacer(Modifier.height(20.dp))
             Text(
                 text = audioUi.songTitle.ifEmpty { stringResource(R.string.playing_music_unknow) },

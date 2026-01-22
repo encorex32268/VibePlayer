@@ -36,8 +36,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
-import com.lihan.vibeplayer.ui.design_system.buttons.VPTextButton
-import com.lihan.vibeplayer.ui.theme.ButtonHover
 import com.lihan.vibeplayer.ui.theme.ButtonHover28
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextDisabled

@@ -72,7 +72,8 @@ fun PlayListScreen(
                 title = stringResource(R.string.playlist_favourites),
                 count = if (state.favouritesPlaylists == null || state.favouritesPlaylists.audioIds.isEmpty()) 0  else state.favouritesPlaylists.audioIds.size,
                 onMenuDotsClick = {},
-                playlistCardStyle = PlaylistCardStyle.Favourites
+                playlistCardStyle = PlaylistCardStyle.Favourites,
+
             )
         }
         item {
@@ -111,6 +112,7 @@ fun PlayListScreen(
                     title = playlistUi.title,
                     count = playlistUi.count,
                     playlistCardStyle = playlistUi.style,
+                    imageCacheKey = playlistUi.id.toString(),
                     onMenuDotsClick = {
 
                     }

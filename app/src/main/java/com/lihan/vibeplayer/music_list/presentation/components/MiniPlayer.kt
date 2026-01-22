@@ -30,7 +30,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
@@ -63,8 +62,9 @@ fun MiniPlayer(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        AsyncImage(
+        AudioAsyncImage(
             model = audioUi.albumImage,
+            cacheKey = "album_${audioUi.id}",
             contentDescription = audioUi.songTitle,
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
@@ -72,7 +72,6 @@ fun MiniPlayer(
             placeholder = painterResource(R.drawable.song_image_default),
             error = painterResource(R.drawable.song_image_default)
         )
-
         Column {
             Row(
                 modifier = Modifier.fillMaxWidth(),

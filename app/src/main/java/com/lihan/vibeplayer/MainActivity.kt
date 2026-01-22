@@ -25,9 +25,9 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.lihan.vibeplayer.core.navigation.Route
 import com.lihan.vibeplayer.music_list.presentation.MusicListScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.addsong.AddSongsScreenRoot
-import com.lihan.vibeplayer.permission.PermissionScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.search.SearchScreenRoot
+import com.lihan.vibeplayer.permission.PermissionScreenRoot
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 

@@ -2,7 +2,6 @@ package com.lihan.vibeplayer.music_list.presentation.model
 
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
-import com.lihan.vibeplayer.music_list.presentation.MusicListUiEvent
 
 enum class RepeatModeStatus {
     Off,All,One;

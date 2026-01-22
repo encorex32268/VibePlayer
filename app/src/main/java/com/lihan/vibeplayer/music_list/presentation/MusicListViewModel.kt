@@ -11,7 +11,6 @@ import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
-import com.lihan.vibeplayer.music_list.data.OfflineMusicListRepository
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
@@ -20,26 +19,18 @@ import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
 
 class MusicListViewModel(
     private val exoPlayer: ExoPlayer,

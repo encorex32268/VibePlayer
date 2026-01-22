@@ -10,20 +10,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.toCoilUri
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.domain.util.toTimeString
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
@@ -57,12 +52,9 @@ fun SongCard(
             )
             Spacer(Modifier.width(12.dp))
         }
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(audioUi.albumImage)
-                .diskCacheKey("album_${audioUi.id}")
-                .memoryCacheKey("album_${audioUi.id}")
-                .build(),
+        AudioAsyncImage(
+            model = audioUi.albumImage,
+            cacheKey = "album_${audioUi.id}",
             contentDescription = audioUi.songTitle,
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))

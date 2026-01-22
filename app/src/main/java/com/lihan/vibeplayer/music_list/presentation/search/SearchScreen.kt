@@ -29,8 +29,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
-import com.lihan.vibeplayer.music_list.presentation.components.SongCard
 import com.lihan.vibeplayer.music_list.presentation.components.SearchBar
+import com.lihan.vibeplayer.music_list.presentation.components.SongCard
 import com.lihan.vibeplayer.ui.design_system.buttons.VPTextButton
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextDisabled

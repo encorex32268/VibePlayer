@@ -19,11 +19,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.size.Size
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.ui.theme.ButtonPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
-import kotlin.math.roundToInt
 
 @Composable
 fun HeartIcon(
