@@ -31,7 +31,7 @@ fun PlayerBottomBar(
     modeStatusBanner: UiText?,
     repeatModeStatus: RepeatModeStatus,
     audioUi: AudioUi,
-    currentPosition: () -> Long,
+    currentPosition: Long,
     duration: Long,
     onSeek: (Long) -> Unit,
     onPlayClick: () -> Unit,
@@ -49,9 +49,9 @@ fun PlayerBottomBar(
         onCollapseClick()
     }
 
-    val progress by remember(currentPosition()) {
+    val progress by remember(currentPosition) {
         derivedStateOf {
-            if (duration > 0) currentPosition().toFloat() / duration.toFloat() else 0f
+            if (duration > 0) currentPosition.toFloat() / duration.toFloat() else 0f
         }
     }
 
@@ -74,6 +74,7 @@ fun PlayerBottomBar(
         label = "PlayerAnimation"
     ) { targetIsExpand ->
         if (targetIsExpand) {
+
             FullScreenPlayer(
                 isPlaying = isPlaying,
                 isEnabledShuffle = isEnabledShuffle,
@@ -81,7 +82,7 @@ fun PlayerBottomBar(
                 repeatModeStatus = repeatModeStatus,
                 audioUi = audioUi,
                 progress = { progress },
-                currentPosition = currentPosition(),
+                currentPosition = { currentPosition },
                 onPlayClick = onPlayClick,
                 onSkipNextClick = onSkipNextClick,
                 onSkipPreviousClick = onSkipPreviousClick,
@@ -128,7 +129,7 @@ private fun PlayerBottomBarPreview() {
             modeStatusBanner = UiText.DynamicString("Test"),
             duration = 1000,
             isPlaying = false,
-            currentPosition = {1000},
+            currentPosition = 1000,
             onPlayClick = {},
             onSkipPreviousClick = {},
             onSkipNextClick = {},

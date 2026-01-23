@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -119,55 +121,61 @@ fun MusicListScreen(
         },
         bottomBar = {
             if (state.playingAudioUi != null){
-                AnimatedVisibility(
-                    modifier = Modifier.onSizeChanged{
-                        miniPlayerHeight = with(density){ it.height.toDp() }
-                    },
-                    visible = true,
-                    enter = slideInVertically(
-                        initialOffsetY = { fullHeight -> fullHeight }
-                    ) + fadeIn(),
-                    exit = slideOutVertically(
-                        targetOffsetY = { fullHeight -> fullHeight }
-                    ) + fadeOut()
-                ) {
-                    PlayerBottomBar(
-                        audioUi = state.playingAudioUi,
-                        modeStatusBanner = state.modeStatusBanner,
-                        repeatModeStatus = state.repeatModeStatus,
-                        isPlaying = state.isPlaying,
-                        isEnabledShuffle = state.isEnabledShuffle,
-                        isExpandPlayer = state.isExpandPlayer,
-                        duration = state.duration,
-                        currentPosition = { state.currentPosition },
-                        onPlayClick = {
-                            onAction(MusicListAction.OnPlayClick)
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ){
+                    AnimatedVisibility(
+                        modifier = Modifier.onSizeChanged{
+                            miniPlayerHeight = with(density){ it.height.toDp() }
                         },
-                        onSkipNextClick = {
-                            onAction(MusicListAction.OnSkipNextClick)
-                        },
-                        onSkipPreviousClick = {
-                            onAction(MusicListAction.OnSkipPreviousClick)
-                        },
-                        onSeek = {
-                            onAction(MusicListAction.OnSeek(it))
-                        },
-                        onRepeatClick = {
-                            onAction(MusicListAction.OnRepeatClick)
-                        },
-                        onShuffleClick = {
-                            onAction(MusicListAction.OnShuffleClick)
-                        },
-                        onExpandClick = {
-                            onAction(MusicListAction.OnExpandClick)
-                        },
-                        onCollapseClick = {
-                            onAction(MusicListAction.OnCollapseClick)
-                        },
-                        onHideModeChangedBanner = {
-                            onAction(MusicListAction.OnHideModeChangedBanner)
-                        }
-                    )
+                        visible = true,
+                        enter = slideInVertically(
+                            initialOffsetY = { fullHeight -> fullHeight }
+                        ) + fadeIn(),
+                        exit = slideOutVertically(
+                            targetOffsetY = { fullHeight -> fullHeight }
+                        ) + fadeOut()
+                    ) {
+                        PlayerBottomBar(
+                            audioUi = state.playingAudioUi,
+                            modeStatusBanner = state.modeStatusBanner,
+                            repeatModeStatus = state.repeatModeStatus,
+                            isPlaying = state.isPlaying,
+                            isEnabledShuffle = state.isEnabledShuffle,
+                            isExpandPlayer = state.isExpandPlayer,
+                            duration = state.duration,
+                            currentPosition = state.currentPosition,
+                            onPlayClick = {
+                                onAction(MusicListAction.OnPlayClick)
+                            },
+                            onSkipNextClick = {
+                                onAction(MusicListAction.OnSkipNextClick)
+                            },
+                            onSkipPreviousClick = {
+                                onAction(MusicListAction.OnSkipPreviousClick)
+                            },
+                            onSeek = {
+                                onAction(MusicListAction.OnSeek(it))
+                            },
+                            onRepeatClick = {
+                                onAction(MusicListAction.OnRepeatClick)
+                            },
+                            onShuffleClick = {
+                                onAction(MusicListAction.OnShuffleClick)
+                            },
+                            onExpandClick = {
+                                onAction(MusicListAction.OnExpandClick)
+                            },
+                            onCollapseClick = {
+                                onAction(MusicListAction.OnCollapseClick)
+                            },
+                            onHideModeChangedBanner = {
+                                onAction(MusicListAction.OnHideModeChangedBanner)
+                            }
+                        )
+                    }
+
                 }
 
             }

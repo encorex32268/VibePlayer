@@ -1,8 +1,10 @@
 package com.lihan.vibeplayer.music_list.di
 
 import androidx.media3.exoplayer.ExoPlayer
+import com.lihan.vibeplayer.music_list.data.DefaultExoPlayerManager
 import com.lihan.vibeplayer.music_list.data.OfflineMusicListRepository
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerFactory
+import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.MusicListViewModel
 import com.lihan.vibeplayer.music_list.presentation.addsong.AddSongsViewModel
@@ -28,6 +30,12 @@ val musicListModule = module {
             context = androidApplication()
         )
     }.bind<ExoPlayer>()
+
+    single {
+        DefaultExoPlayerManager(
+            context = androidApplication()
+        )
+    }.bind<ExoPlayerManager>()
 
     viewModelOf(::MusicListViewModel)
     viewModelOf(::SearchViewModel)

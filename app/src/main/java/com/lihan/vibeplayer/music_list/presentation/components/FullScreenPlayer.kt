@@ -67,7 +67,7 @@ fun FullScreenPlayer(
     audioUi: AudioUi,
     repeatModeStatus: RepeatModeStatus,
     modeStatusBanner: UiText?,
-    currentPosition: Long,
+    currentPosition: () ->  Long,
     progress: () -> Float,
     onSeek: (Long) -> Unit,
     onCollapseClick: () -> Unit,
@@ -82,15 +82,12 @@ fun FullScreenPlayer(
     var sliderValue by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
 
-    val displayPosition by remember(isDragging) {
-        derivedStateOf {
-            if (isDragging) {
-                (sliderValue * audioUi.duration).toLong()
-            } else {
-                currentPosition
-            }
-        }
+    val displayPosition = if (isDragging) {
+        (sliderValue * audioUi.duration).toLong()
+    } else {
+        currentPosition()
     }
+
     LaunchedEffect(modeStatusBanner) {
         if (modeStatusBanner != null) {
             delay(1000)
@@ -104,7 +101,9 @@ fun FullScreenPlayer(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             CircleIconButton(
@@ -146,7 +145,9 @@ fun FullScreenPlayer(
         }
 
         Slider(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             value = if (isDragging) {
                 sliderValue
             } else {
@@ -217,7 +218,9 @@ fun FullScreenPlayer(
             }
         }
         PlayerControlSection(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             isPlaying = isPlaying,
             repeatModeStatus = repeatModeStatus,
             isEnabledShuffle = isEnabledShuffle,
@@ -236,9 +239,7 @@ fun FullScreenPlayer(
 private fun FullScreenPlayerPreview() {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    scope.launch {
-        snackbarHostState.showSnackbar("Test")
-    }
+
     VibePlayerTheme {
         FullScreenPlayer(
             isPlaying = false,
@@ -256,7 +257,7 @@ private fun FullScreenPlayerPreview() {
             onCollapseClick = {},
             progress = { 0.5f },
             onSeek = {},
-            currentPosition = 2000,
+            currentPosition = { 2000 },
             isEnabledShuffle = true,
             repeatModeStatus = RepeatModeStatus.Off,
             onRepeatClick = {},
