@@ -5,7 +5,7 @@ import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
 
 fun FavouritesPlaylistEntity.toDomain(): FavouritesPlaylist {
     return FavouritesPlaylist(
-        id = id?:-1,
+        id = id,
         title = title,
         audioIds = audioIds,
     )

@@ -1,0 +1,151 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
+package com.lihan.vibeplayer.music_list.presentation.components
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
+import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
+import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
+import com.lihan.vibeplayer.ui.theme.SurfaceHighest
+import com.lihan.vibeplayer.ui.theme.SurfaceOutline
+import com.lihan.vibeplayer.ui.theme.TextPrimary
+import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
+
+@Composable
+fun ActionSheet(
+    playlistUi: PlaylistUi,
+    onPlayClick: () -> Unit,
+    onRenameClick: () -> Unit,
+    onChangeCoverClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        modifier = modifier
+            .widthIn(max = 480.dp)
+            .fillMaxWidth(),
+        containerColor = SurfaceHighest,
+        dragHandle = null,
+        shape = RoundedCornerShape(
+            topStart = 12.dp,
+            topEnd = 12.dp
+        )
+    ) {
+        Column (
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ){
+            PlaylistCard(
+                title = playlistUi.title,
+                count = playlistUi.audioIds.size,
+                playlistCardStyle = playlistUi.style,
+                imageCacheKey = playlistUi.id.toString()
+            )
+            when(playlistUi.style){
+                PlaylistCardStyle.Favourites -> {
+                    ActionItem(
+                        icon = ImageVector.vectorResource(R.drawable.play_outline),
+                        onClick = onPlayClick,
+                        title = stringResource(R.string.play)
+                    )
+                }
+                else -> {
+                    HorizontalDivider(modifier = Modifier.padding(1.dp), color = SurfaceOutline)
+                    ActionItem(
+                        icon = ImageVector.vectorResource(R.drawable.play_outline),
+                        onClick = onPlayClick,
+                        title = stringResource(R.string.play)
+                    )
+                    ActionItem(
+                        icon = ImageVector.vectorResource(R.drawable.pen),
+                        onClick = onRenameClick,
+                        title = stringResource(R.string.rename)
+                    )
+                    ActionItem(
+                        icon = ImageVector.vectorResource(R.drawable.img_edit),
+                        onClick = onChangeCoverClick,
+                        title = stringResource(R.string.change_cover)
+                    )
+                    ActionItem(
+                        icon = ImageVector.vectorResource(R.drawable.delete),
+                        onClick = onDeleteClick,
+                        title = stringResource(R.string.delete)
+                    )
+                }
+            }
+        }
+
+    }
+
+}
+
+@Composable
+private fun ActionItem(
+    icon: ImageVector,
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+){
+    Row(
+        modifier = modifier.clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        CircleIconButton(
+            icon = icon,
+            onClick = onClick
+        )
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            color = TextPrimary
+        )
+    }
+
+}
+
+
+@Preview
+@Composable
+private fun ActionSheetPreview() {
+    VibePlayerTheme {
+        ActionSheet(
+            playlistUi = PlaylistUi(
+                id = 1,
+                title = "Favourites",
+                audioIds = listOf("1","2","3"),
+                style = PlaylistCardStyle.NoCover
+            ),
+            onDismiss = {},
+            onDeleteClick = {},
+            onPlayClick = {},
+            onRenameClick = {},
+            onChangeCoverClick = {}
+        )
+    }
+}

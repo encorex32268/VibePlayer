@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import com.lihan.vibeplayer.core.database.FavouritesPlaylistEntity
 import com.lihan.vibeplayer.core.database.VibePlayerRoomDatabase
 import com.lihan.vibeplayer.core.database.mapper.toData
 import com.lihan.vibeplayer.core.database.mapper.toDomain
@@ -82,6 +83,24 @@ class OfflineMusicListRepository(
         db.playlistDao.create(
             playlist.toData()
         )
+    }
+
+    override suspend fun createFavouritePlaylist(favouritePlaylist: FavouritesPlaylist) {
+        db.favouritesPlaylistDao.create(
+            favouritePlaylist.toData()
+        )
+    }
+
+    override suspend fun checkAndCreateDefaultPlaylist() {
+        val favouritesPlaylist = db.favouritesPlaylistDao.getFavouritesPlaylist().firstOrNull()
+        if (favouritesPlaylist == null){
+            db.favouritesPlaylistDao.create(
+                FavouritesPlaylistEntity(
+                    title = "Favourites",
+                    audioIds = emptyList()
+                )
+            )
+        }
     }
 
     override fun getAllPlaylist(): Flow<List<Playlist>> {

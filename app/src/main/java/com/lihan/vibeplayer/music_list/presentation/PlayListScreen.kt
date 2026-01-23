@@ -22,9 +22,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
-import com.lihan.vibeplayer.music_list.presentation.components.CreateNewPlaylist
+import com.lihan.vibeplayer.music_list.presentation.components.ActionSheet
+import com.lihan.vibeplayer.music_list.presentation.components.DeleteDialog
+import com.lihan.vibeplayer.music_list.presentation.components.PlaylistBottomSheet
 import com.lihan.vibeplayer.music_list.presentation.components.PlaylistCard
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
+import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 import com.lihan.vibeplayer.ui.design_system.buttons.VPOutlineButton
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
@@ -70,8 +73,10 @@ fun PlayListScreen(
         item {
             PlaylistCard(
                 title = stringResource(R.string.playlist_favourites),
-                count = if (state.favouritesPlaylists == null || state.favouritesPlaylists.audioIds.isEmpty()) 0  else state.favouritesPlaylists.audioIds.size,
-                onMenuDotsClick = {},
+                count = state.favouritesPlaylists?.audioIds?.size?:0,
+                onMenuDotsClick = {
+                    onAction(MusicListAction.OnFavouritesMenuDotsClick)
+                },
                 playlistCardStyle = PlaylistCardStyle.Favourites,
 
             )
@@ -110,27 +115,79 @@ fun PlayListScreen(
             ){ playlistUi ->
                 PlaylistCard(
                     title = playlistUi.title,
-                    count = playlistUi.count,
+                    count = playlistUi.audioIds.size,
                     playlistCardStyle = playlistUi.style,
                     imageCacheKey = playlistUi.id.toString(),
                     onMenuDotsClick = {
-
+                        onAction(MusicListAction.OnMenuDotsClick(playlistUi))
                     }
                 )
             }
         }
 
     }
+
+
     
-    if (state.isCreatePlaylistSheetShow){
-        CreateNewPlaylist(
+    if (state.isShowCreatePlaylistBottomSheet){
+        PlaylistBottomSheet(
+            title = stringResource(R.string.playlist_create_new_playlist),
+            placeholder = stringResource(R.string.playlist_bottom_sheet_place_holder),
+            confirmText = stringResource(R.string.create),
             textFieldState = state.createPlaylistTextFieldState,
             isCreateButtonEnabled = state.isCreateButtonEnabled,
             onCancelClick = {
                 onAction(MusicListAction.OnCreatePlaylistCancelClick)
             },
-            onCreateClick = {
+            onConfirmClick = {
                 onAction(MusicListAction.OnNavigateToAddSongs)
+            }
+        )
+    }
+    if (state.isShowActionSheet){
+        if (state.selectActionSheetPlaylistUi != null){
+            ActionSheet(
+                playlistUi = state.selectActionSheetPlaylistUi,
+                onPlayClick = {
+                    onAction(MusicListAction.OnPlayPlaylistClick)
+                },
+                onDeleteClick = {
+                    onAction(MusicListAction.OnDeleteAction(DeleteAction.OnDeleteActionClick))
+                },
+                onRenameClick = {
+                    onAction(MusicListAction.OnRenameAction(RenameAction.OnRenameActionClick))
+                },
+                onChangeCoverClick = {
+                    onAction(MusicListAction.OnChangeCoverClick)
+                },
+                onDismiss = {
+                    onAction(MusicListAction.OnActionSheetDismiss)
+                }
+            )
+        }
+    }
+    if (state.isShowRenameBottomSheet){
+        PlaylistBottomSheet(
+            title = stringResource(R.string.playlist_rename_playlist),
+            confirmText = stringResource(R.string.rename),
+            onCancelClick = {
+                onAction(MusicListAction.OnRenameAction(RenameAction.OnCancelClick))
+            },
+            onConfirmClick = {
+                onAction(MusicListAction.OnRenameAction(RenameAction.OnConfirmClick))
+            },
+            placeholder = stringResource(R.string.playlist_rename_playlist_place_holder),
+            isCreateButtonEnabled = state.isRenameButtonEnabled,
+            textFieldState = state.renamePlaylistTextFieldState
+        )
+    }
+    if (state.isShowDeleteBottomSheet){
+        DeleteDialog(
+            onCancelClick = {
+                onAction(MusicListAction.OnDeleteAction(DeleteAction.OnCancelClick))
+            },
+            onDeleteClick = {
+                onAction(MusicListAction.OnDeleteAction(DeleteAction.OnConfirmClick))
             }
         )
     }
@@ -144,7 +201,14 @@ private fun PlayListScreenPreview() {
     VibePlayerTheme {
         PlayListScreen(
             state = MusicListState(
-                playlists = emptyList()
+                playlists = emptyList(),
+                selectActionSheetPlaylistUi = PlaylistUi(
+                    id = 9,
+                    title = "Playlist",
+                    audioIds = listOf("1","2","3","4"),
+                    style = PlaylistCardStyle.NoCover
+                ),
+                isShowDeleteBottomSheet = true
             ),
             onAction = {}
         )

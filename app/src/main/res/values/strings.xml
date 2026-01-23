@@ -46,6 +46,13 @@ your library and play songs</string>
     <string name="playlist_create_new_playlist">Create New Playlist</string>
     <string name="playlist_bottom_sheet_place_holder">Enter playlist name</string>
     <string name="playlist_bottom_sheet_place_holder_count">%1$d/40</string>
+
+    <string name="playlist_rename_playlist">Rename Playlist</string>
+    <string name="playlist_rename_playlist_place_holder">Enter new name</string>
+
+    <string name="delete_playlist_title">Delete Playlist</string>
+    <string name="delete_playlist_description">Are you sure you want to delete playlist New Playlist?</string>
+    <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="create">Create</string>
     <string name="playlist_create_playlist">Create playlist</string>
@@ -54,5 +61,8 @@ your library and play songs</string>
     <string name="add_songs_selected">%1$d Selected</string>
     <string name="ok">OK</string>
     <string name="playlist_favourites">Favourites</string>
+    <string name="rename">Rename</string>
+    <string name="play">Play</string>
+    <string name="change_cover">Change Cover</string>
 
 </resources>

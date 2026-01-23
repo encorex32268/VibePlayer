@@ -18,6 +18,10 @@ interface MusicListRepository {
 
     suspend fun createPlaylist(playlist: Playlist)
 
+    suspend fun createFavouritePlaylist(favouritePlaylist: FavouritesPlaylist)
+
+    suspend fun checkAndCreateDefaultPlaylist()
+
     fun getAllPlaylist(): Flow<List<Playlist>>
 
     fun getFavouritesPlaylist(): Flow<FavouritesPlaylist?>

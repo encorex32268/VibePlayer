@@ -10,14 +10,15 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
+import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
+import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -48,6 +49,7 @@ class MusicListViewModel(
     val state = _state
         .onStart {
             if (!hasInitialLoadedData) {
+                checkFavouritesPlaylist()
                 loadAudios()
                 loadPlaylists()
                 observePlayer()
@@ -60,7 +62,14 @@ class MusicListViewModel(
             MusicListState()
         )
 
+    private fun checkFavouritesPlaylist() {
+        viewModelScope.launch {
+            repository.checkAndCreateDefaultPlaylist()
+        }
+    }
+
     fun onAction(action: MusicListAction) {
+        println("Action ${action}")
         when (action) {
             MusicListAction.OnScanAgainClick -> {
                 viewModelScope.launch{ loadAudios() }
@@ -80,16 +89,98 @@ class MusicListViewModel(
             MusicListAction.OnCreatePlaylistAddClick -> onCreatePlaylistAddClick()
             MusicListAction.OnNavigateToAddSongs,
             MusicListAction.OnCreatePlaylistCancelClick -> onCreatePlaylistCancel()
+            is MusicListAction.OnMenuDotsClick -> onMenuDotsClick(action.playlistUi)
+            MusicListAction.OnFavouritesMenuDotsClick -> onFavouritesMenuDotsClick()
+            MusicListAction.OnActionSheetDismiss -> onActionSheetDismiss()
+            MusicListAction.OnChangeCoverClick -> {
+                _state.update { it.copy(
+                    isShowActionSheet = false,
+
+                ) }
+            }
+            MusicListAction.OnPlayPlaylistClick -> TODO()
+            is MusicListAction.OnDeleteAction -> onDeleteAction(action.action)
+            is MusicListAction.OnRenameAction -> onRenameAction(action.action)
 
             else -> Unit
         }
     }
 
+    private fun onRenameAction(action: RenameAction){
+        when(action){
+            RenameAction.OnRenameActionClick -> {
+                _state.update { it.copy(
+                    isShowActionSheet = false,
+                    isShowRenameBottomSheet = true
+                ) }
+            }
+            RenameAction.OnCancelClick -> {
+                _state.update { it.copy(
+                    isShowActionSheet = true,
+                    isShowRenameBottomSheet = false
+                ) }
+            }
+            RenameAction.OnConfirmClick -> {
+                //TODO: Rename Playlist
+
+            }
+
+        }
+    }
+
+    private fun onDeleteAction(action: DeleteAction){
+        when(action){
+            DeleteAction.OnDeleteActionClick -> {
+                _state.update { it.copy(
+                    isShowActionSheet = false,
+                    isShowDeleteBottomSheet = true
+                ) }
+            }
+            DeleteAction.OnCancelClick -> {
+                _state.update { it.copy(
+                    isShowActionSheet = true,
+                    isShowDeleteBottomSheet = false
+                ) }
+            }
+            DeleteAction.OnConfirmClick -> {
+                //TODO: Remove Playlist
+                viewModelScope.launch {
+
+                    _state.update { it.copy(
+                        isShowActionSheet = false,
+                        isShowDeleteBottomSheet = false
+                    ) }
+                }
+            }
+
+        }
+    }
+
+    private fun onActionSheetDismiss(){
+        _state.update { it.copy(
+            selectActionSheetPlaylistUi = null,
+            isShowActionSheet = false
+        ) }
+    }
+
+    private fun onFavouritesMenuDotsClick(){
+        val favouritesPlaylistUi = state.value.favouritesPlaylists
+        _state.update { it.copy(
+            selectActionSheetPlaylistUi = favouritesPlaylistUi
+        ) }
+    }
+
+    private fun onMenuDotsClick(playlistUi: PlaylistUi){
+        _state.update { it.copy(
+            selectActionSheetPlaylistUi = playlistUi,
+            isShowActionSheet = true
+        ) }
+    }
 
     private fun onCreatePlaylistAddClick() {
         _state.update {
             it.copy(
-                isCreatePlaylistSheetShow = true
+                isShowCreatePlaylistBottomSheet = true
             )
         }
     }
@@ -98,7 +189,7 @@ class MusicListViewModel(
         state.value.createPlaylistTextFieldState.clearText()
         _state.update {
             it.copy(
-                isCreatePlaylistSheetShow = false
+                isShowCreatePlaylistBottomSheet = false
             )
         }
     }
@@ -241,32 +332,33 @@ class MusicListViewModel(
             flow3 = repository.getAllPlaylist()
         ){ favouritesPlaylist , audios , playlists ->
 
-            val playlists = playlists.map { playlist ->
-                val firstPlaylistSongId = playlist.audioIds.first()
-                val findAudio =
-                    audios.find { audio -> audio.id.toString() == firstPlaylistSongId }
+            val audioMap = audios.associateBy { it.id.toString() }
 
-                val coverStyle = if (findAudio == null || findAudio.album == Uri.EMPTY) {
-                    PlaylistCardStyle.NoCover
+            val playlists = playlists.map { playlist ->
+                val firstAudioId = playlist.audioIds.first()
+                val firstAudio = firstAudioId.let { audioMap[it] }
+
+                val coverStyle = if (firstAudio != null && firstAudio.album != Uri.EMPTY) {
+                    repository.getAlbumArtImage(firstAudio.album)?.let { image ->
+                        PlaylistCardStyle.HasCover(image)
+                    } ?: PlaylistCardStyle.NoCover
                 } else {
-                    val image = repository.getAlbumArtImage(findAudio.album)
-                    if (image == null) {
-                        PlaylistCardStyle.NoCover
-                    } else {
-                        PlaylistCardStyle.HasCover(
-                            byteArray = repository.getAlbumArtImage(findAudio.album)
-                        )
-                    }
+                    PlaylistCardStyle.NoCover
                 }
+
                 playlist.toUi(coverStyle)
             }
+
+            val favouritesPlaylistUi = favouritesPlaylist?.toUi()
+
+            favouritesPlaylistUi to playlists
+        }.onEach { (favouritesPlaylistUi , playlists) ->
             _state.update { state ->
                 state.copy(
-                    favouritesPlaylists = favouritesPlaylist,
+                    favouritesPlaylists = favouritesPlaylistUi,
                     playlists = playlists
                 )
             }
-
         }.launchIn(viewModelScope)
 
 
@@ -277,13 +369,11 @@ class MusicListViewModel(
         snapshotFlow {
             _state.value.createPlaylistTextFieldState.text.toString()
         }.onEach { text ->
-            println("observeCreatePlaylistTextField ${text}")
             _state.update {
                 it.copy(
                     isCreateButtonEnabled = text.isNotEmpty() &&  text.length <= 40
                 )
             }
-            println("observeCreatePlaylistTextField ${text.isNotEmpty() &&  text.length <= 40}")
         }.launchIn(viewModelScope)
     }
 

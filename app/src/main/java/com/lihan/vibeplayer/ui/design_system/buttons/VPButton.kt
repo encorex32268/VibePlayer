@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,16 +24,17 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 fun VPButton(
     text: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     leadingIcon: @Composable (() -> Unit)?=null,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    containerColor: Color = ButtonPrimary
 ) {
     Button(
         modifier = modifier,
         onClick = onClick,
         enabled = enabled,
         colors = ButtonColors(
-            containerColor = ButtonPrimary,
+            containerColor = containerColor,
             contentColor = TextPrimary,
             disabledContainerColor = ButtonHover28,
             disabledContentColor = TextDisabled

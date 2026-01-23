@@ -8,7 +8,7 @@ fun Playlist.toUi(coverStyle: PlaylistCardStyle): PlaylistUi {
     return PlaylistUi(
         id = id?:-1,
         title = title,
-        count = audioIds.size,
+        audioIds = audioIds,
         style = coverStyle,
     )
 }

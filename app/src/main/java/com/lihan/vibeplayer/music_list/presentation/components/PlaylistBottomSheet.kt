@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -42,12 +40,15 @@ import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 @Composable
-fun CreateNewPlaylist(
+fun PlaylistBottomSheet(
+    title: String,
+    confirmText: String,
     textFieldState: TextFieldState,
-    onCreateClick: () -> Unit,
+    onConfirmClick: () -> Unit,
     onCancelClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isCreateButtonEnabled: Boolean = false
+    isCreateButtonEnabled: Boolean = false,
+    placeholder: String?=null
 ) {
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -74,7 +75,7 @@ fun CreateNewPlaylist(
     ) {
         Text(
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-            text = stringResource(R.string.playlist_create_new_playlist),
+            text = title,
             style = MaterialTheme.typography.titleMedium,
             color = TextPrimary,
             textAlign = TextAlign.Center
@@ -90,9 +91,9 @@ fun CreateNewPlaylist(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.CenterStart
                     ){
-                        if (textFieldState.text.toString().isEmpty()){
+                        if (textFieldState.text.toString().isEmpty() && placeholder!=null){
                             Text(
-                                text = stringResource(R.string.playlist_bottom_sheet_place_holder),
+                                text = placeholder,
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Normal,
                                 color = TextSecondary
@@ -151,12 +152,12 @@ fun CreateNewPlaylist(
             )
             VPButton(
                 modifier = Modifier.weight(1f),
-                text = stringResource(R.string.create),
+                text = confirmText,
                 enabled = isCreateButtonEnabled,
                 onClick = {
                     focusManager.clearFocus()
                     keyboard?.hide()
-                    onCreateClick()
+                    onConfirmClick()
                 }
             )
         }
@@ -168,16 +169,19 @@ fun CreateNewPlaylist(
 
 @Preview
 @Composable
-private fun CreateNewPlaylistPreview() {
+private fun PlaylistBottomSheetPreview() {
     val textFieldState = remember {
         TextFieldState(initialText = "rrr")
     }
     VibePlayerTheme {
-        CreateNewPlaylist(
+        PlaylistBottomSheet(
             textFieldState = textFieldState,
-            onCreateClick = {},
+            onConfirmClick = {},
             onCancelClick = {},
-            isCreateButtonEnabled = textFieldState.text.isNotEmpty()
+            isCreateButtonEnabled = textFieldState.text.isNotEmpty(),
+            placeholder = "",
+            confirmText = "Create",
+            title = "Create new playlist"
         )
     }
 }

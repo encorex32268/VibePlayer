@@ -1,5 +1,6 @@
 package com.lihan.vibeplayer.music_list.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,12 +34,16 @@ fun PlaylistCard(
     title: String,
     count: Int,
     playlistCardStyle: PlaylistCardStyle,
-    onMenuDotsClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onMenuDotsClick: (() -> Unit)?=null,
     imageCacheKey: String? = null
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = {
+                onMenuDotsClick?.invoke()
+            }),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -85,11 +90,13 @@ fun PlaylistCard(
                 color = TextSecondary
             )
         }
-        CircleIconButton(
-            isRemoveBackground = true,
-            icon = ImageVector.vectorResource(R.drawable.menu_dots),
-            onClick = onMenuDotsClick
-        )
+        if (onMenuDotsClick!= null){
+            CircleIconButton (
+                isRemoveBackground = true,
+                icon = ImageVector.vectorResource(R.drawable.menu_dots),
+                onClick = onMenuDotsClick
+            )
+        }
 
     }
 
@@ -112,8 +119,8 @@ private fun PlaylistCardPreview() {
             )
             PlaylistCard(
                 title = "Friday Chill",
-                count = 222,
-                onMenuDotsClick = {},
+                count = 0,
+                onMenuDotsClick = null,
                 playlistCardStyle = PlaylistCardStyle.NoCover,
                 imageCacheKey = ""
             )

@@ -1,6 +1,7 @@
 package com.lihan.vibeplayer.music_list.presentation
 
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 
 sealed interface MusicListAction {
     data object OnScanAgainClick: MusicListAction
@@ -23,4 +24,27 @@ sealed interface MusicListAction {
     data object OnCreatePlaylistAddClick: MusicListAction
     data object OnNavigateToAddSongs: MusicListAction
 
+    data class OnMenuDotsClick(
+        val playlistUi: PlaylistUi
+    ): MusicListAction
+    data object OnFavouritesMenuDotsClick: MusicListAction
+    data object OnActionSheetDismiss: MusicListAction
+    data object OnPlayPlaylistClick: MusicListAction
+    data object OnChangeCoverClick: MusicListAction
+
+    data class OnDeleteAction(val action: DeleteAction): MusicListAction
+    data class OnRenameAction(val action: RenameAction): MusicListAction
+
+}
+
+sealed interface DeleteAction {
+    data object OnDeleteActionClick: DeleteAction
+    data object OnConfirmClick: DeleteAction
+    data object OnCancelClick: DeleteAction
+}
+
+sealed interface RenameAction {
+    data object OnRenameActionClick: RenameAction
+    data object OnConfirmClick: RenameAction
+    data object OnCancelClick: RenameAction
 }

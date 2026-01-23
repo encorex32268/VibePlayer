@@ -6,14 +6,13 @@ class StringListConverter{
 
     @TypeConverter
     fun stringToStringList(value: String): List<String>{
-        return value.split(",").toList()
+        if (value.isBlank()) return emptyList()
+        return value.split(",").map { it.trim() }
     }
 
     @TypeConverter
     fun stringListToString(value: List<String>): String{
-        return value.joinToString(",")
+        return value.filter { it.isNotBlank() }.joinToString(",")
     }
-
-
 
 }

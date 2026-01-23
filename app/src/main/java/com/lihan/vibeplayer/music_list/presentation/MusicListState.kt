@@ -20,8 +20,14 @@ data class MusicListState(
     val modeStatusBanner: UiText?=null,
     val repeatModeStatus: RepeatModeStatus = RepeatModeStatus.Off,
     val playlists: List<PlaylistUi> = emptyList(),
-    val favouritesPlaylists: FavouritesPlaylist?=null,
-    val isCreatePlaylistSheetShow: Boolean = false,
+    val favouritesPlaylists: PlaylistUi?=null,
+    val isShowCreatePlaylistBottomSheet: Boolean = false,
     val createPlaylistTextFieldState: TextFieldState = TextFieldState(),
-    val isCreateButtonEnabled: Boolean = false
+    val isCreateButtonEnabled: Boolean = false,
+    val renamePlaylistTextFieldState: TextFieldState = TextFieldState(),
+    val isRenameButtonEnabled: Boolean = false,
+    val selectActionSheetPlaylistUi: PlaylistUi?=null,
+    val isShowActionSheet: Boolean = false,
+    val isShowRenameBottomSheet: Boolean = false,
+    val isShowDeleteBottomSheet: Boolean = false,
 )
