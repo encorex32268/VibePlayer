@@ -79,8 +79,14 @@ class OfflineMusicListRepository(
         }
     }
 
-    override suspend fun createPlaylist(playlist: Playlist) {
-        db.playlistDao.create(
+    override suspend fun upsertPlaylist(playlist: Playlist) {
+        db.playlistDao.upsert(
+            playlist.toData()
+        )
+    }
+
+    override suspend fun deletePlaylist(playlist: Playlist) {
+        db.playlistDao.delete(
             playlist.toData()
         )
     }

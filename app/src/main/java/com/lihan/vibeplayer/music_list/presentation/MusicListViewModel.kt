@@ -15,6 +15,7 @@ import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
 import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
+import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
@@ -59,6 +60,7 @@ class MusicListViewModel(
                 loadPlaylists()
                 observePlayer()
                 observeCreatePlaylistTextField()
+                observeRenameTextField()
                 hasInitialLoadedData = true
             }
         }.stateIn(
@@ -133,8 +135,12 @@ class MusicListViewModel(
             RenameAction.OnRenameActionClick -> {
                 _state.update { it.copy(
                     isShowActionSheet = false,
-                    isShowRenameBottomSheet = true
+                    isShowRenameBottomSheet = true,
                 ) }
+                val currentPlaylistTitle = state.value.selectActionSheetPlaylistUi?.title
+                state.value.renamePlaylistTextFieldState.edit {
+                    this.replace(0,this.length,currentPlaylistTitle?:"")
+                }
             }
             RenameAction.OnCancelClick -> {
                 _state.update { it.copy(
@@ -143,7 +149,19 @@ class MusicListViewModel(
                 ) }
             }
             RenameAction.OnConfirmClick -> {
-                //TODO: Rename Playlist
+                viewModelScope.launch {
+                    val currentPlaylist = state.value.selectActionSheetPlaylistUi ?: return@launch
+                    repository.upsertPlaylist(
+                        playlist = currentPlaylist.copy(
+                            title = state.value.renamePlaylistTextFieldState.text.toString()
+                        ).toDomain()
+                    )
+
+                    _state.update { it.copy(
+                        isShowActionSheet = false,
+                        isShowRenameBottomSheet = false
+                    ) }
+                }
 
             }
 
@@ -165,12 +183,16 @@ class MusicListViewModel(
                 ) }
             }
             DeleteAction.OnConfirmClick -> {
-                //TODO: Remove Playlist
                 viewModelScope.launch {
+                    val currentPlaylist = state.value.selectActionSheetPlaylistUi
+                    currentPlaylist?.let {
+                        repository.deletePlaylist(currentPlaylist.toDomain())
+                    }
 
                     _state.update { it.copy(
                         isShowActionSheet = false,
-                        isShowDeleteBottomSheet = false
+                        isShowDeleteBottomSheet = false,
+                        selectActionSheetPlaylistUi = null
                     ) }
                 }
             }
@@ -394,6 +416,20 @@ class MusicListViewModel(
             _state.update {
                 it.copy(
                     isCreateButtonEnabled = text.isNotEmpty() &&  text.length <= 40
+                )
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun observeRenameTextField() {
+        snapshotFlow {
+            _state.value.renamePlaylistTextFieldState.text.toString()
+        }.onEach { text ->
+            val currentPlaylistTitle = state.value.selectActionSheetPlaylistUi?.title
+            val isChanged = text != currentPlaylistTitle
+            _state.update {
+                it.copy(
+                    isRenameButtonEnabled = isChanged &&  text.length <= 40 && text.isNotEmpty()
                 )
             }
         }.launchIn(viewModelScope)

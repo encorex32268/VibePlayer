@@ -212,7 +212,7 @@ class AddSongsViewModel(
                 .filter { it.isSelected }
                 .map { it.id.toString() }
 
-            repository.createPlaylist(
+            repository.upsertPlaylist(
                 playlist = Playlist(
                     title = playlistTitle,
                     audioIds = selectedAudios

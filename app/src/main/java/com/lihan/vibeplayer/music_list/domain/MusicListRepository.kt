@@ -16,7 +16,9 @@ interface MusicListRepository {
 
     suspend fun getAlbumArtImage(uri: Uri): ByteArray?
 
-    suspend fun createPlaylist(playlist: Playlist)
+    suspend fun upsertPlaylist(playlist: Playlist)
+
+    suspend fun deletePlaylist(playlist: Playlist)
 
     suspend fun createFavouritePlaylist(favouritePlaylist: FavouritesPlaylist)
 

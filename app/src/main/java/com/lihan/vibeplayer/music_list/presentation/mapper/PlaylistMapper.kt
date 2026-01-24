@@ -12,3 +12,11 @@ fun Playlist.toUi(coverStyle: PlaylistCardStyle): PlaylistUi {
         style = coverStyle,
     )
 }
+
+fun PlaylistUi.toDomain(): Playlist {
+    return Playlist(
+        id = id,
+        title = title,
+        audioIds = audioIds
+    )
+}

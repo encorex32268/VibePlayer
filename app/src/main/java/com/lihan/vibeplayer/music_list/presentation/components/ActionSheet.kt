@@ -111,7 +111,7 @@ private fun ActionItem(
     modifier: Modifier = Modifier
 ){
     Row(
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {

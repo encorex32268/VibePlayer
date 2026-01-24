@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 interface PlaylistDao {
 
     @Upsert
-    suspend fun create(playlistEntity: PlaylistEntity)
+    suspend fun upsert(playlistEntity: PlaylistEntity)
 
     @Delete
     suspend fun delete(playlistEntity: PlaylistEntity)
