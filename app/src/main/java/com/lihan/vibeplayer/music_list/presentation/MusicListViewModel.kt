@@ -23,6 +23,7 @@ import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -44,6 +46,9 @@ class MusicListViewModel(
     private var hasInitialLoadedData = false
 
     private var progressJob: Job? = null
+
+    private val _uiEvent = Channel<MusicListUiEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
 
     private val _state = MutableStateFlow(MusicListState())
     val state = _state
@@ -69,7 +74,7 @@ class MusicListViewModel(
     }
 
     fun onAction(action: MusicListAction) {
-        println("Action ${action}")
+
         when (action) {
             MusicListAction.OnScanAgainClick -> {
                 viewModelScope.launch{ loadAudios() }
@@ -87,7 +92,7 @@ class MusicListViewModel(
             MusicListAction.OnCollapseClick -> onCollapseClick()
             MusicListAction.OnHideModeChangedBanner -> onHideModeChangedBanner()
             MusicListAction.OnCreatePlaylistAddClick -> onCreatePlaylistAddClick()
-            MusicListAction.OnNavigateToAddSongs,
+            MusicListAction.OnNavigateToAddSongs -> onNavigateToAddSongs()
             MusicListAction.OnCreatePlaylistCancelClick -> onCreatePlaylistCancel()
             is MusicListAction.OnMenuDotsClick -> onMenuDotsClick(action.playlistUi)
             MusicListAction.OnFavouritesMenuDotsClick -> onFavouritesMenuDotsClick()
@@ -103,6 +108,23 @@ class MusicListViewModel(
             is MusicListAction.OnRenameAction -> onRenameAction(action.action)
 
             else -> Unit
+        }
+    }
+
+    private fun onNavigateToAddSongs() {
+
+        viewModelScope.launch {
+            val title = state.value.createPlaylistTextFieldState.text.toString()
+            state.value.createPlaylistTextFieldState.clearText()
+            _state.update { it.copy(
+                isShowCreatePlaylistBottomSheet = false
+            ) }
+
+            //wait for hide bottom sheet
+            delay(300L)
+            _uiEvent.send(
+                MusicListUiEvent.OnNavigateToAddSongs(title)
+            )
         }
     }
 

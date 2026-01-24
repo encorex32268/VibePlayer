@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.music_list.presentation.components.MusicListScreenTopBar
 import com.lihan.vibeplayer.music_list.presentation.components.MusicListTabRow
 import com.lihan.vibeplayer.music_list.presentation.components.PLAYLIST
@@ -58,13 +59,20 @@ fun MusicListScreenRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    ObserveEvent(viewModel.uiEvent) {uiEvent ->
+        when(uiEvent){
+            is MusicListUiEvent.OnNavigateToAddSongs -> onNavigateToAddSongs(uiEvent.title)
+            else -> Unit
+        }
+
+    }
+
     MusicListScreen(
         state = state,
         onAction = { action ->
             when (action) {
                 MusicListAction.OnScanClick -> onNavigateToScan()
                 MusicListAction.OnSearchClick -> onNavigateToSearch()
-                MusicListAction.OnNavigateToAddSongs -> onNavigateToAddSongs(state.createPlaylistTextFieldState.text.toString())
                 else -> Unit
             }
             viewModel.onAction(action)
