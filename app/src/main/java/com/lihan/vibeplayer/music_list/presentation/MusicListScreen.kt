@@ -95,9 +95,6 @@ fun MusicListScreen(
             listState.firstVisibleItemIndex >= 10
         }
     }
-    val density = LocalDensity.current
-
-    var miniPlayerHeight by remember { mutableStateOf(0.dp) }
 
     val horizontalPager = rememberPagerState(
         pageCount = { 2 }
@@ -134,9 +131,6 @@ fun MusicListScreen(
                     contentAlignment = Alignment.Center
                 ){
                     AnimatedVisibility(
-                        modifier = Modifier.onSizeChanged{
-                            miniPlayerHeight = with(density){ it.height.toDp() }
-                        },
                         visible = true,
                         enter = slideInVertically(
                             initialOffsetY = { fullHeight -> fullHeight }
@@ -225,7 +219,15 @@ fun MusicListScreen(
                                 state = state,
                                 listState = listState,
                                 onAction = onAction,
-                                miniPlayerHeight = miniPlayerHeight
+                                onFunctionPlayClick = {
+                                    onAction(MusicListAction.OnFunctionPlayClick)
+                                },
+                                onFunctionShuffleClick = {
+                                    onAction(MusicListAction.OnFunctionShuffleClick)
+                                },
+                                onSongClick = { audioUi ->
+                                    onAction(MusicListAction.OnSongClick(audioUi))
+                                }
                             )
                         }
                         PLAYLIST -> {

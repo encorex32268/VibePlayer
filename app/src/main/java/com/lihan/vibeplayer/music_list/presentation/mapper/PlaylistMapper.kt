@@ -1,6 +1,5 @@
 package com.lihan.vibeplayer.music_list.presentation.mapper
 
-import android.net.Uri
 import com.lihan.vibeplayer.music_list.domain.Playlist
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi

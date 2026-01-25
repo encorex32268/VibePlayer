@@ -64,5 +64,7 @@ your library and play songs</string>
     <string name="rename">Rename</string>
     <string name="play">Play</string>
     <string name="change_cover">Change Cover</string>
+    <string name="playlist_detail_no_songs_found">No songs found</string>
+    <string name="playlist_detail_add_songs">Add Songs</string>
 
 </resources>

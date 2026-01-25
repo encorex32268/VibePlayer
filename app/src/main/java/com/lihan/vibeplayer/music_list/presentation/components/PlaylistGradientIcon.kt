@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.ui.theme.ButtonPrimary
@@ -23,7 +24,9 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 @Composable
 fun PlaylistGradientIcon(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    backgroundSize: Dp = 64.dp,
+    iconSize: Dp = 36.dp
 ) {
 
     Box(
@@ -37,11 +40,11 @@ fun PlaylistGradientIcon(
                     ),
                 ), alpha = 0.14f
             )
-            .size(64.dp),
+            .size(backgroundSize),
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            modifier = Modifier.size(36.dp)
+            modifier = Modifier.size(iconSize)
                 .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen),
             imageVector =  ImageVector.vectorResource(R.drawable.playlist_gradient),
             contentDescription = null,

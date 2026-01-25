@@ -20,19 +20,24 @@ import com.lihan.vibeplayer.music_list.presentation.components.EmptyView
 import com.lihan.vibeplayer.music_list.presentation.components.ListFunctionSection
 import com.lihan.vibeplayer.music_list.presentation.components.ScanningView
 import com.lihan.vibeplayer.music_list.presentation.components.SongCard
+import com.lihan.vibeplayer.music_list.presentation.components.SongListContent
+import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 
 @Composable
 fun SongsScreen(
     state: MusicListState,
     listState: LazyListState,
-    miniPlayerHeight: Dp,
     onAction: (MusicListAction) -> Unit,
+    onSongClick: (AudioUi) -> Unit,
+    onFunctionShuffleClick: () -> Unit,
+    onFunctionPlayClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     when {
         state.isScanning -> {
             ScanningView(
-                modifier = Modifier.fillMaxSize()
+                modifier = modifier.fillMaxSize()
             )
         }
 
@@ -41,61 +46,21 @@ fun SongsScreen(
                 onScanAgainClick = {
                     onAction(MusicListAction.OnScanAgainClick)
                 },
-                modifier = Modifier.fillMaxSize()
+                modifier = modifier.fillMaxSize()
             )
         }
 
         else -> {
-            Box(
-                modifier = Modifier
+            SongListContent(
+                modifier = modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp),
-            ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(8.dp),
-                    state = listState
-                ) {
-                    item{
-                        ListFunctionSection(
-                            isTablet = false,
-                            songListSize = state.audios.size,
-                            onShuffleClick = {
-                                onAction(MusicListAction.OnFunctionShuffleClick)
-                            },
-                            onPlayClick = {
-                                onAction(
-                                    MusicListAction.OnFunctionPlayClick
-                                )
-                            }
-                        )
-                    }
-                    itemsIndexed(
-                        items = state.audios,
-                        key = { _, audioUi ->
-                            audioUi.id
-                        }
-                    ) { index, audioUi ->
-                        if (index != 0) {
-                            HorizontalDivider(
-                                color = SurfaceOutline,
-                                thickness = 1.dp
-                            )
-                        }
-                        SongCard(
-                            audioUi = audioUi,
-                            modifier = Modifier.fillMaxWidth(),
-                            onAudioClick = {
-                                onAction(MusicListAction.OnSongClick(audioUi))
-                            }
-                        )
-                    }
-                    item {
-                        Spacer(Modifier.height(miniPlayerHeight))
-                    }
-                }
-
-            }
+                listState = listState,
+                audios = state.audios,
+                onFunctionShuffleClick = onFunctionShuffleClick,
+                onFunctionPlayClick = onFunctionPlayClick,
+                onSongClick = onSongClick
+            )
         }
     }
 

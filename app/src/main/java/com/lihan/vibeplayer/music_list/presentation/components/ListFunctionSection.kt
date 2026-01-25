@@ -3,8 +3,11 @@ package com.lihan.vibeplayer.music_list.presentation.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.ui.design_system.buttons.VPOutlineButton
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
@@ -29,7 +33,8 @@ fun ListFunctionSection(
     songListSize: Int,
     onShuffleClick: () -> Unit,
     onPlayClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAddClick: (()-> Unit)? = null,
 ) {
     val commonModifier = modifier.fillMaxWidth()
 
@@ -40,6 +45,7 @@ fun ListFunctionSection(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             FunctionButtons(
+                modifier = Modifier.weight(1f),
                 onShuffleClick = onShuffleClick,
                 onPlayClick = onPlayClick,
                 useWeight = false
@@ -49,6 +55,13 @@ fun ListFunctionSection(
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
                 color = TextSecondary
             )
+            if (onAddClick != null){
+                Spacer(Modifier.width(12.dp))
+                CircleIconButton(
+                    icon = ImageVector.vectorResource(R.drawable.plus),
+                    onClick = {}
+                )
+            }
         }
     } else {
         Column(
@@ -59,11 +72,23 @@ fun ListFunctionSection(
                 onPlayClick = onPlayClick,
                 useWeight = true
             )
-            Text(
-                text = stringResource(R.string.main_list_function_songs_size, songListSize),
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                color = TextSecondary
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.main_list_function_songs_size, songListSize),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                    color = TextSecondary
+                )
+                if (onAddClick != null){
+                    CircleIconButton(
+                        icon = ImageVector.vectorResource(R.drawable.plus),
+                        onClick = {}
+                    )
+                }
+            }
         }
     }
 }
@@ -72,10 +97,11 @@ fun ListFunctionSection(
 private fun FunctionButtons(
     onShuffleClick: () -> Unit,
     onPlayClick: () -> Unit,
-    useWeight: Boolean = true
+    modifier: Modifier = Modifier,
+    useWeight: Boolean = true,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         VPOutlineButton(
@@ -117,7 +143,8 @@ private fun ListFunctionSectionPreview() {
             onPlayClick = {},
             onShuffleClick = {},
             songListSize = 123,
-            isTablet = false
+            isTablet = false,
+            onAddClick = {}
         )
     }
 }
