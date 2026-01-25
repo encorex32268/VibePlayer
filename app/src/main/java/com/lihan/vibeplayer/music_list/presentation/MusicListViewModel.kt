@@ -389,7 +389,7 @@ class MusicListViewModel(
             flow2 = repository.getAllAudios(),
             flow3 = repository.getAllPlaylist()
         ){ favouritesPlaylist , audios , playlists ->
-            println("Playlists ${playlists}")
+
             val audioMap = audios.associateBy { it.id.toString() }
 
             val playlists = playlists.map { playlist ->
