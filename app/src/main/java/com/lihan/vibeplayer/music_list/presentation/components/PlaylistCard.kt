@@ -1,5 +1,6 @@
 package com.lihan.vibeplayer.music_list.presentation.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,9 +13,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -22,9 +28,11 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImagePainter
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
+import com.lihan.vibeplayer.ui.theme.ButtonPrimary
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
@@ -38,6 +46,8 @@ fun PlaylistCard(
     onMenuDotsClick: (() -> Unit)?=null,
     imageCacheKey: String? = null
 ) {
+    var isImageLoadingAndError by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -55,22 +65,24 @@ fun PlaylistCard(
                 PlaylistGradientIcon()
             }
             is PlaylistCardStyle.HasCover -> {
-                Box(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(64.dp),
-                    contentAlignment = Alignment.Center
-                ){
+                if (isImageLoadingAndError){
+                    PlaylistGradientIcon()
+                }else{
                     AudioAsyncImage(
-                        model = playlistCardStyle.byteArray,
+                        model = playlistCardStyle.imageModel,
                         cacheKey = imageCacheKey?:"",
                         contentDescription = title,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .size(64.dp),
-                        placeholder = painterResource(R.drawable.playlist_gradient),
-                        error = painterResource(R.drawable.playlist_gradient)
+                            .size(64.dp)
+                            .clip(CircleShape),
+                        onError = {
+                            isImageLoadingAndError = true
+                        },
+                        onLoading = {
+                            isImageLoadingAndError = true
+                        }
                     )
+
                 }
             }
         }
@@ -122,6 +134,13 @@ private fun PlaylistCardPreview() {
                 count = 0,
                 onMenuDotsClick = null,
                 playlistCardStyle = PlaylistCardStyle.NoCover,
+                imageCacheKey = ""
+            )
+            PlaylistCard(
+                title = "Friday Chill",
+                count = 0,
+                onMenuDotsClick = null,
+                playlistCardStyle = PlaylistCardStyle.HasCover(null),
                 imageCacheKey = ""
             )
         }

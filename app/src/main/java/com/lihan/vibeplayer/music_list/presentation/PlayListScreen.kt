@@ -1,5 +1,6 @@
 package com.lihan.vibeplayer.music_list.presentation
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -117,7 +118,11 @@ fun PlayListScreen(
                     title = playlistUi.title,
                     count = playlistUi.audioIds.size,
                     playlistCardStyle = playlistUi.style,
-                    imageCacheKey = playlistUi.id.toString(),
+                    imageCacheKey = if (playlistUi.coverImageUriString.isNullOrEmpty()){
+                        playlistUi.id.toString()
+                    }else{
+                        playlistUi.coverImageUriString
+                    },
                     onMenuDotsClick = {
                         onAction(MusicListAction.OnMenuDotsClick(playlistUi))
                     }
@@ -157,8 +162,8 @@ fun PlayListScreen(
                 onRenameClick = {
                     onAction(MusicListAction.OnRenameAction(RenameAction.OnRenameActionClick))
                 },
-                onChangeCoverClick = {
-                    onAction(MusicListAction.OnChangeCoverClick)
+                onUpdatePlaylistCover = { uriString ->
+                    onAction(MusicListAction.OnUpdatePlaylistCover(uriString))
                 },
                 onDismiss = {
                     onAction(MusicListAction.OnActionSheetDismiss)

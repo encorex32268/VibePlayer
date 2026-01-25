@@ -8,6 +8,7 @@ fun PlaylistEntity.toDomain(): Playlist {
         id = id?:-1,
         title = title,
         audioIds = audioIds,
+        coverImageUriString = coverImageUriString
     )
 }
 
@@ -16,5 +17,6 @@ fun Playlist.toData(): PlaylistEntity {
         id = id,
         title = title,
         audioIds = audioIds,
+        coverImageUriString = coverImageUriString
     )
 }

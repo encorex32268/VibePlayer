@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package com.lihan.vibeplayer.music_list.data
 
 import android.content.ContentUris
@@ -21,6 +23,10 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class OfflineMusicListRepository(
     private val context: Context,
@@ -118,7 +124,6 @@ class OfflineMusicListRepository(
     override fun getFavouritesPlaylist(): Flow<FavouritesPlaylist?> {
         return db.favouritesPlaylistDao.getFavouritesPlaylist().map { it?.toDomain() }
     }
-
 
     private fun getDeviceAudiosByQuery(
         selection: String,

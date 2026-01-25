@@ -30,7 +30,8 @@ sealed interface MusicListAction {
     data object OnFavouritesMenuDotsClick: MusicListAction
     data object OnActionSheetDismiss: MusicListAction
     data object OnPlayPlaylistClick: MusicListAction
-    data object OnChangeCoverClick: MusicListAction
+
+    data class OnUpdatePlaylistCover(val uriString: String): MusicListAction
 
     data class OnDeleteAction(val action: DeleteAction): MusicListAction
     data class OnRenameAction(val action: RenameAction): MusicListAction

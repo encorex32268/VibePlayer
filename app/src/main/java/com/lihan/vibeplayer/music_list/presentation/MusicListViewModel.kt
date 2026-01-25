@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import coil3.toCoilUri
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.io.File
 
 class MusicListViewModel(
     private val repository: MusicListRepository,
@@ -99,18 +101,30 @@ class MusicListViewModel(
             is MusicListAction.OnMenuDotsClick -> onMenuDotsClick(action.playlistUi)
             MusicListAction.OnFavouritesMenuDotsClick -> onFavouritesMenuDotsClick()
             MusicListAction.OnActionSheetDismiss -> onActionSheetDismiss()
-            MusicListAction.OnChangeCoverClick -> {
-                _state.update { it.copy(
-                    isShowActionSheet = false,
-
-                ) }
-            }
+            is MusicListAction.OnUpdatePlaylistCover -> onUpdatePlaylistCover(action.uriString)
             MusicListAction.OnPlayPlaylistClick -> TODO()
             is MusicListAction.OnDeleteAction -> onDeleteAction(action.action)
             is MusicListAction.OnRenameAction -> onRenameAction(action.action)
 
             else -> Unit
         }
+    }
+
+    private fun onUpdatePlaylistCover(uriString: String) {
+
+        val currentPlaylist = state.value.selectActionSheetPlaylistUi ?: return
+
+        viewModelScope.launch {
+            repository.upsertPlaylist(
+                playlist = currentPlaylist.copy(
+                    coverImageUriString = uriString
+                ).toDomain()
+            )
+            _state.update { it.copy(
+                isShowActionSheet = false
+            ) }
+        }
+
     }
 
     private fun onNavigateToAddSongs() {
@@ -375,19 +389,26 @@ class MusicListViewModel(
             flow2 = repository.getAllAudios(),
             flow3 = repository.getAllPlaylist()
         ){ favouritesPlaylist , audios , playlists ->
-
+            println("Playlists ${playlists}")
             val audioMap = audios.associateBy { it.id.toString() }
 
             val playlists = playlists.map { playlist ->
                 val firstAudioId = playlist.audioIds.first()
                 val firstAudio = firstAudioId.let { audioMap[it] }
 
-                val coverStyle = if (firstAudio != null && firstAudio.album != Uri.EMPTY) {
-                    repository.getAlbumArtImage(firstAudio.album)?.let { image ->
-                        PlaylistCardStyle.HasCover(image)
-                    } ?: PlaylistCardStyle.NoCover
-                } else {
-                    PlaylistCardStyle.NoCover
+                val coverStyle = when{
+                    playlist.coverImageUriString != null -> {
+
+                        PlaylistCardStyle.HasCover(
+                            Uri.parse(playlist.coverImageUriString)
+                        )
+                    }
+                    firstAudio != null && firstAudio.album != Uri.EMPTY -> {
+                        PlaylistCardStyle.HasCover(repository.getAlbumArtImage(firstAudio.album))
+                    }
+                    else -> {
+                        PlaylistCardStyle.NoCover
+                    }
                 }
 
                 playlist.toUi(coverStyle)
@@ -397,6 +418,7 @@ class MusicListViewModel(
 
             favouritesPlaylistUi to playlists
         }.onEach { (favouritesPlaylistUi , playlists) ->
+
             _state.update { state ->
                 state.copy(
                     favouritesPlaylists = favouritesPlaylistUi,

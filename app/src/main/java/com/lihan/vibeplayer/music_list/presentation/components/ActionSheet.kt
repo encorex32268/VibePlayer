@@ -2,6 +2,10 @@
 
 package com.lihan.vibeplayer.music_list.presentation.components
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,11 +43,23 @@ fun ActionSheet(
     playlistUi: PlaylistUi,
     onPlayClick: () -> Unit,
     onRenameClick: () -> Unit,
-    onChangeCoverClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onDismiss: () -> Unit,
+    onUpdatePlaylistCover: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
+    val picker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { imageUri ->
+        if (imageUri!=null){
+            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            context.contentResolver.takePersistableUriPermission(imageUri, flag)
+            onUpdatePlaylistCover(imageUri.toString())
+        }
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         modifier = modifier
@@ -87,7 +104,9 @@ fun ActionSheet(
                     )
                     ActionItem(
                         icon = ImageVector.vectorResource(R.drawable.img_edit),
-                        onClick = onChangeCoverClick,
+                        onClick = {
+                            picker.launch("image/*")
+                        },
                         title = stringResource(R.string.change_cover)
                     )
                     ActionItem(
@@ -145,7 +164,9 @@ private fun ActionSheetPreview() {
             onDeleteClick = {},
             onPlayClick = {},
             onRenameClick = {},
-            onChangeCoverClick = {}
+            onUpdatePlaylistCover = {
+
+            }
         )
     }
 }
