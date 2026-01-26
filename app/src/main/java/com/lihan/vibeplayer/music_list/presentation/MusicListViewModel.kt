@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.collections.distinctBy
+import androidx.core.net.toUri
 
 class MusicListViewModel(
     private val repository: MusicListRepository,
@@ -237,8 +238,17 @@ class MusicListViewModel(
     }
 
     private fun onMenuDotsClick(playlistUi: PlaylistUi){
+        val newPlaylistUi = if (playlistUi.coverImageUriString.isNullOrEmpty()){
+            playlistUi
+        }else{
+            playlistUi.copy(
+                style = PlaylistCardStyle.HasCover(
+                    playlistUi.coverImageUriString.toUri()
+                )
+            )
+        }
         _state.update { it.copy(
-            selectActionSheetPlaylistUi = playlistUi,
+            selectActionSheetPlaylistUi = newPlaylistUi,
             isShowActionSheet = true
         ) }
     }
@@ -411,7 +421,7 @@ class MusicListViewModel(
                 val coverStyle = when{
                     playlist.coverImageUriString != null -> {
                         PlaylistCardStyle.HasCover(
-                            Uri.parse(playlist.coverImageUriString)
+                            playlist.coverImageUriString.toUri()
                         )
                     }
                     firstAudio != null && firstAudio.album != Uri.EMPTY -> {

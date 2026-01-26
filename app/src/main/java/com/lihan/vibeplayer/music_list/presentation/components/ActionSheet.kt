@@ -80,7 +80,11 @@ fun ActionSheet(
                 title = playlistUi.title,
                 count = playlistUi.audioIds.size,
                 playlistCardStyle = playlistUi.style,
-                imageCacheKey = playlistUi.id.toString()
+                imageCacheKey =  if (playlistUi.coverImageUriString.isNullOrEmpty()){
+                    playlistUi.id.toString()
+                }else{
+                    playlistUi.coverImageUriString
+                }
             )
             when(playlistUi.style){
                 PlaylistCardStyle.Favourites -> {
