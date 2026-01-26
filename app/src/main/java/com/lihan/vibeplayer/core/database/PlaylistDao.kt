@@ -17,6 +17,13 @@ interface PlaylistDao {
 
     @Query(
         """
+            SELECT * From playlistentity Where id=:id
+        """
+    )
+    fun getPlaylistById(id: Int): Flow<PlaylistEntity>
+
+    @Query(
+        """
             SELECT * From playlistentity
         """
     )

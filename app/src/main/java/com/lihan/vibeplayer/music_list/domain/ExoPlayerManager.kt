@@ -8,7 +8,7 @@ interface ExoPlayerManager {
     val duration: Long
 
 
-    fun setInitMediaItems(items: List<MediaItem>)
+    fun setInitMediaItems(audios: List<Audio>)
     fun getAllMediaItems(): List<MediaItem>
     fun getCurrentMediaItem(): MediaItem?
 

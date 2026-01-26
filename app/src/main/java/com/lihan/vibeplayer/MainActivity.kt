@@ -25,6 +25,8 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.lihan.vibeplayer.core.navigation.Route
 import com.lihan.vibeplayer.music_list.presentation.MusicListScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.addsong.AddSongsScreenRoot
+import com.lihan.vibeplayer.music_list.presentation.playlistdetial.PlaylistDetailScreen
+import com.lihan.vibeplayer.music_list.presentation.playlistdetial.PlaylistDetailScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.search.SearchScreenRoot
 import com.lihan.vibeplayer.permission.PermissionScreenRoot
@@ -85,6 +87,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToAddSongs = { title ->
                                     navController.navigate(Route.AddSongs(title))
+                                },
+                                onNavigateToPlaylistDetail = { playlistId ->
+                                    navController.navigate(Route.PlaylistDetail(playlistId))
                                 }
                             )
                         }
@@ -110,6 +115,16 @@ class MainActivity : ComponentActivity() {
                             val routeTitle = entry.toRoute<Route.AddSongs>().title
                             AddSongsScreenRoot(
                                 title = routeTitle,
+                                onBack = {
+                                    navController.navigateUp()
+                                }
+                            )
+                        }
+
+                        composable<Route.PlaylistDetail>{ entry ->
+                            val routeId = entry.toRoute<Route.PlaylistDetail>().id
+                            PlaylistDetailScreenRoot(
+                                playlistId = routeId,
                                 onBack = {
                                     navController.navigateUp()
                                 }

@@ -70,9 +70,6 @@ fun PlaylistCard(
                             .clip(CircleShape),
                         onError = {
                             isImageLoadingAndError = true
-                        },
-                        onLoading = {
-                            isImageLoadingAndError = true
                         }
                     )
 

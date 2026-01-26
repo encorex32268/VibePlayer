@@ -26,6 +26,8 @@ interface MusicListRepository {
 
     fun getAllPlaylist(): Flow<List<Playlist>>
 
+    fun getPlaylistById(id: Int): Flow<Playlist>
+
     fun getFavouritesPlaylist(): Flow<FavouritesPlaylist?>
 
 }

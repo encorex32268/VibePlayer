@@ -6,6 +6,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import com.lihan.vibeplayer.music_list.domain.Audio
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
 
 class DefaultExoPlayerManager(
@@ -23,7 +24,14 @@ class DefaultExoPlayerManager(
     override val duration: Long
         get() = exoPlayer.duration
 
-    override fun setInitMediaItems(items: List<MediaItem>) {
+    override fun setInitMediaItems(audios: List<Audio>) {
+        val items = audios.map { audioUi ->
+            MediaItem.Builder()
+                .setMediaId(audioUi.id.toString())
+                .setUri(audioUi.album)
+                .build()
+        }
+
         exoPlayer.apply {
             setMediaItems(items)
         }

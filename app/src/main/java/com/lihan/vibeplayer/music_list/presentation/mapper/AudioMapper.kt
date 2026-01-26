@@ -9,6 +9,18 @@ fun Audio.toUi(): AudioUi {
         album = album,
         songTitle = songTitle,
         artisName = artisName,
-        duration = duration
+        duration = duration,
+        size = size
+    )
+}
+
+fun AudioUi.toDomain(): Audio {
+    return Audio(
+        id = id,
+        album = album,
+        songTitle = songTitle,
+        artisName = artisName,
+        duration = duration,
+        size = size
     )
 }

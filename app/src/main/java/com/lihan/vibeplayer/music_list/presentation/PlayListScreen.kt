@@ -1,6 +1,5 @@
 package com.lihan.vibeplayer.music_list.presentation
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,7 +37,16 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 @Composable
 fun PlayListScreen(
     state: MusicListState,
-    onAction: (MusicListAction) -> Unit,
+    onCreatePlaylistAddClick: () -> Unit,
+    onFavouritesMenuDotsClick: () -> Unit,
+    onMenuDotsClick: (PlaylistUi) -> Unit,
+    onCreatePlaylistCancelClick: () -> Unit,
+    onNavigateToAddSongs: () -> Unit,
+    onNavigateToPlaylistDetail: (id: Int) -> Unit,
+    onDeleteAction: (action: DeleteAction) -> Unit,
+    onRenameAction: (action: RenameAction) -> Unit,
+    onUpdatePlaylistCover: (uriString: String) -> Unit,
+    onActionSheetDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -65,9 +73,7 @@ fun PlayListScreen(
                 )
                 CircleIconButton(
                     icon = ImageVector.vectorResource(R.drawable.plus),
-                    onClick = {
-                        onAction(MusicListAction.OnCreatePlaylistAddClick)
-                    }
+                    onClick = onCreatePlaylistAddClick
                 )
             }
         }
@@ -75,9 +81,7 @@ fun PlayListScreen(
             PlaylistCard(
                 title = stringResource(R.string.playlist_favourites),
                 count = state.favouritesPlaylists?.audioIds?.size?:0,
-                onMenuDotsClick = {
-                    onAction(MusicListAction.OnFavouritesMenuDotsClick)
-                },
+                onMenuDotsClick = onFavouritesMenuDotsClick,
                 playlistCardStyle = PlaylistCardStyle.Favourites,
 
             )
@@ -97,9 +101,7 @@ fun PlayListScreen(
                 VPOutlineButton(
                     text = stringResource(R.string.playlist_create_playlist),
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onAction(MusicListAction.OnCreatePlaylistAddClick)
-                    },
+                    onClick = onCreatePlaylistAddClick,
                     leadingIcon = {
                         Icon(
                             imageVector = ImageVector.vectorResource(R.drawable.plus),
@@ -124,7 +126,7 @@ fun PlayListScreen(
                         playlistUi.coverImageUriString
                     },
                     onMenuDotsClick = {
-                        onAction(MusicListAction.OnMenuDotsClick(playlistUi))
+                        onMenuDotsClick(playlistUi)
                     }
                 )
             }
@@ -141,12 +143,8 @@ fun PlayListScreen(
             confirmText = stringResource(R.string.create),
             textFieldState = state.createPlaylistTextFieldState,
             isCreateButtonEnabled = state.isCreateButtonEnabled,
-            onCancelClick = {
-                onAction(MusicListAction.OnCreatePlaylistCancelClick)
-            },
-            onConfirmClick = {
-                onAction(MusicListAction.OnNavigateToAddSongs)
-            }
+            onCancelClick = onCreatePlaylistCancelClick,
+            onConfirmClick = onNavigateToAddSongs
         )
     }
     if (state.isShowActionSheet){
@@ -154,20 +152,16 @@ fun PlayListScreen(
             ActionSheet(
                 playlistUi = state.selectActionSheetPlaylistUi,
                 onPlayClick = {
-                    onAction(MusicListAction.OnPlayPlaylistClick)
+                    onNavigateToPlaylistDetail(state.selectActionSheetPlaylistUi.id)
                 },
                 onDeleteClick = {
-                    onAction(MusicListAction.OnDeleteAction(DeleteAction.OnDeleteActionClick))
+                    onDeleteAction(DeleteAction.OnDeleteActionClick)
                 },
                 onRenameClick = {
-                    onAction(MusicListAction.OnRenameAction(RenameAction.OnRenameActionClick))
+                    onRenameAction(RenameAction.OnRenameActionClick)
                 },
-                onUpdatePlaylistCover = { uriString ->
-                    onAction(MusicListAction.OnUpdatePlaylistCover(uriString))
-                },
-                onDismiss = {
-                    onAction(MusicListAction.OnActionSheetDismiss)
-                }
+                onUpdatePlaylistCover = onUpdatePlaylistCover,
+                onDismiss = onActionSheetDismiss
             )
         }
     }
@@ -176,10 +170,10 @@ fun PlayListScreen(
             title = stringResource(R.string.playlist_rename_playlist),
             confirmText = stringResource(R.string.rename),
             onCancelClick = {
-                onAction(MusicListAction.OnRenameAction(RenameAction.OnCancelClick))
+                onRenameAction(RenameAction.OnCancelClick)
             },
             onConfirmClick = {
-                onAction(MusicListAction.OnRenameAction(RenameAction.OnConfirmClick))
+                onRenameAction(RenameAction.OnConfirmClick)
             },
             placeholder = stringResource(R.string.playlist_rename_playlist_place_holder),
             isCreateButtonEnabled = state.isRenameButtonEnabled,
@@ -189,10 +183,10 @@ fun PlayListScreen(
     if (state.isShowDeleteBottomSheet){
         DeleteDialog(
             onCancelClick = {
-                onAction(MusicListAction.OnDeleteAction(DeleteAction.OnCancelClick))
+                onDeleteAction(DeleteAction.OnCancelClick)
             },
             onDeleteClick = {
-                onAction(MusicListAction.OnDeleteAction(DeleteAction.OnConfirmClick))
+                onDeleteAction(DeleteAction.OnConfirmClick)
             }
         )
     }
@@ -215,7 +209,16 @@ private fun PlayListScreenPreview() {
                 ),
                 isShowDeleteBottomSheet = true
             ),
-            onAction = {}
+            onDeleteAction = {},
+            onRenameAction = {},
+            onNavigateToAddSongs = {},
+            onMenuDotsClick = {},
+            onActionSheetDismiss = {},
+            onUpdatePlaylistCover = {},
+            onCreatePlaylistAddClick = {},
+            onFavouritesMenuDotsClick = {},
+            onNavigateToPlaylistDetail = {},
+            onCreatePlaylistCancelClick = {}
         )
     }
 

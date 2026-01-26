@@ -23,13 +23,13 @@ sealed interface MusicListAction {
     data object OnCreatePlaylistCancelClick: MusicListAction
     data object OnCreatePlaylistAddClick: MusicListAction
     data object OnNavigateToAddSongs: MusicListAction
+    data class OnNavigateToPlaylistDetail(val id: Int): MusicListAction
 
     data class OnMenuDotsClick(
         val playlistUi: PlaylistUi
     ): MusicListAction
     data object OnFavouritesMenuDotsClick: MusicListAction
     data object OnActionSheetDismiss: MusicListAction
-    data object OnPlayPlaylistClick: MusicListAction
 
     data class OnUpdatePlaylistCover(val uriString: String): MusicListAction
 

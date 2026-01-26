@@ -10,11 +10,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import coil3.toCoilUri
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
-import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
@@ -39,7 +37,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.io.File
 import kotlin.collections.distinctBy
 
 class MusicListViewModel(
@@ -79,7 +76,6 @@ class MusicListViewModel(
     }
 
     fun onAction(action: MusicListAction) {
-        println("action ${action}")
         when (action) {
             MusicListAction.OnScanAgainClick -> { loadAudios()}
             MusicListAction.OnFunctionShuffleClick -> onFunctionShuffleClick()
@@ -96,16 +92,29 @@ class MusicListViewModel(
             MusicListAction.OnHideModeChangedBanner -> onHideModeChangedBanner()
             MusicListAction.OnCreatePlaylistAddClick -> onCreatePlaylistAddClick()
             MusicListAction.OnNavigateToAddSongs -> onNavigateToAddSongs()
+            is MusicListAction.OnNavigateToPlaylistDetail -> onNavigateToPlaylistDetail(action.id)
             MusicListAction.OnCreatePlaylistCancelClick -> onCreatePlaylistCancel()
             is MusicListAction.OnMenuDotsClick -> onMenuDotsClick(action.playlistUi)
             MusicListAction.OnFavouritesMenuDotsClick -> onFavouritesMenuDotsClick()
             MusicListAction.OnActionSheetDismiss -> onActionSheetDismiss()
             is MusicListAction.OnUpdatePlaylistCover -> onUpdatePlaylistCover(action.uriString)
-            MusicListAction.OnPlayPlaylistClick -> TODO()
             is MusicListAction.OnDeleteAction -> onDeleteAction(action.action)
             is MusicListAction.OnRenameAction -> onRenameAction(action.action)
 
             else -> Unit
+        }
+    }
+
+    private fun onNavigateToPlaylistDetail(id: Int){
+        viewModelScope.launch {
+            _state.update { it.copy(
+                isShowActionSheet = false,
+                selectActionSheetPlaylistUi = null
+            ) }
+            delay(300L)
+            _uiEvent.send(
+                MusicListUiEvent.OnNavigateToPlaylistDetail(id)
+            )
         }
     }
 
@@ -358,7 +367,7 @@ class MusicListViewModel(
         repository
             .getAllAudios()
             .onEach { audios ->
-                println("AllAudios ${audios}")
+
                 val hasImageAudios = coroutineScope {
                     audios.map { audio ->
                         async{
@@ -368,13 +377,7 @@ class MusicListViewModel(
                         }
                     }
                 }
-                val mediaItems = audios.map { audioUi ->
-                    MediaItem.Builder()
-                        .setMediaId(audioUi.id.toString())
-                        .setUri(audioUi.album)
-                        .build()
-                }
-                exoPlayerManager.setInitMediaItems(mediaItems)
+                exoPlayerManager.setInitMediaItems(audios)
 
                 delay(300L)
 
@@ -407,7 +410,6 @@ class MusicListViewModel(
 
                 val coverStyle = when{
                     playlist.coverImageUriString != null -> {
-
                         PlaylistCardStyle.HasCover(
                             Uri.parse(playlist.coverImageUriString)
                         )
@@ -522,7 +524,9 @@ class MusicListViewModel(
                 }
 
                 override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                    println("TimelineChanged Reason ${reason}")
                     updateShuffledList()
+
                 }
 
                 override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {

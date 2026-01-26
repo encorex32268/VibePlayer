@@ -121,6 +121,10 @@ class OfflineMusicListRepository(
         } }
     }
 
+    override fun getPlaylistById(id: Int): Flow<Playlist> {
+        return db.playlistDao.getPlaylistById(id).map { it.toDomain() }
+    }
+
     override fun getFavouritesPlaylist(): Flow<FavouritesPlaylist?> {
         return db.favouritesPlaylistDao.getFavouritesPlaylist().map { it?.toDomain() }
     }

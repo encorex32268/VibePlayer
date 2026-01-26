@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.components.AudioAsyncImage
@@ -43,9 +45,29 @@ import com.lihan.vibeplayer.ui.design_system.buttons.VPOutlineButton
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
-fun PlaylistDetailScreenRoot(){
+fun PlaylistDetailScreenRoot(
+    playlistId: Int,
+    onBack: () -> Unit,
+    viewModel: PlaylistDetailViewModel = koinViewModel {
+        parametersOf(playlistId)
+    }
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    PlaylistDetailScreen(
+        state = state,
+        onAction = { action ->
+            when(action){
+                PlaylistDetailAction.OnBackClick -> onBack()
+                else -> Unit
+            }
+            viewModel.onAction(action)
+        }
+    )
 
 
 }
@@ -60,6 +82,13 @@ fun PlaylistDetailScreen(
 
     var isImageLoadingAndError by remember { mutableStateOf(false) }
 
+    val firstAudioUi = remember(state.audios) {
+        if (state.audios.isEmpty()){
+            null
+        }else{
+            state.audios.first()
+        }
+    }
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -69,7 +98,7 @@ fun PlaylistDetailScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)
-        ){
+        ) {
             CircleIconButton(
                 modifier = Modifier.align(Alignment.CenterStart),
                 icon = ImageVector.vectorResource(R.drawable.arrow_left),
@@ -79,87 +108,86 @@ fun PlaylistDetailScreen(
             )
         }
         Spacer(modifier = Modifier.height(30.dp))
-        if (isImageLoadingAndError){
-            PlaylistGradientIcon(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .size(200.dp),
-                iconSize = 100.dp
-            )
-        }else{
-            AudioAsyncImage(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .size(200.dp),
-                cacheKey = "",
-                model = null,
-                onError = {
-                    isImageLoadingAndError = true
-                },
-                onLoading = {
-                    isImageLoadingAndError = true
-                }
-            )
-
+        when{
+            !state.isLoading && isImageLoadingAndError -> {
+                PlaylistGradientIcon(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(200.dp),
+                    iconSize = 100.dp
+                )
+            }
+            !state.isLoading && firstAudioUi != null -> {
+                AudioAsyncImage(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(200.dp),
+                    model = firstAudioUi.albumImage,
+                    cacheKey = firstAudioUi.id.toString(),
+                    onError = {
+                        isImageLoadingAndError = true
+                    }
+                )
+            }
         }
         Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = state.playlistUi?.title?:"",
+            text = state.playlistUi?.title ?: "",
             style = MaterialTheme.typography.titleLarge,
             color = TextPrimary
         )
         Spacer(modifier = Modifier.height(30.dp))
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            if (state.audios.isEmpty()){
-                //Empty
-                Text(
-                    modifier = Modifier
-                        .padding(top = 16.dp, bottom = 8.dp),
-                    text = stringResource(R.string.playlist_detail_no_songs_found),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Normal,
-                    color = TextSecondary,
-                    textAlign = TextAlign.Center
-                )
-                VPOutlineButton(
-                    text = stringResource(R.string.playlist_detail_add_songs),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.plus),
-                            contentDescription = stringResource(R.string.playlist_detail_add_songs),
-                            tint = TextPrimary
-                        )
-                    },
-                    onClick = {
-                        //TODO: Navigate To Add Songs
-                    }
-                )
-            }else{
-                SongListContent(
-                    modifier = modifier
-                        .fillMaxSize(),
-                    listState = listState,
-                    audios = state.audios,
-                    onFunctionShuffleClick = {
+        ) {
+            when {
+                state.audios.isEmpty() && !state.isLoading -> {
+                    Text(
+                        modifier = Modifier
+                            .padding(top = 16.dp, bottom = 8.dp),
+                        text = stringResource(R.string.playlist_detail_no_songs_found),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Normal,
+                        color = TextSecondary,
+                        textAlign = TextAlign.Center
+                    )
+                    VPOutlineButton(
+                        text = stringResource(R.string.playlist_detail_add_songs),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(R.drawable.plus),
+                                contentDescription = stringResource(R.string.playlist_detail_add_songs),
+                                tint = TextPrimary
+                            )
+                        },
+                        onClick = {
+                            //TODO: Navigate To Add Songs
+                        }
+                    )
+                }
 
-                    },
-                    onFunctionPlayClick = {
+                state.audios.isNotEmpty() && !state.isLoading -> {
+                    SongListContent(
+                        modifier = modifier
+                            .fillMaxSize(),
+                        listState = listState,
+                        audios = state.audios,
+                        onFunctionShuffleClick = {
 
-                    },
-                    onSongClick = {
+                        },
+                        onFunctionPlayClick = {
 
-                    },
-                    onAddClick = {
+                        },
+                        onSongClick = {
 
-                    })
+                        },
+                        onAddClick = {
 
+                        })
+                }
             }
 
         }
-
-
 
 
     }
@@ -174,7 +202,7 @@ private fun PlaylistDetailScreenPreview() {
             state = PlaylistDetailState(
                 audios = (0..10).map {
                     AudioUi(
-                        id =  it.toLong(),
+                        id = it.toLong(),
                         album = Uri.EMPTY,
                         songTitle = "Song - ${it}",
                         artisName = "ArtisName ${it}",
@@ -185,7 +213,7 @@ private fun PlaylistDetailScreenPreview() {
                     id = 1,
                     title = "My Playlist Test",
                     style = PlaylistCardStyle.NoCover,
-                    audioIds = (0..10).map{
+                    audioIds = (0..10).map {
                         it.toString()
                     }
                 )

@@ -125,67 +125,12 @@ fun SongsScreen(
                         onSongClick = onSongClick
                     )
 
-                    if (state.playingAudioUi != null){
-                        Box(
-                            modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
-                            contentAlignment = Alignment.Center
-                        ){
-                            AnimatedVisibility(
-                                visible = true,
-                                enter = slideInVertically(
-                                    initialOffsetY = { fullHeight -> fullHeight }
-                                ) + fadeIn(),
-                                exit = slideOutVertically(
-                                    targetOffsetY = { fullHeight -> fullHeight }
-                                ) + fadeOut()
-                            ) {
-                                PlayerBottomBar(
-                                    audioUi = state.playingAudioUi,
-                                    modeStatusBanner = state.modeStatusBanner,
-                                    repeatModeStatus = state.repeatModeStatus,
-                                    isPlaying = state.isPlaying,
-                                    isEnabledShuffle = state.isEnabledShuffle,
-                                    isExpandPlayer = state.isExpandPlayer,
-                                    duration = state.duration,
-                                    currentPosition = state.currentPosition,
-                                    onPlayClick = {
-                                        onAction(MusicListAction.OnPlayClick)
-                                    },
-                                    onSkipNextClick = {
-                                        onAction(MusicListAction.OnSkipNextClick)
-                                    },
-                                    onSkipPreviousClick = {
-                                        onAction(MusicListAction.OnSkipPreviousClick)
-                                    },
-                                    onSeek = {
-                                        onAction(MusicListAction.OnSeek(it))
-                                    },
-                                    onRepeatClick = {
-                                        onAction(MusicListAction.OnRepeatClick)
-                                    },
-                                    onShuffleClick = {
-                                        onAction(MusicListAction.OnShuffleClick)
-                                    },
-                                    onExpandClick = {
-                                        onAction(MusicListAction.OnExpandClick)
-                                    },
-                                    onCollapseClick = {
-                                        onAction(MusicListAction.OnCollapseClick)
-                                    },
-                                    onHideModeChangedBanner = {
-                                        onAction(MusicListAction.OnHideModeChangedBanner)
-                                    }
-                                )
-                            }
-
-                        }
-
-                    }
                 }
             }
         }
 
     }
+
 
 }
 

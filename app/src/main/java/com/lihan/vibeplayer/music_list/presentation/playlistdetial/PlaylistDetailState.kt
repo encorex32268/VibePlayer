@@ -5,5 +5,6 @@ import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 
 data class PlaylistDetailState(
     val audios: List<AudioUi> = emptyList(),
-    val playlistUi: PlaylistUi?=null
+    val playlistUi: PlaylistUi?=null,
+    val isLoading: Boolean = false
 )

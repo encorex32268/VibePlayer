@@ -46,6 +46,7 @@ import com.lihan.vibeplayer.ui.design_system.buttons.VPFloatingActionButton
 import com.lihan.vibeplayer.ui.design_system.surface.VPSurface
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -55,6 +56,7 @@ fun MusicListScreenRoot(
     onNavigateToScan: () -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToAddSongs: (String) -> Unit,
+    onNavigateToPlaylistDetail: (Int) -> Unit,
     viewModel: MusicListViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -62,7 +64,7 @@ fun MusicListScreenRoot(
     ObserveEvent(viewModel.uiEvent) { uiEvent ->
         when (uiEvent) {
             is MusicListUiEvent.OnNavigateToAddSongs -> onNavigateToAddSongs(uiEvent.title)
-            else -> Unit
+            is MusicListUiEvent.OnNavigateToPlaylistDetail -> onNavigateToPlaylistDetail(uiEvent.id)
         }
 
     }
@@ -96,62 +98,155 @@ fun MusicListScreen(
         containerColor = SurfaceBG,
     ) { innerPadding ->
         VPSurface {
-            Column(
-                modifier = modifier
-                    .fillMaxSize()
+            Box(
+                modifier = Modifier.fillMaxSize()
             ) {
-                MusicListScreenTopBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    onScanClick = {
-                        onAction(MusicListAction.OnScanClick)
-                    },
-                    onSearchClick = {
-                        onAction(MusicListAction.OnSearchClick)
-                    }
-                )
-                MusicListTabRow(
-                    selectedTabIndex = horizontalPager.currentPage,
-                    onTabClick = {
-                        scope.launch {
-                            horizontalPager.scrollToPage(it)
+                Column(
+                    modifier = modifier
+                        .fillMaxSize()
+                ) {
+                    MusicListScreenTopBar(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        onScanClick = {
+                            onAction(MusicListAction.OnScanClick)
+                        },
+                        onSearchClick = {
+                            onAction(MusicListAction.OnSearchClick)
+                        }
+                    )
+                    MusicListTabRow(
+                        selectedTabIndex = horizontalPager.currentPage,
+                        onTabClick = {
+                            scope.launch {
+                                horizontalPager.scrollToPage(it)
+                            }
+                        }
+                    )
+
+                    HorizontalPager(
+                        state = horizontalPager,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        when (page) {
+                            SONGS -> {
+                                SongsScreen(
+                                    modifier = Modifier.fillMaxSize(),
+                                    state = state,
+                                    onAction = onAction,
+                                    onFunctionPlayClick = {
+                                        onAction(MusicListAction.OnFunctionPlayClick)
+                                    },
+                                    onFunctionShuffleClick = {
+                                        onAction(MusicListAction.OnFunctionShuffleClick)
+                                    },
+                                    onSongClick = { audioUi ->
+                                        onAction(MusicListAction.OnSongClick(audioUi))
+                                    }
+                                )
+                            }
+
+                            PLAYLIST -> {
+                                PlayListScreen(
+                                    state = state,
+                                    onCreatePlaylistAddClick = {
+                                        onAction(MusicListAction.OnCreatePlaylistAddClick)
+                                    },
+                                    onCreatePlaylistCancelClick = {
+                                        onAction(MusicListAction.OnCreatePlaylistCancelClick)
+                                    },
+                                    onFavouritesMenuDotsClick = {
+                                        onAction(MusicListAction.OnFavouritesMenuDotsClick)
+                                    },
+                                    onMenuDotsClick = { playlistUi ->
+                                        onAction(MusicListAction.OnMenuDotsClick(playlistUi))
+                                    },
+                                    onNavigateToAddSongs = {
+                                        onAction(MusicListAction.OnNavigateToAddSongs)
+                                    },
+                                    onNavigateToPlaylistDetail = { id ->
+                                        onAction(MusicListAction.OnNavigateToPlaylistDetail(id))
+                                    },
+                                    onUpdatePlaylistCover = { uriString ->
+                                        onAction(MusicListAction.OnUpdatePlaylistCover(uriString))
+                                    },
+                                    onActionSheetDismiss = {
+                                        onAction(MusicListAction.OnActionSheetDismiss)
+                                    },
+                                    onRenameAction = { action ->
+                                        onAction(MusicListAction.OnRenameAction(action))
+                                    },
+                                    onDeleteAction = { action ->
+                                        onAction(MusicListAction.OnDeleteAction(action))
+                                    }
+                                    
+                                )
+                            }
                         }
                     }
-                )
 
-                HorizontalPager(
-                    state = horizontalPager,
-                    modifier = Modifier.fillMaxSize()
-                ) { page ->
-                    when (page) {
-                        SONGS -> {
-                            SongsScreen(
-                                modifier = Modifier.fillMaxSize(),
-                                state = state,
-                                onAction = onAction,
-                                onFunctionPlayClick = {
-                                    onAction(MusicListAction.OnFunctionPlayClick)
+
+                }
+
+                if (state.playingAudioUi != null){
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter),
+                        contentAlignment = Alignment.Center
+                    ){
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = slideInVertically(
+                                initialOffsetY = { fullHeight -> fullHeight }
+                            ) + fadeIn(),
+                            exit = slideOutVertically(
+                                targetOffsetY = { fullHeight -> fullHeight }
+                            ) + fadeOut()
+                        ) {
+                            PlayerBottomBar(
+                                audioUi = state.playingAudioUi,
+                                modeStatusBanner = state.modeStatusBanner,
+                                repeatModeStatus = state.repeatModeStatus,
+                                isPlaying = state.isPlaying,
+                                isEnabledShuffle = state.isEnabledShuffle,
+                                isExpandPlayer = state.isExpandPlayer,
+                                duration = state.duration,
+                                currentPosition = state.currentPosition,
+                                onPlayClick = {
+                                    onAction(MusicListAction.OnPlayClick)
                                 },
-                                onFunctionShuffleClick = {
-                                    onAction(MusicListAction.OnFunctionShuffleClick)
+                                onSkipNextClick = {
+                                    onAction(MusicListAction.OnSkipNextClick)
                                 },
-                                onSongClick = { audioUi ->
-                                    onAction(MusicListAction.OnSongClick(audioUi))
+                                onSkipPreviousClick = {
+                                    onAction(MusicListAction.OnSkipPreviousClick)
+                                },
+                                onSeek = {
+                                    onAction(MusicListAction.OnSeek(it))
+                                },
+                                onRepeatClick = {
+                                    onAction(MusicListAction.OnRepeatClick)
+                                },
+                                onShuffleClick = {
+                                    onAction(MusicListAction.OnShuffleClick)
+                                },
+                                onExpandClick = {
+                                    onAction(MusicListAction.OnExpandClick)
+                                },
+                                onCollapseClick = {
+                                    onAction(MusicListAction.OnCollapseClick)
+                                },
+                                onHideModeChangedBanner = {
+                                    onAction(MusicListAction.OnHideModeChangedBanner)
                                 }
                             )
                         }
 
-                        PLAYLIST -> {
-                            PlayListScreen(
-                                state = state,
-                                onAction = onAction
-                            )
-                        }
                     }
+
                 }
-
-
             }
 
         }
