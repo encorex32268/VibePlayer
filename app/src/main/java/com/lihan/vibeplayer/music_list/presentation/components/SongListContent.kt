@@ -34,19 +34,19 @@ fun SongListContent(
     onFunctionShuffleClick: () -> Unit,
     onFunctionPlayClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAddClick: (()-> Unit)? = null,
+    onAddClick: (() -> Unit)? = null,
 ) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 8.dp),
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(8.dp),
             state = listState
         ) {
-            item{
+            item {
                 ListFunctionSection(
                     isTablet = false,
                     songListSize = audios.size,
@@ -57,7 +57,7 @@ fun SongListContent(
             }
             itemsIndexed(
                 items = audios,
-                key = { _, audioUi ->
+                key = { _ , audioUi ->
                     audioUi.id
                 }
             ) { index, audioUi ->
@@ -74,9 +74,6 @@ fun SongListContent(
                         onSongClick(audioUi)
                     }
                 )
-            }
-            item {
-                Spacer(Modifier.height(112.dp))
             }
         }
 

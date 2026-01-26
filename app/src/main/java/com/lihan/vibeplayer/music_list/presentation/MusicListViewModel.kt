@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.collections.distinctBy
 
 class MusicListViewModel(
     private val repository: MusicListRepository,
@@ -78,11 +79,9 @@ class MusicListViewModel(
     }
 
     fun onAction(action: MusicListAction) {
-
+        println("action ${action}")
         when (action) {
-            MusicListAction.OnScanAgainClick -> {
-                viewModelScope.launch{ loadAudios() }
-            }
+            MusicListAction.OnScanAgainClick -> { loadAudios()}
             MusicListAction.OnFunctionShuffleClick -> onFunctionShuffleClick()
             is MusicListAction.OnFunctionPlayClick -> onFunctionPlayClick()
             MusicListAction.OnPlayClick -> onPlayClick()
@@ -285,9 +284,16 @@ class MusicListViewModel(
         }
 
         val currentMediaItems = exoPlayerManager.getAllMediaItems()
-        val index = currentMediaItems.indexOf(
-            currentMediaItems.find { it.mediaId == audioUi.id.toString() }
-        )
+        val mediaItem = currentMediaItems.find { it.mediaId == audioUi.id.toString() }
+        if (mediaItem == null){
+            return
+        }
+
+        val index = currentMediaItems.indexOf(mediaItem)
+        if (index == -1){
+            //Not found
+            return
+        }
         exoPlayerManager.playSongByIndex(index)
     }
 
@@ -352,6 +358,7 @@ class MusicListViewModel(
         repository
             .getAllAudios()
             .onEach { audios ->
+                println("AllAudios ${audios}")
                 val hasImageAudios = coroutineScope {
                     audios.map { audio ->
                         async{
@@ -390,7 +397,9 @@ class MusicListViewModel(
             flow3 = repository.getAllPlaylist()
         ){ favouritesPlaylist , audios , playlists ->
 
-            val audioMap = audios.associateBy { it.id.toString() }
+            val distinctAudios = audios.distinctBy { it.id }
+
+            val audioMap = distinctAudios.associateBy { it.id.toString() }
 
             val playlists = playlists.map { playlist ->
                 val firstAudioId = playlist.audioIds.first()
@@ -565,7 +574,7 @@ class MusicListViewModel(
 
         val newAudioUis = items.mapNotNull { mediaItem ->
             audioMap[mediaItem.mediaId]
-        }
+        }.distinctBy { it.id }
 
         _state.update {
             it.copy(

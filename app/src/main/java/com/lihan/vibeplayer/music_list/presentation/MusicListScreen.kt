@@ -59,8 +59,8 @@ fun MusicListScreenRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    ObserveEvent(viewModel.uiEvent) {uiEvent ->
-        when(uiEvent){
+    ObserveEvent(viewModel.uiEvent) { uiEvent ->
+        when (uiEvent) {
             is MusicListUiEvent.OnNavigateToAddSongs -> onNavigateToAddSongs(uiEvent.title)
             else -> Unit
         }
@@ -87,103 +87,14 @@ fun MusicListScreen(
     onAction: (MusicListAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-
-    val isShowFloatingActionButton by remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex >= 10
-        }
-    }
 
     val horizontalPager = rememberPagerState(
         pageCount = { 2 }
     )
-
     Scaffold(
         containerColor = SurfaceBG,
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = isShowFloatingActionButton,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                VPFloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            listState.animateScrollToItem(0)
-                        }
-                    },
-                    content = {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.arrow_up),
-                            tint = Color.White,
-                            contentDescription = stringResource(R.string.main_floating_action_button_scroll_to_top)
-                        )
-                    }
-                )
-            }
-        },
-        bottomBar = {
-            if (state.playingAudioUi != null){
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ){
-                    AnimatedVisibility(
-                        visible = true,
-                        enter = slideInVertically(
-                            initialOffsetY = { fullHeight -> fullHeight }
-                        ) + fadeIn(),
-                        exit = slideOutVertically(
-                            targetOffsetY = { fullHeight -> fullHeight }
-                        ) + fadeOut()
-                    ) {
-                        PlayerBottomBar(
-                            audioUi = state.playingAudioUi,
-                            modeStatusBanner = state.modeStatusBanner,
-                            repeatModeStatus = state.repeatModeStatus,
-                            isPlaying = state.isPlaying,
-                            isEnabledShuffle = state.isEnabledShuffle,
-                            isExpandPlayer = state.isExpandPlayer,
-                            duration = state.duration,
-                            currentPosition = state.currentPosition,
-                            onPlayClick = {
-                                onAction(MusicListAction.OnPlayClick)
-                            },
-                            onSkipNextClick = {
-                                onAction(MusicListAction.OnSkipNextClick)
-                            },
-                            onSkipPreviousClick = {
-                                onAction(MusicListAction.OnSkipPreviousClick)
-                            },
-                            onSeek = {
-                                onAction(MusicListAction.OnSeek(it))
-                            },
-                            onRepeatClick = {
-                                onAction(MusicListAction.OnRepeatClick)
-                            },
-                            onShuffleClick = {
-                                onAction(MusicListAction.OnShuffleClick)
-                            },
-                            onExpandClick = {
-                                onAction(MusicListAction.OnExpandClick)
-                            },
-                            onCollapseClick = {
-                                onAction(MusicListAction.OnCollapseClick)
-                            },
-                            onHideModeChangedBanner = {
-                                onAction(MusicListAction.OnHideModeChangedBanner)
-                            }
-                        )
-                    }
-
-                }
-
-            }
-        }
-    ) { it ->
-        it
+    ) { innerPadding ->
         VPSurface {
             Column(
                 modifier = modifier
@@ -192,7 +103,7 @@ fun MusicListScreen(
                 MusicListScreenTopBar(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 10.dp, horizontal = 16.dp),
+                        .padding(horizontal = 16.dp),
                     onScanClick = {
                         onAction(MusicListAction.OnScanClick)
                     },
@@ -216,8 +127,8 @@ fun MusicListScreen(
                     when (page) {
                         SONGS -> {
                             SongsScreen(
+                                modifier = Modifier.fillMaxSize(),
                                 state = state,
-                                listState = listState,
                                 onAction = onAction,
                                 onFunctionPlayClick = {
                                     onAction(MusicListAction.OnFunctionPlayClick)
@@ -230,6 +141,7 @@ fun MusicListScreen(
                                 }
                             )
                         }
+
                         PLAYLIST -> {
                             PlayListScreen(
                                 state = state,
@@ -238,7 +150,6 @@ fun MusicListScreen(
                         }
                     }
                 }
-
 
 
             }
@@ -264,7 +175,14 @@ private fun MusicListScreenPreview() {
                         artisName = "Artis-${it}",
                         duration = it.toLong() * 10000
                     )
-                }
+                },
+                playingAudioUi = AudioUi(
+                    id = 1L,
+                    album = Uri.EMPTY,
+                    songTitle = "Song-1",
+                    artisName = "Artis-1",
+                    duration = 1 * 10000L
+                )
             ),
             onAction = {
 

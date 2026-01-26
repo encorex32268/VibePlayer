@@ -30,12 +30,12 @@ class DefaultExoPlayerManager(
     }
 
     override fun playSongByIndex(index: Int) {
+        if (index < 0 || index >= exoPlayer.mediaItemCount) {
+            return
+        }
+
         exoPlayer.apply {
-            setMediaItems(
-                getAllMediaItems(),
-                index,
-                0L
-            )
+            seekTo(index, 0L)
             prepare()
         }
     }
@@ -98,7 +98,7 @@ class DefaultExoPlayerManager(
         return if(exoPlayer.shuffleModeEnabled){
             getShuffledMediaItems()
         }else{
-            (0..exoPlayer.mediaItemCount).map {
+            (0 until exoPlayer.mediaItemCount).map {
                 exoPlayer.getMediaItemAt(it)
             }
         }

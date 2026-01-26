@@ -153,8 +153,7 @@ fun PlaylistDetailScreen(
                     },
                     onAddClick = {
 
-                    }
-                )
+                    })
 
             }
 
