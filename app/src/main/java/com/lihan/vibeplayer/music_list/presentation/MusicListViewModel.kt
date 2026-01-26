@@ -533,12 +533,6 @@ class MusicListViewModel(
                     }
                 }
 
-                override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                    println("TimelineChanged Reason ${reason}")
-                    updateShuffledList()
-
-                }
-
                 override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
                     updateShuffledList()
                     _state.update {

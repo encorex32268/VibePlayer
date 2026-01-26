@@ -114,7 +114,7 @@ class MainActivity : ComponentActivity() {
                         composable<Route.AddSongs>{ entry ->
                             val routeTitle = entry.toRoute<Route.AddSongs>().title
                             AddSongsScreenRoot(
-                                title = routeTitle,
+                                title = routeTitle?:"",
                                 onBack = {
                                     navController.navigateUp()
                                 }
@@ -127,6 +127,13 @@ class MainActivity : ComponentActivity() {
                                 playlistId = routeId,
                                 onBack = {
                                     navController.navigateUp()
+                                },
+                                onNavigateToAddSongs = { playlistId ->
+                                    navController.navigate(
+                                        Route.AddSongs(
+                                            id = playlistId
+                                        )
+                                    )
                                 }
                             )
                         }

@@ -96,7 +96,7 @@ fun MusicListScreen(
     )
     Scaffold(
         containerColor = SurfaceBG,
-    ) { innerPadding ->
+    ) { innerPadding -> innerPadding
         VPSurface {
             Box(
                 modifier = Modifier.fillMaxSize()

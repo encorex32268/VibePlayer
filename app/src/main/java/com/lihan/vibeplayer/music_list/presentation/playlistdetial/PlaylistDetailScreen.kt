@@ -192,7 +192,7 @@ fun PlaylistDetailScreen(
 
                         },
                         onFunctionPlayClick = {
-
+                            onAction(PlaylistDetailAction.OnFunctionPlayClick)
                         },
                         onSongClick = {
 

@@ -18,7 +18,10 @@ sealed interface Route {
     data object Search: Route
 
     @Serializable
-    data class AddSongs(val title: String): Route
+    data class AddSongs(
+        val title: String?=null,
+        val id: Int?=null
+    ): Route
 
     @Serializable
     data class PlaylistDetail(val id: Int): Route
