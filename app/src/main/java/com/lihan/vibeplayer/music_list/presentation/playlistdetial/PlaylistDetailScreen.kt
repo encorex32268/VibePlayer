@@ -31,8 +31,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.components.AudioAsyncImage
 import com.lihan.vibeplayer.music_list.presentation.components.PlaylistGradientIcon
@@ -52,11 +54,18 @@ import org.koin.core.parameter.parametersOf
 fun PlaylistDetailScreenRoot(
     playlistId: Int,
     onBack: () -> Unit,
+    onNavigateToAddSongs: (id: Int) -> Unit,
     viewModel: PlaylistDetailViewModel = koinViewModel {
         parametersOf(playlistId)
     }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    ObserveEvent(viewModel.uiEvent) { uiEvent ->
+        when(uiEvent){
+            is PlaylistDetailUiEvent.OnNavigateToAddSongs -> onNavigateToAddSongs(uiEvent.id)
+        }
+    }
 
     PlaylistDetailScreen(
         state = state,
@@ -82,11 +91,18 @@ fun PlaylistDetailScreen(
 
     var isImageLoadingAndError by remember { mutableStateOf(false) }
 
-    val firstAudioUi = remember(state.audios) {
-        if (state.audios.isEmpty()){
-            null
+    //image and cache key
+    val imageModelPair: Pair<Any?,String> = remember(state.playlistUi , state.audios) {
+        val coverImageString = state.playlistUi?.coverImageUriString
+        if (coverImageString.isNullOrEmpty()){
+            if (state.audios.isEmpty()){
+                null to ""
+            }else{
+                val firstAudio = state.audios.first()
+                firstAudio to firstAudio.id.toString()
+            }
         }else{
-            state.audios.first()
+            coverImageString.toUri() to coverImageString
         }
     }
 
@@ -117,13 +133,13 @@ fun PlaylistDetailScreen(
                     iconSize = 100.dp
                 )
             }
-            !state.isLoading && firstAudioUi != null -> {
+            !state.isLoading && imageModelPair.first != null  -> {
                 AudioAsyncImage(
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(200.dp),
-                    model = firstAudioUi.albumImage,
-                    cacheKey = firstAudioUi.id.toString(),
+                    model = imageModelPair.first,
+                    cacheKey = imageModelPair.second,
                     onError = {
                         isImageLoadingAndError = true
                     }
@@ -161,7 +177,7 @@ fun PlaylistDetailScreen(
                             )
                         },
                         onClick = {
-                            //TODO: Navigate To Add Songs
+                            onAction(PlaylistDetailAction.OnAddSongClick)
                         }
                     )
                 }
