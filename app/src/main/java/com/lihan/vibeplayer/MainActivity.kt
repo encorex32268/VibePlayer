@@ -177,7 +177,7 @@ class MainActivity : ComponentActivity() {
                                     musicSharedViewModel.onAction(MusicSharedAction.OnFunctionPlayClick(emptyList()))
                                 },
                                 onFunctionShuffleClick = {
-                                    musicSharedViewModel.onAction(MusicSharedAction.OnFunctionShuffleClick)
+                                    musicSharedViewModel.onAction(MusicSharedAction.OnFunctionShuffleClick(emptyList()))
                                 },
                                 onSongClick = { audioUi ->
                                     musicSharedViewModel.onAction(MusicSharedAction.OnSongClick(audioUi))
@@ -215,6 +215,7 @@ class MainActivity : ComponentActivity() {
                         composable<Route.PlaylistDetail>{ entry ->
                             val routeId = entry.toRoute<Route.PlaylistDetail>().id
                             PlaylistDetailScreenRoot(
+                                musicSharedViewModel = musicSharedViewModel,
                                 playlistId = routeId,
                                 onBack = {
                                     navController.navigateUp()
@@ -224,11 +225,6 @@ class MainActivity : ComponentActivity() {
                                         Route.AddSongs(
                                             id = playlistId
                                         )
-                                    )
-                                },
-                                onFunctionPlay = { audios ->
-                                    musicSharedViewModel.onAction(
-                                        MusicSharedAction.OnFunctionPlayClick(audios)
                                     )
                                 }
                             )

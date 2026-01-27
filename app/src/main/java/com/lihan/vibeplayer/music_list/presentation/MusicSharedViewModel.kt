@@ -9,6 +9,7 @@ import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
+import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
@@ -75,11 +76,11 @@ class MusicSharedViewModel(
             MusicSharedAction.OnSkipNextClick -> exoPlayerManager.skipNext()
             MusicSharedAction.OnSkipPreviousClick -> exoPlayerManager.skipPrevious()
             is MusicSharedAction.OnFunctionPlayClick -> {
-                exoPlayerManager.quickPlay(action.audios)
+                exoPlayerManager.quickPlay(action.audios.map { it.toDomain() })
             }
 
-            MusicSharedAction.OnFunctionShuffleClick -> {
-                exoPlayerManager.quickShuffledPlay()
+            is MusicSharedAction.OnFunctionShuffleClick -> {
+                exoPlayerManager.quickShuffledPlay(action.audios.map { it.toDomain() })
                 _state.update {
                     it.copy(
                         isExpandPlayer = true

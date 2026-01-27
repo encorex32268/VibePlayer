@@ -53,14 +53,7 @@ class PlaylistDetailViewModel(
 
 
     fun onAction(action: PlaylistDetailAction) {
-        when (action) {
-            PlaylistDetailAction.OnBackClick -> Unit
-            PlaylistDetailAction.OnAddSongClick -> {
-                //TODO: Play First! next part do this
-            }
 
-            PlaylistDetailAction.OnFunctionPlayClick -> Unit
-        }
     }
 
 
@@ -76,6 +69,7 @@ class PlaylistDetailViewModel(
             flow = playlistFlow,
             flow2 = repository.getAllAudios()
         ) { playlist, allAudios ->
+
             val playlistUi = when (playlist) {
                 is FavouritesPlaylist -> playlist.toUi()
                 is Playlist -> playlist.toUi(coverStyle = PlaylistCardStyle.NoCover)
@@ -110,15 +104,31 @@ class PlaylistDetailViewModel(
 
                         else -> PlaylistCardStyle.NoCover
                     }
+                    println("CoverStyle ${coverStyle}")
+                    println("CoverStyle ${playlistUi.coverImageUriString}")
                     emit(audioUiList to playlistUi.copy(style = coverStyle))
 
                 }.flowOn(Dispatchers.IO)
 
-            }.onEach { (audios, playlist) ->
+            }.onEach { (audios, playlistUi) ->
+                val coverImageString = playlistUi.coverImageUriString
+                val coverImagePair = if (coverImageString.isNullOrEmpty()){
+                    if (audios.isEmpty()){
+                        null to ""
+                    }else{
+                        val firstAudio = audios.first()
+
+                        (playlistUi.style as PlaylistCardStyle.HasCover).imageModel to firstAudio.id.toString()
+                    }
+                }else{
+                    coverImageString.toUri() to coverImageString
+                }
+
                 _state.update {
                     it.copy(
                         audios = audios,
-                        playlistUi = playlist
+                        playlistUi = playlistUi,
+                        coverImagePair = coverImagePair
                     )
                 }
             }

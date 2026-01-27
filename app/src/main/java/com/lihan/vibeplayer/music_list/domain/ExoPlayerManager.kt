@@ -17,7 +17,7 @@ interface ExoPlayerManager {
     fun playSongByIndex(index: Int)
     fun play()
     fun quickPlay(audios: List<Audio> = emptyList())
-    fun quickShuffledPlay()
+    fun quickShuffledPlay(audios: List<Audio> = emptyList())
     fun pause()
 
     fun shuffleEnabled()

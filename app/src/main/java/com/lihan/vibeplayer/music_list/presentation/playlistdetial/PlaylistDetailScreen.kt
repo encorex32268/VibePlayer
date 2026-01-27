@@ -37,6 +37,8 @@ import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.domain.Audio
+import com.lihan.vibeplayer.music_list.presentation.MusicSharedAction
+import com.lihan.vibeplayer.music_list.presentation.MusicSharedViewModel
 import com.lihan.vibeplayer.music_list.presentation.components.AudioAsyncImage
 import com.lihan.vibeplayer.music_list.presentation.components.PlaylistGradientIcon
 import com.lihan.vibeplayer.music_list.presentation.components.SongListContent
@@ -54,10 +56,10 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun PlaylistDetailScreenRoot(
+    musicSharedViewModel: MusicSharedViewModel,
     playlistId: Int,
     onBack: () -> Unit,
     onNavigateToAddSongs: (id: Int) -> Unit,
-    onFunctionPlay: (List<Audio>) -> Unit,
     viewModel: PlaylistDetailViewModel = koinViewModel {
         parametersOf(playlistId)
     }
@@ -72,15 +74,15 @@ fun PlaylistDetailScreenRoot(
 
     PlaylistDetailScreen(
         state = state,
+        onSharedAction = musicSharedViewModel::onAction,
         onAction = { action ->
             when(action){
                 PlaylistDetailAction.OnBackClick -> onBack()
-                PlaylistDetailAction.OnFunctionPlayClick -> {
-                    onFunctionPlay(state.audios.map { it.toDomain() })
+                PlaylistDetailAction.OnAddClick -> {
+                    //TODO: Navigate To AddSongs
                 }
-                else -> Unit
             }
-            viewModel.onAction(action)
+//            viewModel.onAction(action)
         }
     )
 
@@ -90,6 +92,7 @@ fun PlaylistDetailScreenRoot(
 @Composable
 fun PlaylistDetailScreen(
     state: PlaylistDetailState,
+    onSharedAction: (MusicSharedAction) -> Unit,
     onAction: (PlaylistDetailAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -97,20 +100,6 @@ fun PlaylistDetailScreen(
 
     var isImageLoadingAndError by remember { mutableStateOf(false) }
 
-    //image and cache key
-    val imageModelPair: Pair<Any?,String> = remember(state.playlistUi , state.audios) {
-        val coverImageString = state.playlistUi?.coverImageUriString
-        if (coverImageString.isNullOrEmpty()){
-            if (state.audios.isEmpty()){
-                null to ""
-            }else{
-                val firstAudio = state.audios.first()
-                firstAudio to firstAudio.id.toString()
-            }
-        }else{
-            coverImageString.toUri() to coverImageString
-        }
-    }
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -139,13 +128,13 @@ fun PlaylistDetailScreen(
                     iconSize = 100.dp
                 )
             }
-            !state.isLoading && imageModelPair.first != null  -> {
+            !state.isLoading && state.coverImagePair != null  -> {
                 AudioAsyncImage(
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(200.dp),
-                    model = imageModelPair.first,
-                    cacheKey = imageModelPair.second,
+                    model = state.coverImagePair.first,
+                    cacheKey = state.coverImagePair.second,
                     onError = {
                         isImageLoadingAndError = true
                     }
@@ -183,7 +172,7 @@ fun PlaylistDetailScreen(
                             )
                         },
                         onClick = {
-                            onAction(PlaylistDetailAction.OnAddSongClick)
+                            onAction(PlaylistDetailAction.OnAddClick)
                         }
                     )
                 }
@@ -195,17 +184,18 @@ fun PlaylistDetailScreen(
                         listState = listState,
                         audios = state.audios,
                         onFunctionShuffleClick = {
-
+                            onSharedAction(MusicSharedAction.OnFunctionShuffleClick(state.audios))
                         },
                         onFunctionPlayClick = {
-                            onAction(PlaylistDetailAction.OnFunctionPlayClick)
+                            onSharedAction(MusicSharedAction.OnFunctionPlayClick(state.audios))
                         },
-                        onSongClick = {
-
+                        onSongClick = { audioUi ->
+                            onSharedAction(MusicSharedAction.OnSongClick(audioUi))
                         },
                         onAddClick = {
-
-                        })
+                            onAction(PlaylistDetailAction.OnAddClick)
+                        }
+                    )
                 }
             }
 
@@ -240,7 +230,8 @@ private fun PlaylistDetailScreenPreview() {
                     }
                 )
             ),
-            onAction = {}
+            onAction = {},
+            onSharedAction = {}
         )
     }
 }

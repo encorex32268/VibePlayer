@@ -81,8 +81,14 @@ class DefaultExoPlayerManager(
     }
 
     @OptIn(UnstableApi::class)
-    override fun quickShuffledPlay() {
+    override fun quickShuffledPlay(audios: List<Audio>) {
         exoPlayer.apply {
+            stop()
+            if (audios.isEmpty()){
+                setMediaItems(initMediaItems)
+            }else{
+                setInitMediaItems(audios)
+            }
             shuffleModeEnabled = true
             exoPlayer.seekToDefaultPosition(shuffleOrder.firstIndex)
             prepare()
