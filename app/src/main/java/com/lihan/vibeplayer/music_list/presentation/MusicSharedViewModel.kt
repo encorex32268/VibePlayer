@@ -20,6 +20,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
@@ -248,31 +249,27 @@ class MusicSharedViewModel(
     }
 
     private fun loadAudios() {
-        _state.update { it.copy(isScanning = true) }
-        repository
-            .getAllAudiosAndSync()
-            .onEach { audios ->
-
-                val hasImageAudios = coroutineScope {
-                    audios.map { audio ->
-                        async {
-                            val audioUi = audio.toUi()
-                            val albumImage = repository.getAlbumArtImage(audioUi.album)
-                            audioUi.copy(albumImage = albumImage)
-                        }
+        viewModelScope.launch {
+            _state.update { it.copy(isScanning = true) }
+            val allAudios = repository.getAllAudiosAndSync().first()
+            val hasImageAudios = coroutineScope {
+                allAudios.map { audio ->
+                    async {
+                        val audioUi = audio.toUi()
+                        val albumImage = repository.getAlbumArtImage(audioUi.album)
+                        audioUi.copy(albumImage = albumImage)
                     }
                 }
-                exoPlayerManager.setInitMediaItems(audios)
-
-                delay(300L)
-
-                _state.update { state ->
-                    state.copy(
-                        audios = hasImageAudios.awaitAll(),
-                        isScanning = false
-                    )
-                }
-            }.launchIn(viewModelScope)
+            }
+            exoPlayerManager.setInitMediaItems(allAudios)
+            delay(300L)
+            _state.update { state ->
+                state.copy(
+                    audios = hasImageAudios.awaitAll(),
+                    isScanning = false
+                )
+            }
+        }
 
     }
 
