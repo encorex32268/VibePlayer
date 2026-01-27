@@ -43,7 +43,13 @@ val musicListModule = module {
     viewModelOf(::MusicListViewModel)
     viewModelOf(::SearchViewModel)
     viewModelOf(::ScanMusicViewModel)
-    viewModelOf(::AddSongsViewModel)
+    viewModel{
+        AddSongsViewModel(
+            title = get(),
+            playlistId = get(),
+            repository = get()
+        )
+    }
     viewModel{
         PlaylistDetailViewModel(
             id = get(),

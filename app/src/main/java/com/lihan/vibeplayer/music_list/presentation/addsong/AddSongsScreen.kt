@@ -40,20 +40,21 @@ import com.lihan.vibeplayer.ui.design_system.checkbox.VPCheckbox
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun AddSongsScreenRoot(
     onBack: () -> Unit,
     title: String,
-    viewModel: AddSongsViewModel = koinViewModel()
-){
-    val state by viewModel.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(title) {
-        viewModel.onAction(
-            AddSongsAction.OnSaveTitleName(title)
+    playlistId: Int?=null,
+    viewModel: AddSongsViewModel = koinViewModel {
+        parametersOf(
+            title,
+            playlistId
         )
     }
+){
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     ObserveEvent(viewModel.uiEvent) { uiEvent ->
         when(uiEvent){

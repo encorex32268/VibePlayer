@@ -35,10 +35,6 @@ class PlaylistDetailViewModel(
 
     private var hasInitialLoadedData = false
 
-    private val _uiEvent = Channel<PlaylistDetailUiEvent>()
-    val uiEvent = _uiEvent.receiveAsFlow()
-
-
     private val _state = MutableStateFlow(PlaylistDetailState())
     val state = _state.onStart {
         if (!hasInitialLoadedData) {
@@ -50,11 +46,6 @@ class PlaylistDetailViewModel(
         SharingStarted.WhileSubscribed(5_000),
         PlaylistDetailState()
     )
-
-
-    fun onAction(action: PlaylistDetailAction) {
-
-    }
 
 
     private fun initPlaylistUi() {
@@ -104,8 +95,6 @@ class PlaylistDetailViewModel(
 
                         else -> PlaylistCardStyle.NoCover
                     }
-                    println("CoverStyle ${coverStyle}")
-                    println("CoverStyle ${playlistUi.coverImageUriString}")
                     emit(audioUiList to playlistUi.copy(style = coverStyle))
 
                 }.flowOn(Dispatchers.IO)

@@ -203,9 +203,10 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable<Route.AddSongs>{ entry ->
-                            val routeTitle = entry.toRoute<Route.AddSongs>().title
+                            val route = entry.toRoute<Route.AddSongs>()
                             AddSongsScreenRoot(
-                                title = routeTitle?:"",
+                                title = route.title?:"",
+                                playlistId = route.id,
                                 onBack = {
                                     navController.navigateUp()
                                 }
@@ -220,10 +221,11 @@ class MainActivity : ComponentActivity() {
                                 onBack = {
                                     navController.navigateUp()
                                 },
-                                onNavigateToAddSongs = { playlistId ->
+                                onNavigateToAddSongs = { playlistId,playlistTitle ->
                                     navController.navigate(
                                         Route.AddSongs(
-                                            id = playlistId
+                                            id = playlistId,
+                                            title = playlistTitle
                                         )
                                     )
                                 }

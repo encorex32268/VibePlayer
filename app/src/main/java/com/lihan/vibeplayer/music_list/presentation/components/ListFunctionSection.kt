@@ -59,7 +59,7 @@ fun ListFunctionSection(
                 Spacer(Modifier.width(12.dp))
                 CircleIconButton(
                     icon = ImageVector.vectorResource(R.drawable.plus),
-                    onClick = {}
+                    onClick = onAddClick
                 )
             }
         }
@@ -85,7 +85,7 @@ fun ListFunctionSection(
                 if (onAddClick != null){
                     CircleIconButton(
                         icon = ImageVector.vectorResource(R.drawable.plus),
-                        onClick = {}
+                        onClick = onAddClick
                     )
                 }
             }

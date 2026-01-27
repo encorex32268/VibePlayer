@@ -18,6 +18,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -27,11 +29,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AddSongsViewModel(
+    private val title: String,
+    private val playlistId: Int?=null,
     private val repository: MusicListRepository
 ) : ViewModel() {
 
     private var hasInitialLoadedData = false
-    private var playlistTitle = ""
 
     private var originAudioUi: List<AudioUi> = emptyList()
 
@@ -59,7 +62,6 @@ class AddSongsViewModel(
             AddSongsAction.OnBackClick -> Unit
             AddSongsAction.OnCloseClick -> onCloseClick()
             AddSongsAction.OnOKClick -> onOKClick()
-            is AddSongsAction.OnSaveTitleName -> onSaveTitleName(action.title)
         }
     }
 
@@ -74,7 +76,9 @@ class AddSongsViewModel(
                     originAudioUi.filter { it.songTitle.contains(text) }
                 }
 
-                val isSelectAll = if (newAudios.isEmpty()) false else { newAudios.all { it.isSelected }  }
+                val isSelectAll = if (newAudios.isEmpty()) false else {
+                    newAudios.all { it.isSelected }
+                }
 
                 _state.update { state ->
                     state.copy(
@@ -110,17 +114,18 @@ class AddSongsViewModel(
             }
         }
 
-        val selectCount = originAudioUi.filter { audioUi ->
+        val selectedCount = originAudioUi.filter { audioUi ->
             audioUi.isSelected
         }.size
 
-        val isSelectAll = if (currentAudios.isEmpty()) false else currentAudios.all { it.isSelected }
+        val isSelectAll =
+            if (currentAudios.isEmpty()) false else currentAudios.all { it.isSelected }
 
         _state.update {
             it.copy(
                 isSelectAll = isSelectAll,
                 audioUis = currentAudios,
-                selectedCount = selectCount
+                selectedCount = selectedCount
             )
         }
     }
@@ -150,7 +155,7 @@ class AddSongsViewModel(
 
         val allSelected = newAudios.all { it.isSelected }
 
-        val selectCount = originAudioUi.filter { audioUi ->
+        val selectedCount = originAudioUi.filter { audioUi ->
             audioUi.isSelected
         }.size
 
@@ -160,42 +165,49 @@ class AddSongsViewModel(
             it.copy(
                 audioUis = newAudios,
                 isSelectAll = isSelectAll,
-                selectedCount = selectCount
+                selectedCount = selectedCount
             )
         }
     }
 
-    private fun onSaveTitleName(title: String) {
-        playlistTitle = title
-    }
-
     private fun loadAudios() {
-        repository
-            .getAllAudiosAndSync()
-            .onEach { audios ->
-                val hasImageAudios = coroutineScope {
-                    audios.map { audio ->
-                        async{
-                            val audioUi = audio.toUi()
-                            val albumImage = repository.getAlbumArtImage(audioUi.album)
-                            audioUi.copy(albumImage = albumImage)
-                        }
+        viewModelScope.launch {
+
+            val playlistDeferred = async { playlistId?.let { repository.getPlaylistById(it).first() } }
+            val allAudiosDeferred = async { repository.getAllAudios().first() }
+
+            val playlist = playlistDeferred.await()
+            val allAudios = allAudiosDeferred.await()
+
+            val playlistAudioIds = playlist?.audioIds?.toSet() ?: emptySet()
+
+            val processedAudios = coroutineScope {
+                allAudios.map { audio ->
+                    async {
+                        val audioIdStr = audio.id.toString()
+                        audio.toUi().copy(
+                            albumImage = repository.getAlbumArtImage(audio.album),
+                            isSelected = playlistAudioIds.contains(audioIdStr)
+                        )
                     }
                 }.awaitAll()
+            }
 
-                originAudioUi = hasImageAudios
 
-                val isSelectAll = if (originAudioUi.isEmpty()) false else {
-                    originAudioUi.all { it.isSelected }
-                }
+            originAudioUi = processedAudios
 
-                _state.update { state ->
-                    state.copy(
-                        audioUis = hasImageAudios,
-                        isSelectAll = isSelectAll
-                    )
-                }
-            }.launchIn(viewModelScope)
+            val selectedCount = originAudioUi.filter { audioUi ->
+                audioUi.isSelected
+            }.size
+
+            _state.update { state ->
+                state.copy(
+                    audioUis = processedAudios,
+                    isSelectAll = processedAudios.isNotEmpty() && processedAudios.all { it.isSelected },
+                    selectedCount = selectedCount
+                )
+            }
+        }
     }
 
 
@@ -211,7 +223,8 @@ class AddSongsViewModel(
 
             repository.upsertPlaylist(
                 playlist = Playlist(
-                    title = playlistTitle,
+                    id = playlistId,
+                    title = title,
                     audioIds = selectedAudios
                 )
             )

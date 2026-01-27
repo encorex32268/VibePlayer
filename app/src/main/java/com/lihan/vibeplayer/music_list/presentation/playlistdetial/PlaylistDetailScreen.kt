@@ -59,18 +59,12 @@ fun PlaylistDetailScreenRoot(
     musicSharedViewModel: MusicSharedViewModel,
     playlistId: Int,
     onBack: () -> Unit,
-    onNavigateToAddSongs: (id: Int) -> Unit,
+    onNavigateToAddSongs: (id: Int,title: String) -> Unit,
     viewModel: PlaylistDetailViewModel = koinViewModel {
         parametersOf(playlistId)
     }
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    ObserveEvent(viewModel.uiEvent) { uiEvent ->
-        when(uiEvent){
-            is PlaylistDetailUiEvent.OnNavigateToAddSongs -> onNavigateToAddSongs(uiEvent.id)
-        }
-    }
 
     PlaylistDetailScreen(
         state = state,
@@ -78,11 +72,8 @@ fun PlaylistDetailScreenRoot(
         onAction = { action ->
             when(action){
                 PlaylistDetailAction.OnBackClick -> onBack()
-                PlaylistDetailAction.OnAddClick -> {
-                    //TODO: Navigate To AddSongs
-                }
+                PlaylistDetailAction.OnAddClick -> onNavigateToAddSongs(playlistId,state.playlistUi?.title?:"")
             }
-//            viewModel.onAction(action)
         }
     )
 
@@ -193,6 +184,7 @@ fun PlaylistDetailScreen(
                             onSharedAction(MusicSharedAction.OnSongClick(audioUi))
                         },
                         onAddClick = {
+                            println("OnAddClick")
                             onAction(PlaylistDetailAction.OnAddClick)
                         }
                     )
