@@ -33,7 +33,7 @@ class OfflineMusicListRepository(
     private val db: VibePlayerRoomDatabase
 ): MusicListRepository{
 
-    override fun getAllAudios(): Flow<List<Audio>> {
+    override fun getAllAudiosAndSync(): Flow<List<Audio>> {
         return db.audioDao.getAudios().onStart {
             val audios = getDeviceAudiosByQuery(selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0")
             db.audioDao.upsertAudioList(audios.map { it.toData() })
@@ -42,6 +42,10 @@ class OfflineMusicListRepository(
                 audioEntity.toDomain()
             }
         }
+    }
+
+    override fun getAllAudios(): Flow<List<Audio>> {
+        return db.audioDao.getAudios().map { it.map { audioEntity -> audioEntity.toDomain() } }
     }
 
     override suspend fun getAudiosBySizeAndDuration(

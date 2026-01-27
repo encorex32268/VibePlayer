@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -37,7 +38,6 @@ class MusicSharedViewModel(
 
     private val _state = MutableStateFlow(MusicSharedState())
     val state = _state.asStateFlow()
-
 
 
     init {
@@ -70,16 +70,23 @@ class MusicSharedViewModel(
                     )
                 }
             }
+
             MusicSharedAction.OnShuffleClick -> exoPlayerManager.shuffleEnabled()
             MusicSharedAction.OnSkipNextClick -> exoPlayerManager.skipNext()
             MusicSharedAction.OnSkipPreviousClick -> exoPlayerManager.skipPrevious()
-            is MusicSharedAction.OnFunctionPlayClick -> { exoPlayerManager.quickPlay(action.audios) }
+            is MusicSharedAction.OnFunctionPlayClick -> {
+                exoPlayerManager.quickPlay(action.audios)
+            }
+
             MusicSharedAction.OnFunctionShuffleClick -> {
                 exoPlayerManager.quickShuffledPlay()
-                _state.update { it.copy(
-                    isExpandPlayer = true
-                )}
+                _state.update {
+                    it.copy(
+                        isExpandPlayer = true
+                    )
+                }
             }
+
             MusicSharedAction.OnPlayClick -> onPlayClick()
             MusicSharedAction.OnRepeatClick -> onRepeatClick()
             is MusicSharedAction.OnSeek -> onSeek(action.duration)
@@ -127,12 +134,12 @@ class MusicSharedViewModel(
 
         val currentMediaItems = exoPlayerManager.getAllMediaItems()
         val mediaItem = currentMediaItems.find { it.mediaId == audioUi.id.toString() }
-        if (mediaItem == null){
+        if (mediaItem == null) {
             return
         }
 
         val index = currentMediaItems.indexOf(mediaItem)
-        if (index == -1){
+        if (index == -1) {
             //Not found
             return
         }
@@ -156,8 +163,6 @@ class MusicSharedViewModel(
 
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                super.onMediaItemTransition(mediaItem, reason)
-
                 val newId = mediaItem?.mediaId ?: return
 
                 if (newId != state.value.playingAudioUi?.id?.toString()) {
@@ -244,12 +249,12 @@ class MusicSharedViewModel(
     private fun loadAudios() {
         _state.update { it.copy(isScanning = true) }
         repository
-            .getAllAudios()
+            .getAllAudiosAndSync()
             .onEach { audios ->
 
                 val hasImageAudios = coroutineScope {
                     audios.map { audio ->
-                        async{
+                        async {
                             val audioUi = audio.toUi()
                             val albumImage = repository.getAlbumArtImage(audioUi.album)
                             audioUi.copy(albumImage = albumImage)

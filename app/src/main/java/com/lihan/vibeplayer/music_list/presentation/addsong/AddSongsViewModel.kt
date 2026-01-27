@@ -171,7 +171,7 @@ class AddSongsViewModel(
 
     private fun loadAudios() {
         repository
-            .getAllAudios()
+            .getAllAudiosAndSync()
             .onEach { audios ->
                 val hasImageAudios = coroutineScope {
                     audios.map { audio ->

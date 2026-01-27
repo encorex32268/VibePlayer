@@ -9,28 +9,18 @@ import com.lihan.vibeplayer.music_list.data.OfflineMusicListRepository
 import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
 import com.lihan.vibeplayer.music_list.domain.Playlist
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
-import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import androidx.core.net.toUri
-import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
-import com.lihan.vibeplayer.music_list.domain.MusicListRepository
-import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.filterNotNull
@@ -67,12 +57,6 @@ class PlaylistDetailViewModel(
             PlaylistDetailAction.OnBackClick -> Unit
             PlaylistDetailAction.OnAddSongClick -> {
                 //TODO: Play First! next part do this
-//                val playlistUi = state.value.playlistUi ?: return
-//                viewModelScope.launch {
-//                    _uiEvent.send(
-//                        PlaylistDetailUiEvent.OnNavigateToAddSongs(playlistUi.id)
-//                    )
-//                }
             }
 
             PlaylistDetailAction.OnFunctionPlayClick -> Unit

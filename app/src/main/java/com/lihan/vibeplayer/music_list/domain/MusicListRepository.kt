@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface MusicListRepository {
 
+    fun getAllAudiosAndSync(): Flow<List<Audio>>
+
     fun getAllAudios(): Flow<List<Audio>>
 
     suspend fun getAudiosBySizeAndDuration(

@@ -1,30 +1,16 @@
 package com.lihan.vibeplayer.music_list.presentation
 
 import android.net.Uri
-import androidx.annotation.OptIn
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.common.Timeline
-import androidx.media3.common.util.UnstableApi
-import com.lihan.vibeplayer.R
-import com.lihan.vibeplayer.core.presentation.util.UiText
-import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
-import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
-import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,12 +21,9 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.collections.distinctBy
 import androidx.core.net.toUri
-import com.lihan.vibeplayer.music_list.domain.Audio
-import kotlinx.coroutines.CoroutineScope
 
 class MusicListViewModel(
     private val repository: MusicListRepository
@@ -260,7 +243,7 @@ class MusicListViewModel(
 
         combine(
             flow = repository.getFavouritesPlaylist(),
-            flow2 = repository.getAllAudios(),
+            flow2 = repository.getAllAudiosAndSync(),
             flow3 = repository.getAllPlaylist()
         ){ favouritesPlaylist , audios , playlists ->
 
