@@ -36,6 +36,7 @@ import com.lihan.vibeplayer.music_list.presentation.components.SongCard
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.ui.design_system.buttons.VPButton
 import com.lihan.vibeplayer.ui.design_system.buttons.VPRadioButton
+import com.lihan.vibeplayer.ui.design_system.checkbox.VPCheckbox
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 import org.koin.compose.viewmodel.koinViewModel
@@ -129,9 +130,9 @@ fun AddSongsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    VPRadioButton(
-                        selected = state.isSelectAll,
-                        onClick = {
+                    VPCheckbox(
+                        checked = state.isSelectAll,
+                        onCheckedChange = {
                             onAction(
                                 AddSongsAction.OnAllSelectedClick
                             )

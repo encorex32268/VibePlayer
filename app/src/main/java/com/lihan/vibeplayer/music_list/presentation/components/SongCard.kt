@@ -23,6 +23,7 @@ import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.domain.util.toTimeString
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.ui.design_system.buttons.VPRadioButton
+import com.lihan.vibeplayer.ui.design_system.checkbox.VPCheckbox
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
@@ -44,9 +45,9 @@ fun SongCard(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if(isSelectable){
-            VPRadioButton(
-                selected = audioUi.isSelected,
-                onClick = {
+            VPCheckbox(
+                checked =  audioUi.isSelected,
+                onCheckedChange = {
                     onSelect?.invoke(audioUi)
                 }
             )
