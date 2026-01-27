@@ -79,18 +79,6 @@ class MusicListViewModel(
     fun onAction(action: MusicListAction) {
         when (action) {
             MusicListAction.OnScanAgainClick -> { loadAudios()}
-            MusicListAction.OnFunctionShuffleClick -> onFunctionShuffleClick()
-            is MusicListAction.OnFunctionPlayClick -> onFunctionPlayClick()
-            MusicListAction.OnPlayClick -> onPlayClick()
-            MusicListAction.OnSkipNextClick -> onSkipNextClick()
-            MusicListAction.OnSkipPreviousClick -> onSkipPreviousClick()
-            is MusicListAction.OnSeek -> onSeekTo(action.position)
-            MusicListAction.OnRepeatClick -> onRepeatModeClick()
-            MusicListAction.OnShuffleClick -> onShuffleClick()
-            is MusicListAction.OnSongClick -> onSongClick(action.audioUi)
-            MusicListAction.OnExpandClick -> onExpandClick()
-            MusicListAction.OnCollapseClick -> onCollapseClick()
-            MusicListAction.OnHideModeChangedBanner -> onHideModeChangedBanner()
             MusicListAction.OnCreatePlaylistAddClick -> onCreatePlaylistAddClick()
             MusicListAction.OnNavigateToAddSongs -> onNavigateToAddSongs()
             is MusicListAction.OnNavigateToPlaylistDetail -> onNavigateToPlaylistDetail(action.id)
@@ -101,7 +89,6 @@ class MusicListViewModel(
             is MusicListAction.OnUpdatePlaylistCover -> onUpdatePlaylistCover(action.uriString)
             is MusicListAction.OnDeleteAction -> onDeleteAction(action.action)
             is MusicListAction.OnRenameAction -> onRenameAction(action.action)
-
             else -> Unit
         }
     }
@@ -266,108 +253,6 @@ class MusicListViewModel(
         _state.update {
             it.copy(
                 isShowCreatePlaylistBottomSheet = false
-            )
-        }
-    }
-
-
-    private fun onHideModeChangedBanner() {
-        _state.update {
-            it.copy(
-                modeStatusBanner = null
-            )
-        }
-    }
-
-    private fun onExpandClick() {
-        _state.update {
-            it.copy(
-                isExpandPlayer = true
-            )
-        }
-    }
-
-    private fun onCollapseClick() {
-        _state.update {
-            it.copy(
-                isExpandPlayer = false
-            )
-        }
-    }
-
-    private fun onSongClick(audioUi: AudioUi) {
-        _state.update {
-            it.copy(
-                playingAudioUi = audioUi
-            )
-        }
-
-        val currentMediaItems = exoPlayerManager.getAllMediaItems()
-        val mediaItem = currentMediaItems.find { it.mediaId == audioUi.id.toString() }
-        if (mediaItem == null){
-            return
-        }
-
-        val index = currentMediaItems.indexOf(mediaItem)
-        if (index == -1){
-            //Not found
-            return
-        }
-        exoPlayerManager.playSongByIndex(index)
-    }
-
-    private fun onShuffleClick() {
-        exoPlayerManager.shuffleEnabled()
-    }
-
-
-    private fun onRepeatModeClick() {
-        val currentRepeatMode = exoPlayerManager.getRepeatMode()
-        val newRepeatMode = when (currentRepeatMode) {
-            Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
-            Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
-            Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_OFF
-            else -> Player.REPEAT_MODE_OFF
-        }
-        exoPlayerManager.setRepeatMode(newRepeatMode)
-    }
-
-    private fun onSeekTo(position: Long) {
-        exoPlayerManager.seekTo(position)
-        _state.update {
-            it.copy(
-                currentPosition = position
-            )
-        }
-    }
-
-    private fun onSkipPreviousClick() {
-        exoPlayerManager.skipPrevious()
-    }
-
-    private fun onSkipNextClick() {
-        exoPlayerManager.skipNext()
-    }
-
-    private fun onPlayClick() {
-        val isPlaying = state.value.isPlaying
-        if (isPlaying) {
-            exoPlayerManager.pause()
-        } else {
-            exoPlayerManager.play()
-        }
-    }
-
-    private fun onFunctionPlayClick() {
-        exoPlayerManager.quickPlay()
-    }
-
-    @OptIn(UnstableApi::class)
-    private fun onFunctionShuffleClick() {
-        exoPlayerManager.quickShuffledPlay()
-        _state.update {
-            it.copy(
-                isExpandPlayer = true
             )
         }
     }

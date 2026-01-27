@@ -10,21 +10,43 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.lihan.vibeplayer.core.navigation.Route
+import com.lihan.vibeplayer.core.navigation.withoutBottomBarRoutes
 import com.lihan.vibeplayer.music_list.presentation.MusicListScreenRoot
+import com.lihan.vibeplayer.music_list.presentation.MusicSharedAction
+import com.lihan.vibeplayer.music_list.presentation.MusicSharedViewModel
 import com.lihan.vibeplayer.music_list.presentation.addsong.AddSongsScreenRoot
+import com.lihan.vibeplayer.music_list.presentation.components.PlayerBottomBar
 import com.lihan.vibeplayer.music_list.presentation.playlistdetial.PlaylistDetailScreen
 import com.lihan.vibeplayer.music_list.presentation.playlistdetial.PlaylistDetailScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicScreenRoot
@@ -32,6 +54,8 @@ import com.lihan.vibeplayer.music_list.presentation.search.SearchScreenRoot
 import com.lihan.vibeplayer.permission.PermissionScreenRoot
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
+import org.koin.compose.viewmodel.koinActivityViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,9 +76,66 @@ class MainActivity : ComponentActivity() {
                 } else {
                     Route.Permission
                 }
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+                val isHideBottomBar = withoutBottomBarRoutes.any { currentDestination?.hasRoute(it) == true }
+
+                val musicSharedViewModel = koinViewModel<MusicSharedViewModel>()
+                val sharedState by musicSharedViewModel.state.collectAsStateWithLifecycle()
 
                 Scaffold(
-                    containerColor = SurfaceBG
+                    containerColor = SurfaceBG,
+                    bottomBar = {
+                        if (sharedState.playingAudioUi != null && !isHideBottomBar){
+                            AnimatedVisibility(
+                                visible = true,
+                                enter = slideInVertically(
+                                    initialOffsetY = { fullHeight -> fullHeight }
+                                ) + fadeIn(),
+                                exit = slideOutVertically(
+                                    targetOffsetY = { fullHeight -> fullHeight }
+                                ) + fadeOut()
+                            ) {
+                                PlayerBottomBar(
+                                    audioUi = sharedState.playingAudioUi!!,
+                                    modeStatusBanner = sharedState.modeStatusBanner,
+                                    repeatModeStatus = sharedState.repeatModeStatus,
+                                    isPlaying = sharedState.isPlaying,
+                                    isEnabledShuffle = sharedState.isEnabledShuffle,
+                                    isExpandPlayer = sharedState.isExpandPlayer,
+                                    duration = sharedState.duration,
+                                    currentPosition = sharedState.currentPosition,
+                                    onPlayClick = {
+                                        musicSharedViewModel.onAction(MusicSharedAction.OnPlayClick)
+                                    },
+                                    onSkipNextClick = {
+                                        musicSharedViewModel.onAction(MusicSharedAction.OnSkipNextClick)
+                                    },
+                                    onSkipPreviousClick = {
+                                        musicSharedViewModel.onAction(MusicSharedAction.OnSkipPreviousClick)
+                                    },
+                                    onSeek = {
+                                        musicSharedViewModel.onAction(MusicSharedAction.OnSeek(it))
+                                    },
+                                    onRepeatClick = {
+                                        musicSharedViewModel.onAction(MusicSharedAction.OnRepeatClick)
+                                    },
+                                    onShuffleClick = {
+                                        musicSharedViewModel.onAction(MusicSharedAction.OnShuffleClick)
+                                    },
+                                    onExpandClick = {
+                                        musicSharedViewModel.onAction(MusicSharedAction.OnExpandClick)
+                                    },
+                                    onCollapseClick = {
+                                        musicSharedViewModel.onAction(MusicSharedAction.OnCollapseClick)
+                                    },
+                                    onHideModeChangedBanner = {
+                                        musicSharedViewModel.onAction(MusicSharedAction.OnHideModeChangedBanner)
+                                    }
+                                )
+                            }
+                        }
+                    }
                 ) {
                     NavHost(
                         modifier = Modifier
@@ -90,7 +171,17 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToPlaylistDetail = { playlistId ->
                                     navController.navigate(Route.PlaylistDetail(playlistId))
+                                },
+                                onFunctionPlayClick = {
+                                    musicSharedViewModel.onAction(MusicSharedAction.OnFunctionPlayClick)
+                                },
+                                onFunctionShuffleClick = {
+                                    musicSharedViewModel.onAction(MusicSharedAction.OnFunctionShuffleClick)
+                                },
+                                onSongClick = { audioUi ->
+                                    musicSharedViewModel.onAction(MusicSharedAction.OnSongClick(audioUi))
                                 }
+
                             )
                         }
 
@@ -101,7 +192,6 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-
 
                         composable<Route.Search>{
                             SearchScreenRoot(
@@ -143,7 +233,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-
-
-

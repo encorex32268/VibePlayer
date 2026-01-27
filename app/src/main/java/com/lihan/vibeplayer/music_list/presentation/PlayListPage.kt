@@ -35,7 +35,7 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 
 @Composable
-fun PlayListScreen(
+fun PlayListPage(
     state: MusicListState,
     onCreatePlaylistAddClick: () -> Unit,
     onFavouritesMenuDotsClick: () -> Unit,
@@ -196,9 +196,9 @@ fun PlayListScreen(
 
 @Preview
 @Composable
-private fun PlayListScreenPreview() {
+private fun PlayListPagePreview() {
     VibePlayerTheme {
-        PlayListScreen(
+        PlayListPage(
             state = MusicListState(
                 playlists = emptyList(),
                 selectActionSheetPlaylistUi = PlaylistUi(

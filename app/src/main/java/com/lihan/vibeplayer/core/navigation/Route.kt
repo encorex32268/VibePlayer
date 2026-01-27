@@ -26,3 +26,10 @@ sealed interface Route {
     @Serializable
     data class PlaylistDetail(val id: Int): Route
 }
+
+val withoutBottomBarRoutes = listOf(
+    Route.Permission::class,
+    Route.ScanMusic::class,
+    Route.AddSongs::class,
+    Route.Search::class
+)

@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -58,7 +60,8 @@ fun MiniPlayer(
                 color = SurfaceHigher,
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             )
-            .padding(16.dp),
+            .padding(16.dp)
+            .navigationBarsPadding(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -149,19 +152,25 @@ fun MiniPlayer(
 @Composable
 private fun MiniPlayerPreview() {
     VibePlayerTheme {
-        MiniPlayer(
-            audioUi = AudioUi(
-                id = 1,
-                songTitle = "Song Title",
-                artisName = "Artist Name",
-                album = Uri.EMPTY,
-                duration = 1000
-            ),
-            isPlaying = true,
-            onPlayClick = {},
-            onSkipNextClick = {},
-            onMiniPlayerClick = {},
-            playbackProgress = { 0.5f }
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            MiniPlayer(
+                audioUi = AudioUi(
+                    id = 1,
+                    songTitle = "Song Title",
+                    artisName = "Artist Name",
+                    album = Uri.EMPTY,
+                    duration = 1000
+                ),
+                isPlaying = true,
+                onPlayClick = {},
+                onSkipNextClick = {},
+                onMiniPlayerClick = {},
+                playbackProgress = { 0.5f }
+            )
+
+        }
     }
 }

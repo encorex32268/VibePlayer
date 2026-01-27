@@ -7,6 +7,7 @@ import com.lihan.vibeplayer.music_list.domain.ExoPlayerFactory
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.MusicListViewModel
+import com.lihan.vibeplayer.music_list.presentation.MusicSharedViewModel
 import com.lihan.vibeplayer.music_list.presentation.addsong.AddSongsViewModel
 import com.lihan.vibeplayer.music_list.presentation.playlistdetial.PlaylistDetailViewModel
 import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicViewModel
@@ -50,6 +51,8 @@ val musicListModule = module {
             exoPlayerManager = get()
         )
     }
+
+    viewModelOf(::MusicSharedViewModel)
 
 
 }
