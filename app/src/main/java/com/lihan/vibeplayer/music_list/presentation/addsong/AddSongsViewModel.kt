@@ -195,9 +195,6 @@ class AddSongsViewModel(
                         isSelectAll = isSelectAll
                     )
                 }
-
-                println("LoadAudios ${originAudioUi.all { it.isSelected }}")
-
             }.launchIn(viewModelScope)
     }
 

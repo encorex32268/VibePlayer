@@ -40,8 +40,7 @@ import kotlinx.coroutines.flow.flowOn
 
 class PlaylistDetailViewModel(
     private val id: Int,
-    private val repository: OfflineMusicListRepository,
-    private val exoPlayerManager: ExoPlayerManager
+    private val repository: OfflineMusicListRepository
 ) : ViewModel() {
 
     private var hasInitialLoadedData = false
@@ -76,17 +75,10 @@ class PlaylistDetailViewModel(
 //                }
             }
 
-            PlaylistDetailAction.OnFunctionPlayClick -> onFunctionPlayClick()
+            PlaylistDetailAction.OnFunctionPlayClick -> Unit
         }
     }
 
-
-    private fun onFunctionPlayClick(){
-        val currentAudios = state.value.audios
-        exoPlayerManager.setInitMediaItems(
-            currentAudios.map { it.toDomain() }
-        )
-    }
 
     private fun initPlaylistUi() {
         val isFavouritesPlaylistId = id == -1

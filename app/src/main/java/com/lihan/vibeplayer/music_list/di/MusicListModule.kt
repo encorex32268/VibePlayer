@@ -47,8 +47,7 @@ val musicListModule = module {
     viewModel{
         PlaylistDetailViewModel(
             id = get(),
-            repository = get(),
-            exoPlayerManager = get()
+            repository = get()
         )
     }
 

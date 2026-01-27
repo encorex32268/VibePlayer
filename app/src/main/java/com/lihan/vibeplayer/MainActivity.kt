@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity() {
                 val currentDestination = navBackStackEntry?.destination
                 val isHideBottomBar = withoutBottomBarRoutes.any { currentDestination?.hasRoute(it) == true }
 
-                val musicSharedViewModel = koinViewModel<MusicSharedViewModel>()
+                val musicSharedViewModel = koinActivityViewModel<MusicSharedViewModel>()
                 val sharedState by musicSharedViewModel.state.collectAsStateWithLifecycle()
 
                 Scaffold(
@@ -160,6 +160,7 @@ class MainActivity : ComponentActivity() {
 
                         composable<Route.MusicList> {
                             MusicListScreenRoot(
+                                musicSharedViewModel = musicSharedViewModel,
                                 onNavigateToScan = {
                                     navController.navigate(Route.ScanMusic)
                                 },
@@ -173,7 +174,7 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Route.PlaylistDetail(playlistId))
                                 },
                                 onFunctionPlayClick = {
-                                    musicSharedViewModel.onAction(MusicSharedAction.OnFunctionPlayClick)
+                                    musicSharedViewModel.onAction(MusicSharedAction.OnFunctionPlayClick(emptyList()))
                                 },
                                 onFunctionShuffleClick = {
                                     musicSharedViewModel.onAction(MusicSharedAction.OnFunctionShuffleClick)
@@ -223,6 +224,11 @@ class MainActivity : ComponentActivity() {
                                         Route.AddSongs(
                                             id = playlistId
                                         )
+                                    )
+                                },
+                                onFunctionPlay = { audios ->
+                                    musicSharedViewModel.onAction(
+                                        MusicSharedAction.OnFunctionPlayClick(audios)
                                     )
                                 }
                             )

@@ -3,6 +3,7 @@ package com.lihan.vibeplayer.music_list.data
 import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -12,6 +13,9 @@ import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
 class DefaultExoPlayerManager(
     private val context: Context
 ): ExoPlayerManager {
+
+    private var initMediaItems: List<MediaItem> = emptyList()
+    private var initAudioItems: List<Audio> = emptyList()
 
     private val exoPlayer = ExoPlayer
         .Builder(context)
@@ -25,13 +29,24 @@ class DefaultExoPlayerManager(
         get() = exoPlayer.duration
 
     override fun setInitMediaItems(audios: List<Audio>) {
-        val items = audios.map { audioUi ->
+        val items = audios.map { audio ->
             MediaItem.Builder()
-                .setMediaId(audioUi.id.toString())
-                .setUri(audioUi.album)
+                .setMediaId(audio.id.toString())
+                .setUri(audio.album)
+                .setMediaMetadata(
+                    MediaMetadata.Builder()
+                        .setTitle(audio.songTitle)
+                        .setArtist(audio.artisName)
+                        .build()
+                )
                 .build()
         }
-
+        if (initMediaItems.isEmpty()){
+            initMediaItems = items
+        }
+        if (initAudioItems.isEmpty()){
+            initAudioItems = audios
+        }
         exoPlayer.apply {
             setMediaItems(items)
         }
@@ -52,9 +67,14 @@ class DefaultExoPlayerManager(
         exoPlayer.play()
     }
 
-    override fun quickPlay() {
+    override fun quickPlay(audios: List<Audio>) {
         exoPlayer.apply {
-            setMediaItems(getAllMediaItems())
+            stop()
+            if (audios.isEmpty()){
+                setMediaItems(initMediaItems)
+            }else{
+                setInitMediaItems(audios)
+            }
             prepare()
             play()
         }
@@ -148,9 +168,11 @@ class DefaultExoPlayerManager(
         return items
     }
 
+    override fun getAllAudios(): List<Audio> {
+        return initAudioItems
+    }
+
     override fun getCurrentMediaItem(): MediaItem? {
         return exoPlayer.currentMediaItem
     }
 }
-
-

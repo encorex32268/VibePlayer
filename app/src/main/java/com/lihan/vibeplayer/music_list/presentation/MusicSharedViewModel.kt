@@ -2,52 +2,47 @@ package com.lihan.vibeplayer.music_list.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
+import com.lihan.vibeplayer.music_list.domain.MusicListRepository
+import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class MusicSharedViewModel(
-    private val exoPlayerManager: ExoPlayerManager
-) : ViewModel() {
+    private val exoPlayerManager: ExoPlayerManager,
+    private val repository: MusicListRepository
 
-    private var hasInitialLoadedData = false
+) : ViewModel() {
 
     private var progressJob: Job? = null
 
     private var exoPlayerListener: Player.Listener? = null
 
     private val _state = MutableStateFlow(MusicSharedState())
-    val state = _state
-        .onStart {
-            if (!hasInitialLoadedData) {
-                observePlayer()
-                hasInitialLoadedData = true
-            }
-        }
-        .onEach {
-            println("MusicSharedViewModel ${it.playingAudioUi?.songTitle}")
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
-            MusicSharedState()
-        )
+    val state = _state.asStateFlow()
+
+
 
     init {
-        println("MusicSharedViewModel is Creadted")
+        loadAudios()
+        observePlayer()
     }
 
     fun onAction(action: MusicSharedAction) {
@@ -78,7 +73,7 @@ class MusicSharedViewModel(
             MusicSharedAction.OnShuffleClick -> exoPlayerManager.shuffleEnabled()
             MusicSharedAction.OnSkipNextClick -> exoPlayerManager.skipNext()
             MusicSharedAction.OnSkipPreviousClick -> exoPlayerManager.skipPrevious()
-            MusicSharedAction.OnFunctionPlayClick -> exoPlayerManager.quickPlay()
+            is MusicSharedAction.OnFunctionPlayClick -> { exoPlayerManager.quickPlay(action.audios) }
             MusicSharedAction.OnFunctionShuffleClick -> {
                 exoPlayerManager.quickShuffledPlay()
                 _state.update { it.copy(
@@ -89,6 +84,7 @@ class MusicSharedViewModel(
             MusicSharedAction.OnRepeatClick -> onRepeatClick()
             is MusicSharedAction.OnSeek -> onSeek(action.duration)
             is MusicSharedAction.OnSongClick -> onSongClick(action.audioUi)
+            MusicSharedAction.OnScanAgainClick -> loadAudios()
         }
     }
 
@@ -158,18 +154,17 @@ class MusicSharedViewModel(
                 }
             }
 
-            override fun onEvents(player: Player, events: Player.Events) {
 
-                val currentMediaItem = exoPlayerManager.getCurrentMediaItem()
-                val currentId = currentMediaItem?.mediaId
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                super.onMediaItemTransition(mediaItem, reason)
 
-                if (currentId != null && currentId != state.value.playingAudioUi?.id?.toString() && state.value.playingAudioUi != null) {
-                    val currentAudio =
-                        state.value.playingQueue.find { it.id.toString() == currentId }
-                    _state.update {
-                        it.copy(
-                            playingAudioUi = currentAudio
-                        )
+                val newId = mediaItem?.mediaId ?: return
+
+                if (newId != state.value.playingAudioUi?.id?.toString()) {
+                    val currentAudio = state.value.audios.find { it.id.toString() == newId }
+
+                    currentAudio?.let { audio ->
+                        _state.update { it.copy(playingAudioUi = audio) }
                     }
                 }
             }
@@ -246,13 +241,42 @@ class MusicSharedViewModel(
         }
     }
 
+    private fun loadAudios() {
+        _state.update { it.copy(isScanning = true) }
+        repository
+            .getAllAudios()
+            .onEach { audios ->
+
+                val hasImageAudios = coroutineScope {
+                    audios.map { audio ->
+                        async{
+                            val audioUi = audio.toUi()
+                            val albumImage = repository.getAlbumArtImage(audioUi.album)
+                            audioUi.copy(albumImage = albumImage)
+                        }
+                    }
+                }
+                exoPlayerManager.setInitMediaItems(audios)
+
+                delay(300L)
+
+                _state.update { state ->
+                    state.copy(
+                        audios = hasImageAudios.awaitAll(),
+                        isScanning = false
+                    )
+                }
+            }.launchIn(viewModelScope)
+
+    }
+
     private fun updateShuffledList() {
         val items = exoPlayerManager.getPlayingMediaItems()
 
-        val audioMap = if (state.value.playingQueue.isEmpty()) {
+        val audioMap = if (state.value.audios.isEmpty()) {
             hashMapOf()
         } else {
-            state.value.playingQueue.associateBy { it.id.toString() }
+            state.value.audios.associateBy { it.id.toString() }
         }
 
         val newAudioUis = items.mapNotNull { mediaItem ->
@@ -269,7 +293,6 @@ class MusicSharedViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        println("MusicSharedViewModel is onCleared")
         progressJob?.cancel()
         exoPlayerListener?.let {
             exoPlayerManager.removeListener(it)

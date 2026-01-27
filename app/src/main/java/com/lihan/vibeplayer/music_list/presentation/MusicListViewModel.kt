@@ -39,15 +39,14 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.collections.distinctBy
 import androidx.core.net.toUri
+import com.lihan.vibeplayer.music_list.domain.Audio
+import kotlinx.coroutines.CoroutineScope
 
 class MusicListViewModel(
-    private val repository: MusicListRepository,
-    private val exoPlayerManager: ExoPlayerManager
+    private val repository: MusicListRepository
 ) : ViewModel() {
 
     private var hasInitialLoadedData = false
-
-    private var progressJob: Job? = null
 
     private val _uiEvent = Channel<MusicListUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -57,9 +56,7 @@ class MusicListViewModel(
         .onStart {
             if (!hasInitialLoadedData) {
                 checkFavouritesPlaylist()
-                loadAudios()
                 loadPlaylists()
-                observePlayer()
                 observeCreatePlaylistTextField()
                 observeRenameTextField()
                 hasInitialLoadedData = true
@@ -78,7 +75,6 @@ class MusicListViewModel(
 
     fun onAction(action: MusicListAction) {
         when (action) {
-            MusicListAction.OnScanAgainClick -> { loadAudios()}
             MusicListAction.OnCreatePlaylistAddClick -> onCreatePlaylistAddClick()
             MusicListAction.OnNavigateToAddSongs -> onNavigateToAddSongs()
             is MusicListAction.OnNavigateToPlaylistDetail -> onNavigateToPlaylistDetail(action.id)
@@ -257,34 +253,7 @@ class MusicListViewModel(
         }
     }
 
-    private fun loadAudios() {
-        _state.update { it.copy(isScanning = true) }
-        repository
-            .getAllAudios()
-            .onEach { audios ->
 
-                val hasImageAudios = coroutineScope {
-                    audios.map { audio ->
-                        async{
-                            val audioUi = audio.toUi()
-                            val albumImage = repository.getAlbumArtImage(audioUi.album)
-                            audioUi.copy(albumImage = albumImage)
-                        }
-                    }
-                }
-                exoPlayerManager.setInitMediaItems(audios)
-
-                delay(300L)
-
-                _state.update { state ->
-                    state.copy(
-                        audios = hasImageAudios.awaitAll(),
-                        isScanning = false
-                    )
-                }
-            }.launchIn(viewModelScope)
-
-    }
 
 
     private fun loadPlaylists() {
@@ -363,118 +332,5 @@ class MusicListViewModel(
         }.launchIn(viewModelScope)
     }
 
-    private fun startProgressTimer() {
-        progressJob?.cancel()
-        progressJob = viewModelScope.launch {
-            while (isActive) {
-                val pos = exoPlayerManager.currentPosition
-                _state.update { it.copy(currentPosition = pos) }
-                delay(500L)
-            }
-        }
-    }
-
-    private fun observePlayer() {
-        exoPlayerManager.addListener(
-            object : Player.Listener {
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    _state.update {
-                        it.copy(
-                            isPlaying = isPlaying
-                        )
-                    }
-                    if (isPlaying) {
-                        startProgressTimer()
-                    } else {
-                        progressJob?.cancel()
-                    }
-                }
-
-                override fun onEvents(player: Player, events: Player.Events) {
-
-                    val currentMediaItem = exoPlayerManager.getCurrentMediaItem()
-                    val currentId = currentMediaItem?.mediaId
-
-                    if (currentId != null && currentId != state.value.playingAudioUi?.id?.toString() && state.value.playingAudioUi != null) {
-                        val currentAudio = state.value.audios.find { it.id.toString() == currentId }
-                        _state.update { it.copy(
-                            playingAudioUi = currentAudio
-                        ) }
-                    }
-                }
-                override fun onRepeatModeChanged(repeatMode: Int) {
-                    val repeatModeStatus = when (repeatMode) {
-                        Player.REPEAT_MODE_OFF -> RepeatModeStatus.Off
-                        Player.REPEAT_MODE_ALL -> RepeatModeStatus.All
-                        Player.REPEAT_MODE_ONE -> RepeatModeStatus.One
-                        else -> RepeatModeStatus.Off
-                    }
-
-                    _state.update {
-                        it.copy(
-                            modeStatusBanner = repeatModeStatus.toUiText(),
-                            repeatModeStatus = repeatModeStatus
-                        )
-                    }
-                }
-
-                override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-                    updateShuffledList()
-                    _state.update {
-                        it.copy(
-                            isEnabledShuffle = shuffleModeEnabled,
-                            modeStatusBanner = when (shuffleModeEnabled) {
-                                true -> UiText.StringResource(R.string.main_shuffle_enabled)
-                                false -> UiText.StringResource(R.string.main_shuffle_off)
-                            }
-                        )
-                    }
-                }
-
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    when (playbackState) {
-                        Player.STATE_READY -> {
-                            val currentPosition = exoPlayerManager.currentPosition
-                            val duration = exoPlayerManager.duration
-
-                            _state.update {
-                                it.copy(
-                                    currentPosition = currentPosition,
-                                    duration = duration,
-                                )
-                            }
-                        }
-                        Player.STATE_ENDED -> {
-                            progressJob?.cancel()
-                        }
-
-                        else -> Unit
-                    }
-
-                }
-            }
-        )
-    }
-
-    private fun updateShuffledList() {
-        val items = exoPlayerManager.getPlayingMediaItems()
-
-        val audioMap = if (state.value.audios.isEmpty()) {
-            hashMapOf()
-        } else {
-            state.value.audios.associateBy { it.id.toString() }
-        }
-
-        val newAudioUis = items.mapNotNull { mediaItem ->
-            audioMap[mediaItem.mediaId]
-        }.distinctBy { it.id }
-
-        _state.update {
-            it.copy(
-                audios = newAudioUis
-            )
-        }
-
-    }
 
 }

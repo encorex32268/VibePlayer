@@ -12,6 +12,10 @@ data class AudioUi(
     val albumImage: ByteArray? = null,
     val size: Long = 0,
 ) {
+    override fun toString(): String {
+        return "AudioUi(id=$id, songTitle='$songTitle', artisName='$artisName', duration=$duration, isSelected=$isSelected, size=$size, album=$album)"
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

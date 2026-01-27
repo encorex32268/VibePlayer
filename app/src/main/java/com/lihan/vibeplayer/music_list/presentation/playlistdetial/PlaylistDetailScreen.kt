@@ -36,9 +36,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
+import com.lihan.vibeplayer.music_list.domain.Audio
 import com.lihan.vibeplayer.music_list.presentation.components.AudioAsyncImage
 import com.lihan.vibeplayer.music_list.presentation.components.PlaylistGradientIcon
 import com.lihan.vibeplayer.music_list.presentation.components.SongListContent
+import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
@@ -55,6 +57,7 @@ fun PlaylistDetailScreenRoot(
     playlistId: Int,
     onBack: () -> Unit,
     onNavigateToAddSongs: (id: Int) -> Unit,
+    onFunctionPlay: (List<Audio>) -> Unit,
     viewModel: PlaylistDetailViewModel = koinViewModel {
         parametersOf(playlistId)
     }
@@ -72,6 +75,9 @@ fun PlaylistDetailScreenRoot(
         onAction = { action ->
             when(action){
                 PlaylistDetailAction.OnBackClick -> onBack()
+                PlaylistDetailAction.OnFunctionPlayClick -> {
+                    onFunctionPlay(state.audios.map { it.toDomain() })
+                }
                 else -> Unit
             }
             viewModel.onAction(action)

@@ -10,11 +10,13 @@ interface ExoPlayerManager {
 
     fun setInitMediaItems(audios: List<Audio>)
     fun getAllMediaItems(): List<MediaItem>
+    fun getAllAudios(): List<Audio>
+
     fun getCurrentMediaItem(): MediaItem?
 
     fun playSongByIndex(index: Int)
     fun play()
-    fun quickPlay()
+    fun quickPlay(audios: List<Audio> = emptyList())
     fun quickShuffledPlay()
     fun pause()
 

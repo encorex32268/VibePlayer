@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -21,7 +20,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.music_list.presentation.components.EmptyView
 import com.lihan.vibeplayer.music_list.presentation.components.ScanningView
@@ -34,7 +32,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SongsPage(
-    state: MusicListState,
+    state: MusicSharedState,
     onAction: (MusicListAction) -> Unit,
     onSongClick: (AudioUi) -> Unit,
     onFunctionShuffleClick: () -> Unit,
@@ -56,7 +54,6 @@ fun SongsPage(
         containerColor = SurfaceBG,
         floatingActionButton = {
             AnimatedVisibility(
-                modifier = Modifier.padding(bottom = if (state.playingAudioUi != null) (96).dp else 0.dp),
                 visible = isShowFloatingActionButton,
                 enter = fadeIn(),
                 exit = fadeOut()
@@ -77,7 +74,7 @@ fun SongsPage(
                 )
             }
         },
-    ) { innerPadding ->
+    ) { innerPadding -> innerPadding
         when {
             state.isScanning -> {
                 ScanningView(
@@ -99,7 +96,6 @@ fun SongsPage(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     SongListContent(
-                        modifier = Modifier.fillMaxSize().padding(bottom = if (state.playingAudioUi != null) (96).dp else 0.dp),
                         listState = listState,
                         audios = state.audios,
                         onFunctionShuffleClick = onFunctionShuffleClick,
@@ -122,7 +118,7 @@ fun SongsPage(
 private fun SongsPagePreview() {
     VibePlayerTheme {
         SongsPage(
-            state = MusicListState(
+            state = MusicSharedState(
                 isScanning = false,
                 audios = (0..20).map {
                     AudioUi(
@@ -132,14 +128,7 @@ private fun SongsPagePreview() {
                         artisName = "Artis-${it}",
                         duration = it.toLong() * 10000
                     )
-                },
-                playingAudioUi = AudioUi(
-                    id = 1L,
-                    album = Uri.EMPTY,
-                    songTitle = "Song-1",
-                    artisName = "Artis-1",
-                    duration = 1 * 10000L
-                )
+                }
             ),
             onSongClick = {},
             onAction = {},

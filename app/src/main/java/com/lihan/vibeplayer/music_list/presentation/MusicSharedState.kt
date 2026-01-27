@@ -7,7 +7,9 @@ import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 
 data class MusicSharedState(
     val playingQueue: List<AudioUi> = emptyList(),
+    val audios: List<AudioUi> = emptyList(),
     val isPlaying: Boolean = false,
+    val isScanning: Boolean = false,
     val isEnabledShuffle: Boolean = false,
     val isExpandPlayer: Boolean = false,
     val currentPosition: Long = 0L,

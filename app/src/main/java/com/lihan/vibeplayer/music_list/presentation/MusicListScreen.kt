@@ -37,9 +37,11 @@ fun MusicListScreenRoot(
     onNavigateToAddSongs: (String) -> Unit,
     onNavigateToPlaylistDetail: (Int) -> Unit,
     onSongClick: (AudioUi) -> Unit,
+    musicSharedViewModel: MusicSharedViewModel,
     viewModel: MusicListViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val sharedState by musicSharedViewModel.state.collectAsStateWithLifecycle()
 
     ObserveEvent(viewModel.uiEvent) { uiEvent ->
         when (uiEvent) {
@@ -51,6 +53,7 @@ fun MusicListScreenRoot(
 
     MusicListScreen(
         state = state,
+        sharedState = sharedState,
         onAction = { action ->
             when (action) {
                 MusicListAction.OnScanClick -> onNavigateToScan()
@@ -58,6 +61,7 @@ fun MusicListScreenRoot(
                 MusicListAction.OnFunctionPlayClick -> onFunctionPlayClick()
                 MusicListAction.OnFunctionShuffleClick -> onFunctionShuffleClick()
                 is MusicListAction.OnSongClick -> onSongClick(action.audioUi)
+                MusicListAction.OnScanAgainClick -> musicSharedViewModel.onAction(MusicSharedAction.OnScanAgainClick)
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -69,6 +73,7 @@ fun MusicListScreenRoot(
 @Composable
 fun MusicListScreen(
     state: MusicListState,
+    sharedState: MusicSharedState,
     onAction: (MusicListAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -113,7 +118,7 @@ fun MusicListScreen(
                         SONGS -> {
                             SongsPage(
                                 modifier = Modifier.fillMaxSize(),
-                                state = state,
+                                state = sharedState,
                                 onAction = onAction,
                                 onFunctionPlayClick = {
                                     onAction(MusicListAction.OnFunctionPlayClick)
@@ -177,7 +182,7 @@ fun MusicListScreen(
 private fun MusicListScreenPreview() {
     VibePlayerTheme {
         MusicListScreen(
-            state = MusicListState(
+            sharedState = MusicSharedState(
                 isScanning = false,
                 audios = (0..20).map {
                     AudioUi(
@@ -187,14 +192,10 @@ private fun MusicListScreenPreview() {
                         artisName = "Artis-${it}",
                         duration = it.toLong() * 10000
                     )
-                },
-                playingAudioUi = AudioUi(
-                    id = 1L,
-                    album = Uri.EMPTY,
-                    songTitle = "Song-1",
-                    artisName = "Artis-1",
-                    duration = 1 * 10000L
-                )
+                }
+            ),
+            state = MusicListState(
+
             ),
             onAction = {
 
