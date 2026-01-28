@@ -42,7 +42,7 @@ fun PlayListPage(
     onMenuDotsClick: (PlaylistUi) -> Unit,
     onCreatePlaylistCancelClick: () -> Unit,
     onNavigateToAddSongs: () -> Unit,
-    onNavigateToPlaylistDetail: (id: Int) -> Unit,
+    onNavigateToPlaylistDetail: () -> Unit,
     onDeleteAction: (action: DeleteAction) -> Unit,
     onRenameAction: (action: RenameAction) -> Unit,
     onUpdatePlaylistCover: (uriString: String) -> Unit,
@@ -152,7 +152,7 @@ fun PlayListPage(
             ActionSheet(
                 playlistUi = state.selectActionSheetPlaylistUi,
                 onPlayClick = {
-                    onNavigateToPlaylistDetail(state.selectActionSheetPlaylistUi.id)
+                    onNavigateToPlaylistDetail()
                 },
                 onDeleteClick = {
                     onDeleteAction(DeleteAction.OnDeleteActionClick)

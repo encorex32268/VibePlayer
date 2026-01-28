@@ -13,7 +13,7 @@ sealed interface MusicListAction {
     data object OnCreatePlaylistCancelClick: MusicListAction
     data object OnCreatePlaylistAddClick: MusicListAction
     data object OnNavigateToAddSongs: MusicListAction
-    data class OnNavigateToPlaylistDetail(val id: Int): MusicListAction
+    data object OnNavigateToPlaylistDetail: MusicListAction
 
     data class OnMenuDotsClick(
         val playlistUi: PlaylistUi

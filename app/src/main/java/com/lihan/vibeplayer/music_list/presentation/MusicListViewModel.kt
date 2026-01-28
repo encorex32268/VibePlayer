@@ -62,7 +62,7 @@ class MusicListViewModel(
         when (action) {
             MusicListAction.OnCreatePlaylistAddClick -> onCreatePlaylistAddClick()
             MusicListAction.OnNavigateToAddSongs -> onNavigateToAddSongs()
-            is MusicListAction.OnNavigateToPlaylistDetail -> onNavigateToPlaylistDetail(action.id)
+            is MusicListAction.OnNavigateToPlaylistDetail -> onNavigateToPlaylistDetail()
             MusicListAction.OnCreatePlaylistCancelClick -> onCreatePlaylistCancel()
             is MusicListAction.OnMenuDotsClick -> onMenuDotsClick(action.playlistUi)
             MusicListAction.OnFavouritesMenuDotsClick -> onFavouritesMenuDotsClick()
@@ -74,13 +74,22 @@ class MusicListViewModel(
         }
     }
 
-    private fun onNavigateToPlaylistDetail(id: Int){
+    private fun onNavigateToPlaylistDetail(){
         viewModelScope.launch {
+            val currentPlaylistUi = state.value.selectActionSheetPlaylistUi?:return@launch
+
+            val id = if (currentPlaylistUi.style == PlaylistCardStyle.Favourites){
+                -1
+            }else{
+                currentPlaylistUi.id
+            }
+
             _state.update { it.copy(
                 isShowActionSheet = false,
                 selectActionSheetPlaylistUi = null
             ) }
             delay(300L)
+
             _uiEvent.send(
                 MusicListUiEvent.OnNavigateToPlaylistDetail(id)
             )
@@ -201,7 +210,8 @@ class MusicListViewModel(
     private fun onFavouritesMenuDotsClick(){
         val favouritesPlaylistUi = state.value.favouritesPlaylists
         _state.update { it.copy(
-            selectActionSheetPlaylistUi = favouritesPlaylistUi
+            selectActionSheetPlaylistUi = favouritesPlaylistUi,
+            isShowActionSheet = true
         ) }
     }
 
@@ -276,6 +286,7 @@ class MusicListViewModel(
             .flowOn(Dispatchers.Default)
             .onEach { (favouritesPlaylistUi, playlists) ->
 
+                println("favouritesPlaylistUi ${favouritesPlaylistUi}")
                 println("New Data Received: ${playlists} items")
                 _state.update { it.copy(
                     favouritesPlaylists = favouritesPlaylistUi,

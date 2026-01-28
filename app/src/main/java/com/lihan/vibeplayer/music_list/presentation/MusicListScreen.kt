@@ -150,8 +150,8 @@ fun MusicListScreen(
                                 onNavigateToAddSongs = {
                                     onAction(MusicListAction.OnNavigateToAddSongs)
                                 },
-                                onNavigateToPlaylistDetail = { id ->
-                                    onAction(MusicListAction.OnNavigateToPlaylistDetail(id))
+                                onNavigateToPlaylistDetail = {
+                                    onAction(MusicListAction.OnNavigateToPlaylistDetail)
                                 },
                                 onUpdatePlaylistCover = { uriString ->
                                     onAction(MusicListAction.OnUpdatePlaylistCover(uriString))

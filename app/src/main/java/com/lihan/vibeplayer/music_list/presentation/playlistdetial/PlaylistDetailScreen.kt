@@ -37,9 +37,11 @@ import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.domain.Audio
+import com.lihan.vibeplayer.music_list.domain.Playlist
 import com.lihan.vibeplayer.music_list.presentation.MusicSharedAction
 import com.lihan.vibeplayer.music_list.presentation.MusicSharedViewModel
 import com.lihan.vibeplayer.music_list.presentation.components.AudioAsyncImage
+import com.lihan.vibeplayer.music_list.presentation.components.HeartIcon
 import com.lihan.vibeplayer.music_list.presentation.components.PlaylistGradientIcon
 import com.lihan.vibeplayer.music_list.presentation.components.SongListContent
 import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
@@ -111,6 +113,14 @@ fun PlaylistDetailScreen(
         }
         Spacer(modifier = Modifier.height(30.dp))
         when{
+            state.playlistUi?.style == PlaylistCardStyle.Favourites ->{
+                HeartIcon(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(200.dp),
+                    iconSize = 100.dp
+                )
+            }
             isImageLoadingAndError -> {
                 PlaylistGradientIcon(
                     modifier = Modifier

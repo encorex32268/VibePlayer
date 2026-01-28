@@ -92,7 +92,9 @@ class PlaylistDetailViewModel(
                         firstAudio?.album != null && firstAudio.album != Uri.EMPTY -> {
                             PlaylistCardStyle.HasCover(repository.getAlbumArtImage(firstAudio.album))
                         }
-
+                        playlistUi.style == PlaylistCardStyle.Favourites -> {
+                            PlaylistCardStyle.Favourites
+                        }
                         else -> PlaylistCardStyle.NoCover
                     }
                     emit(audioUiList to playlistUi.copy(style = coverStyle))

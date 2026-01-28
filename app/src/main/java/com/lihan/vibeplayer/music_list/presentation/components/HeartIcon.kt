@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.ui.theme.ButtonPrimary
@@ -25,8 +26,10 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 @Composable
 fun HeartIcon(
-    modifier: Modifier = Modifier
-) {
+    modifier: Modifier = Modifier,
+    iconSize: Dp = 36.dp,
+    backgroundSize: Dp = 64.dp,
+ ) {
     Box(
         modifier = modifier
             .clip(CircleShape)
@@ -38,12 +41,12 @@ fun HeartIcon(
                     ),
                 ), alpha = 0.14f
             )
-            .size(64.dp),
+            .size(backgroundSize),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             modifier = Modifier
-                .size(36.dp)
+                .size(iconSize)
                 .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
                 .drawWithContent{
                     drawContent()
