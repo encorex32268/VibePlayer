@@ -7,5 +7,5 @@ data class AddSongsState(
     val searchTextField: TextFieldState = TextFieldState(),
     val audioUis: List<AudioUi> = emptyList(),
     val isSelectAll: Boolean = false,
-    val selectedCount: Int = 0,
+    val selectedAudios: List<String> = emptyList()
 )

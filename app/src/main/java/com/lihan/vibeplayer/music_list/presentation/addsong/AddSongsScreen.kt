@@ -47,7 +47,7 @@ fun AddSongsScreenRoot(
     onBack: () -> Unit,
     title: String,
     playlistId: Int?=null,
-    viewModel: AddSongsViewModel = koinViewModel {
+    viewModel: AddSongsViewModel = koinViewModel<AddSongsViewModel>{
         parametersOf(
             title,
             playlistId
@@ -104,10 +104,10 @@ fun AddSongsScreen(
                     )
                     Text(
                         modifier = Modifier.align(Alignment.Center),
-                        text = if (state.selectedCount == 0){
+                        text = if (state.selectedAudios.isEmpty()){
                             stringResource(R.string.add_songs_title)
                         }else{
-                            stringResource(R.string.add_songs_selected,state.selectedCount)
+                            stringResource(R.string.add_songs_selected,state.selectedAudios.size)
                         },
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Medium
@@ -169,7 +169,7 @@ fun AddSongsScreen(
                 }
 
             }
-            if(state.selectedCount > 0){
+            if(state.selectedAudios.isNotEmpty()){
                 VPButton(
                     modifier = Modifier
                         .widthIn(max = 480.dp)

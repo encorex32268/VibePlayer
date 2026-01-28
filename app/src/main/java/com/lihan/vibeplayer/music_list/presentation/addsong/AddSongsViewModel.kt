@@ -114,25 +114,33 @@ class AddSongsViewModel(
             }
         }
 
-        val selectedCount = originAudioUi.filter { audioUi ->
-            audioUi.isSelected
-        }.size
-
         val isSelectAll =
             if (currentAudios.isEmpty()) false else currentAudios.all { it.isSelected }
+
+        val currentSelectAudios = state.value.selectedAudios.toMutableList()
+        if (newSelectAll){
+            originAudioUi.forEach {
+                val idString = it.id.toString()
+                if (idString !in currentSelectAudios){
+                    currentSelectAudios.add(idString)
+                }
+            }
+        }else{
+            currentSelectAudios.clear()
+        }
+
 
         _state.update {
             it.copy(
                 isSelectAll = isSelectAll,
                 audioUis = currentAudios,
-                selectedCount = selectedCount
+                selectedAudios = currentSelectAudios.toList()
             )
         }
     }
 
 
     private fun onAudioSelected(audioUi: AudioUi) {
-
         val newAudios = state.value.audioUis.map { currentAudio ->
             if (currentAudio.id == audioUi.id) {
                 currentAudio.copy(
@@ -155,9 +163,13 @@ class AddSongsViewModel(
 
         val allSelected = newAudios.all { it.isSelected }
 
-        val selectedCount = originAudioUi.filter { audioUi ->
-            audioUi.isSelected
-        }.size
+        val currentSelectAudios = state.value.selectedAudios.toMutableList()
+        val idString = audioUi.id.toString()
+        if (idString in currentSelectAudios){
+            currentSelectAudios.removeIf { it == idString }
+        }else{
+            currentSelectAudios.add(idString)
+        }
 
         val isSelectAll = if (newAudios.isEmpty()) false else allSelected
 
@@ -165,7 +177,7 @@ class AddSongsViewModel(
             it.copy(
                 audioUis = newAudios,
                 isSelectAll = isSelectAll,
-                selectedCount = selectedCount
+                selectedAudios = currentSelectAudios.toList()
             )
         }
     }
@@ -194,17 +206,15 @@ class AddSongsViewModel(
             }
 
 
+
             originAudioUi = processedAudios
 
-            val selectedCount = originAudioUi.filter { audioUi ->
-                audioUi.isSelected
-            }.size
 
             _state.update { state ->
                 state.copy(
                     audioUis = processedAudios,
                     isSelectAll = processedAudios.isNotEmpty() && processedAudios.all { it.isSelected },
-                    selectedCount = selectedCount
+                    selectedAudios = playlistAudioIds.toList()
                 )
             }
         }
@@ -217,9 +227,7 @@ class AddSongsViewModel(
 
     private fun onOKClick() {
         viewModelScope.launch {
-            val selectedAudios = state.value.audioUis
-                .filter { it.isSelected }
-                .map { it.id.toString() }
+            val selectedAudios = state.value.selectedAudios
 
             repository.upsertPlaylist(
                 playlist = Playlist(
