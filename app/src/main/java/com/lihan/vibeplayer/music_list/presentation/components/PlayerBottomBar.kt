@@ -42,6 +42,8 @@ fun PlayerBottomBar(
     onCollapseClick: () -> Unit,
     onExpandClick: () -> Unit,
     onHideModeChangedBanner: () -> Unit,
+    onFavouriteClick: () -> Unit,
+    onPlaylistClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -91,7 +93,10 @@ fun PlayerBottomBar(
                 onRepeatClick = onRepeatClick,
                 onShuffleClick = onShuffleClick,
                 onHideModeChangedBanner = onHideModeChangedBanner,
+                onFavouriteClick = onFavouriteClick,
+                onPlaylistClick = onPlaylistClick
             )
+
 
         } else {
 
@@ -141,7 +146,9 @@ private fun PlayerBottomBarPreview() {
             onExpandClick = {},
             onCollapseClick = {},
             onHideModeChangedBanner = {},
-            repeatModeStatus = RepeatModeStatus.Off
+            repeatModeStatus = RepeatModeStatus.Off,
+            onPlaylistClick = {},
+            onFavouriteClick = {}
         )
     }
 

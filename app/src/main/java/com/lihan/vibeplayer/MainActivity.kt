@@ -131,7 +131,9 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onHideModeChangedBanner = {
                                         musicSharedViewModel.onAction(MusicSharedAction.OnHideModeChangedBanner)
-                                    }
+                                    },
+                                    onFavouriteClick = {},
+                                    onPlaylistClick = {}
                                 )
                             }
                         }

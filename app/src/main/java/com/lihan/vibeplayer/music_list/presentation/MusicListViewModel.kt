@@ -24,8 +24,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.collections.distinctBy
 import androidx.core.net.toUri
+import com.lihan.vibeplayer.core.database.mapper.toDomain
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 class MusicListViewModel(
     private val repository: MusicListRepository
@@ -40,7 +44,6 @@ class MusicListViewModel(
     val state = _state
         .onStart {
             if (!hasInitialLoadedData) {
-                checkFavouritesPlaylist()
                 loadPlaylists()
                 observeCreatePlaylistTextField()
                 observeRenameTextField()
@@ -52,11 +55,6 @@ class MusicListViewModel(
             MusicListState()
         )
 
-    private fun checkFavouritesPlaylist() {
-        viewModelScope.launch {
-            repository.checkAndCreateDefaultPlaylist()
-        }
-    }
 
     fun onAction(action: MusicListAction) {
         when (action) {
@@ -248,52 +246,72 @@ class MusicListViewModel(
         }
     }
 
-
+    //TODO: Need Fix
     private fun loadPlaylists() {
-        combine(
-            repository.getFavouritesPlaylist(),
-            repository.getAllAudios(),
-            repository.getAllPlaylist()
-        ) { favouritesPlaylist, audios, playlists ->
+        viewModelScope.launch {
+            repository
+                .getAllPlaylist()
+                .onEach { playlists ->
 
-            val audioMap = audios.associateBy { it.id.toString() }
-
-            val playlistsUi = playlists.map { playlist ->
-                println(">>> ${playlist.title}")
-                val coverStyle = when {
-                    playlist.coverImageUriString != null -> {
-                        PlaylistCardStyle.HasCover(playlist.coverImageUriString.toUri())
-                    }
-                    else -> {
-                        val firstAudioWithAlbum = playlist.audioIds
-                            .mapNotNull { audioMap[it] }
-                            .firstOrNull { it.album != Uri.EMPTY }
-
-                        if (firstAudioWithAlbum != null) {
-                            PlaylistCardStyle.HasCover(repository.getAlbumArtImage(firstAudioWithAlbum.album))
-                        } else {
-                            PlaylistCardStyle.NoCover
+                    playlists.map { playlist ->
+                        playlist.id?.let { id ->
+                            async {
+                                repository.getAlbumArtImage(
+                                    repository
+                                        .getPlaylistWithAudios(id)
+                                        .first().audios.first().toDomain().album
+                                )
+                            }
                         }
                     }
-                }
-                playlist.toUi(coverStyle)
-            }
+                }.launchIn(viewModelScope)
 
-            val favouritesPlaylistUi = favouritesPlaylist?.toUi()
+        }
 
-            favouritesPlaylistUi to playlistsUi
-        }.onStart { println("loadPlaylists Flow Started") }
-            .flowOn(Dispatchers.Default)
-            .onEach { (favouritesPlaylistUi, playlists) ->
 
-                println("favouritesPlaylistUi ${favouritesPlaylistUi}")
-                println("New Data Received: ${playlists} items")
-                _state.update { it.copy(
-                    favouritesPlaylists = favouritesPlaylistUi,
-                    playlists = playlists
-                )}
-            }
-            .launchIn(viewModelScope)
+
+//        combine(
+//            repository.getFavouritesPlaylist(),
+//            repository.getAllAudios(),
+//            repository.getAllPlaylist()
+//        ) { favouritesPlaylist, audios, playlists ->
+//
+//            val audioMap = audios.associateBy { it.id.toString() }
+//
+//            val playlistsUi = playlists.map { playlist ->
+//                println(">>> ${playlist.title}")
+//                val coverStyle = when {
+//                    playlist.coverImageUriString != null -> {
+//                        PlaylistCardStyle.HasCover(playlist.coverImageUriString.toUri())
+//                    }
+//                    else -> {
+//                        val firstAudioWithAlbum = playlist.audioIds
+//                            .mapNotNull { audioMap[it] }
+//                            .firstOrNull { it.album != Uri.EMPTY }
+//
+//                        if (firstAudioWithAlbum != null) {
+//                            PlaylistCardStyle.HasCover(repository.getAlbumArtImage(firstAudioWithAlbum.album))
+//                        } else {
+//                            PlaylistCardStyle.NoCover
+//                        }
+//                    }
+//                }
+//                playlist.toUi(coverStyle)
+//            }
+//
+//            val favouritesPlaylistUi = favouritesPlaylist?.toUi()
+//
+//            favouritesPlaylistUi to playlistsUi
+//        }
+//            .flowOn(Dispatchers.IO)
+//            .onEach { (favouritesPlaylistUi, playlists) ->
+//
+//                _state.update { it.copy(
+//                    favouritesPlaylists = favouritesPlaylistUi,
+//                    playlists = playlists
+//                )}
+//            }
+//            .launchIn(viewModelScope)
     }
 
 

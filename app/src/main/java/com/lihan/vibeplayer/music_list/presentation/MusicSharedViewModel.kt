@@ -20,6 +20,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -44,6 +45,7 @@ class MusicSharedViewModel(
 
     init {
         loadAudios()
+        observeFavouritePlaylist()
         observePlayer()
     }
 
@@ -94,7 +96,19 @@ class MusicSharedViewModel(
             is MusicSharedAction.OnSeek -> onSeek(action.duration)
             is MusicSharedAction.OnSongClick -> onSongClick(action.audioUi)
             MusicSharedAction.OnScanAgainClick -> loadAudios()
+            MusicSharedAction.OnFavouriteClick -> onFavouriteClick()
         }
+    }
+
+    private fun onFavouriteClick(){
+        val currentPlayingAudioUi = state.value.playingAudioUi ?: return
+
+        _state.update { state -> state.copy(
+            playingAudioUi = currentPlayingAudioUi.copy(
+                isFavourite = !currentPlayingAudioUi.isFavourite
+            )
+        ) }
+
     }
 
     private fun onPlayClick() {
@@ -271,6 +285,26 @@ class MusicSharedViewModel(
             }
         }
 
+    }
+
+    //TODO: Need Fix
+    private fun observeFavouritePlaylist(){
+//        repository
+//            .getFavouritesPlaylist()
+//            .filterNotNull()
+//            .onEach { favouritesPlaylist ->
+//                val currentSelectedAudioUi = state.value.playingAudioUi ?: return@onEach
+//                if (
+//                    currentSelectedAudioUi.id.toString() in favouritesPlaylist.audioIds && !currentSelectedAudioUi.isFavourite
+//                    ){
+//                    _state.update { it.copy(
+//                        playingAudioUi = currentSelectedAudioUi.copy(
+//                            isFavourite = true
+//                        )
+//                    ) }
+//                }
+//            }
+//            .launchIn(viewModelScope)
     }
 
     private fun updateShuffledList() {

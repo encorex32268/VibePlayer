@@ -11,6 +11,7 @@ data class AudioUi(
     val isSelected: Boolean = false,
     val albumImage: ByteArray? = null,
     val size: Long = 0,
+    val isFavourite: Boolean = false,
 ) {
     override fun toString(): String {
         return "AudioUi(id=$id, songTitle='$songTitle', artisName='$artisName', duration=$duration, isSelected=$isSelected, size=$size, album=$album)"
@@ -26,6 +27,7 @@ data class AudioUi(
         if (duration != other.duration) return false
         if (isSelected != other.isSelected) return false
         if (size != other.size) return false
+        if (isFavourite != other.isFavourite) return false
         if (album != other.album) return false
         if (songTitle != other.songTitle) return false
         if (artisName != other.artisName) return false
@@ -39,11 +41,13 @@ data class AudioUi(
         result = 31 * result + duration.hashCode()
         result = 31 * result + isSelected.hashCode()
         result = 31 * result + size.hashCode()
+        result = 31 * result + isFavourite.hashCode()
         result = 31 * result + album.hashCode()
         result = 31 * result + songTitle.hashCode()
         result = 31 * result + artisName.hashCode()
         result = 31 * result + (albumImage?.contentHashCode() ?: 0)
         return result
     }
+
 
 }

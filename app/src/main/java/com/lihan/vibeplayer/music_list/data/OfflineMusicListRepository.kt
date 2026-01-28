@@ -8,12 +8,11 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import com.lihan.vibeplayer.core.database.FavouritesPlaylistEntity
+import com.lihan.vibeplayer.core.database.PlaylistAudios
 import com.lihan.vibeplayer.core.database.VibePlayerRoomDatabase
 import com.lihan.vibeplayer.core.database.mapper.toData
 import com.lihan.vibeplayer.core.database.mapper.toDomain
 import com.lihan.vibeplayer.music_list.domain.Audio
-import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.domain.Playlist
 import kotlinx.coroutines.Dispatchers
@@ -23,10 +22,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 class OfflineMusicListRepository(
     private val context: Context,
@@ -46,6 +42,10 @@ class OfflineMusicListRepository(
 
     override fun getAllAudios(): Flow<List<Audio>> {
         return db.audioDao.getAudios().map { it.map { audioEntity -> audioEntity.toDomain() } }
+    }
+
+    override fun getAudiosByIds(ids: List<Int>): Flow<List<Audio>> {
+        return db.audioDao.getAudiosByIds(ids).map { it.map { value -> value.toDomain() } }
     }
 
     override suspend fun getAudiosBySizeAndDuration(
@@ -73,6 +73,10 @@ class OfflineMusicListRepository(
         }
     }
 
+    override fun getFavouriteAudios(): Flow<List<Audio>> {
+        return db.audioDao.getFavouriteAudios().map { it.map { audioEntity -> audioEntity.toDomain() } }
+    }
+
     override suspend fun getAlbumArtImage(uri: Uri): ByteArray? {
         return withContext(Dispatchers.IO) {
             val retriever = MediaMetadataRetriever()
@@ -89,6 +93,10 @@ class OfflineMusicListRepository(
         }
     }
 
+    override suspend fun updateFavouriteStatus(audioId: Long, isFavourite: Boolean) {
+        db.audioDao.updateFavouriteStatus(audioId,isFavourite)
+    }
+
     override suspend fun upsertPlaylist(playlist: Playlist) {
         db.playlistDao.upsert(
             playlist.toData()
@@ -101,23 +109,6 @@ class OfflineMusicListRepository(
         )
     }
 
-    override suspend fun createFavouritePlaylist(favouritePlaylist: FavouritesPlaylist) {
-        db.favouritesPlaylistDao.create(
-            favouritePlaylist.toData()
-        )
-    }
-
-    override suspend fun checkAndCreateDefaultPlaylist() {
-        val favouritesPlaylist = db.favouritesPlaylistDao.getFavouritesPlaylist().firstOrNull()
-        if (favouritesPlaylist == null){
-            db.favouritesPlaylistDao.create(
-                FavouritesPlaylistEntity(
-                    title = "Favourites",
-                    audioIds = emptyList()
-                )
-            )
-        }
-    }
 
     override fun getAllPlaylist(): Flow<List<Playlist>> {
         return db.playlistDao.getPlaylists().map { it.map { playlistEntity ->
@@ -129,9 +120,10 @@ class OfflineMusicListRepository(
         return db.playlistDao.getPlaylistById(id).map { it.toDomain() }
     }
 
-    override fun getFavouritesPlaylist(): Flow<FavouritesPlaylist?> {
-        return db.favouritesPlaylistDao.getFavouritesPlaylist().map { it?.toDomain() }
+    override fun getPlaylistWithAudios(playlistId: Int): Flow<PlaylistAudios> {
+        return db.playlistDao.getPlaylistWithAudios(playlistId)
     }
+
 
     private fun getDeviceAudiosByQuery(
         selection: String,

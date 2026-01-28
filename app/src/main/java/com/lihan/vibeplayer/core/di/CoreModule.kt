@@ -2,7 +2,6 @@ package com.lihan.vibeplayer.core.di
 
 import androidx.room.Room
 import com.lihan.vibeplayer.core.database.AudioDao
-import com.lihan.vibeplayer.core.database.FavouritesPlaylistDao
 import com.lihan.vibeplayer.core.database.PlaylistDao
 import com.lihan.vibeplayer.core.database.VibePlayerRoomDatabase
 import org.koin.android.ext.koin.androidContext
@@ -23,6 +22,5 @@ val coreModule = module {
 
     single { get<VibePlayerRoomDatabase>().audioDao }.bind<AudioDao>()
     single { get<VibePlayerRoomDatabase>().playlistDao }.bind<PlaylistDao>()
-    single { get<VibePlayerRoomDatabase>().favouritesPlaylistDao }.bind<FavouritesPlaylistDao>()
 
 }

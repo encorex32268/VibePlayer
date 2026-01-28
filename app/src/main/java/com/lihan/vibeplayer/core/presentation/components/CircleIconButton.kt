@@ -27,11 +27,11 @@ fun CircleIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isDisabledStyle: Boolean = false,
-    isRemoveBackground: Boolean = false
+    isRemoveBackground: Boolean = false,
+    iconTintColor: Color = if (isDisabledStyle) TextDisabled else TextSecondary
 ) {
     val containerColor = if (isDisabledStyle) Color.Transparent  else ButtonHover28
     val contentColor = if (isDisabledStyle) TextDisabled else TextSecondary
-    val iconTintColor = if (isDisabledStyle) TextDisabled else TextSecondary
     IconButton(
         modifier = modifier.clip(CircleShape),
         onClick = onClick,

@@ -16,10 +16,11 @@ interface AudioDao{
     @Delete
     suspend fun deleteAudio(audioEntity: AudioEntity)
 
-    @Query("""
-        SELECT * FROM audioentity
-    """)
+    @Query("SELECT * FROM audioentity")
     fun getAudios(): Flow<List<AudioEntity>>
+
+    @Query("SELECT * FROM AudioEntity WHERE id IN(:ids)")
+    fun getAudiosByIds(ids: List<Int>): Flow<List<AudioEntity>>
 
 
     @Transaction
@@ -28,5 +29,12 @@ interface AudioDao{
             upsertAudio(it)
         }
     }
+
+    @Query("UPDATE AudioEntity SET isFavourite = :isFavourite WHERE id = :audioId")
+    suspend fun updateFavouriteStatus(audioId: Long, isFavourite: Boolean)
+
+
+    @Query("SELECT * FROM AudioEntity WHERE isFavourite = 1")
+    fun getFavouriteAudios(): Flow<List<AudioEntity>>
 
 }

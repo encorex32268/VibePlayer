@@ -10,7 +10,11 @@ import kotlinx.coroutines.launch
 
 @Database(
     version = 1,
-    entities = [AudioEntity::class, PlaylistEntity::class,FavouritesPlaylistEntity::class],
+    entities = [
+        AudioEntity::class,
+        PlaylistEntity::class,
+        PlaylistAudioCrossRef::class
+               ],
     exportSchema = false
 )
 @TypeConverters(
@@ -21,5 +25,4 @@ import kotlinx.coroutines.launch
 abstract class VibePlayerRoomDatabase: RoomDatabase() {
     abstract val audioDao: AudioDao
     abstract val playlistDao: PlaylistDao
-    abstract val favouritesPlaylistDao: FavouritesPlaylistDao
 }

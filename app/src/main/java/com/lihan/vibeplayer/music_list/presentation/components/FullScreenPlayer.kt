@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -81,6 +82,8 @@ fun FullScreenPlayer(
     onRepeatClick: () -> Unit,
     onShuffleClick: () -> Unit,
     onHideModeChangedBanner: () -> Unit,
+    onFavouriteClick: () -> Unit,
+    onPlaylistClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var sliderValue by remember { mutableFloatStateOf(0f) }
@@ -116,6 +119,32 @@ fun FullScreenPlayer(
                 icon = ImageVector.vectorResource(R.drawable.chevron_down),
                 onClick = onCollapseClick
             )
+            Row(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ){
+                CircleIconButton(
+                    icon = ImageVector.vectorResource(R.drawable.playlist),
+                    onClick = onPlaylistClick
+                )
+
+                CircleIconButton(
+                    icon = if (audioUi.isFavourite){
+                        ImageVector.vectorResource(R.drawable.heart_fill)
+                    }else{
+                        ImageVector.vectorResource(R.drawable.heart)
+                    },
+                    iconTintColor = if (audioUi.isFavourite){
+                        TextPrimary
+                    }else{
+                        TextSecondary
+                    },
+                    onClick = onFavouriteClick
+                )
+
+
+            }
         }
         Column(
             modifier = Modifier
@@ -243,9 +272,6 @@ fun FullScreenPlayer(
 @Preview(showSystemUi = true)
 @Composable
 private fun FullScreenPlayerPreview() {
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-
     VibePlayerTheme {
         FullScreenPlayer(
             isPlaying = false,
@@ -255,7 +281,8 @@ private fun FullScreenPlayerPreview() {
                 duration = 10000,
                 albumImage = null,
                 album = Uri.EMPTY,
-                id = 0
+                id = 0,
+                isFavourite = false
             ),
             onPlayClick = {},
             onSkipNextClick = {},
@@ -269,7 +296,9 @@ private fun FullScreenPlayerPreview() {
             onRepeatClick = {},
             onShuffleClick = {},
             modeStatusBanner = UiText.DynamicString("Test"),
-            onHideModeChangedBanner = {}
+            onHideModeChangedBanner = {},
+            onPlaylistClick = {},
+            onFavouriteClick = {}
         )
     }
 }
