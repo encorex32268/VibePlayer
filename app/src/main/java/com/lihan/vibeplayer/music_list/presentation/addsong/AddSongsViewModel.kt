@@ -119,7 +119,7 @@ class AddSongsViewModel(
 
         val currentSelectAudios = state.value.selectedAudios.toMutableList()
         if (newSelectAll){
-            originAudioUi.forEach {
+            currentAudios.forEach {
                 val idString = it.id.toString()
                 if (idString !in currentSelectAudios){
                     currentSelectAudios.add(idString)

@@ -10,6 +10,5 @@ typealias CacheKey = String
 data class PlaylistDetailState(
     val audios: List<AudioUi> = emptyList(),
     val playlistUi: PlaylistUi?=null,
-    val coverImagePair: Pair<ImageModel?,CacheKey>?=null,
-    val isLoading: Boolean = false
+    val coverImagePair: Pair<ImageModel?,CacheKey>?=null
 )

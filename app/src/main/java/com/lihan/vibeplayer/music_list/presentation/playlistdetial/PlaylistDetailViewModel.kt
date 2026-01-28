@@ -100,18 +100,22 @@ class PlaylistDetailViewModel(
                 }.flowOn(Dispatchers.IO)
 
             }.onEach { (audios, playlistUi) ->
-                val coverImageString = playlistUi.coverImageUriString
-                val coverImagePair = if (coverImageString.isNullOrEmpty()){
-                    if (audios.isEmpty()){
-                        null to ""
-                    }else{
-                        val firstAudio = audios.first()
 
-                        (playlistUi.style as PlaylistCardStyle.HasCover).imageModel to firstAudio.id.toString()
+                println("Audios $audios")
+                println("playlistUi $playlistUi")
+
+                val coverImageString = playlistUi.coverImageUriString
+                val coverImagePair =
+                    when {
+                        !coverImageString.isNullOrEmpty() -> coverImageString.toUri() to coverImageString
+                        playlistUi.audioIds.isNotEmpty() -> (playlistUi.style as PlaylistCardStyle.HasCover).imageModel to "${playlistUi.id}_${playlistUi.audioIds.first()}"
+                        else -> null to ""
                     }
-                }else{
-                    coverImageString.toUri() to coverImageString
-                }
+//                val key =  when {
+//                    !playlistUi.coverImageUriString.isNullOrEmpty() -> playlistUi.coverImageUriString
+//                    playlistUi.audioIds.isNotEmpty() -> "${playlistUi.id}_${playlistUi.audioIds.first()}"
+//                    else -> playlistUi.id.toString()
+//                }
 
                 _state.update {
                     it.copy(

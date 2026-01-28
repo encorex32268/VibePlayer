@@ -111,7 +111,7 @@ fun PlaylistDetailScreen(
         }
         Spacer(modifier = Modifier.height(30.dp))
         when{
-            !state.isLoading && isImageLoadingAndError -> {
+            isImageLoadingAndError -> {
                 PlaylistGradientIcon(
                     modifier = Modifier
                         .clip(CircleShape)
@@ -119,7 +119,7 @@ fun PlaylistDetailScreen(
                     iconSize = 100.dp
                 )
             }
-            !state.isLoading && state.coverImagePair != null  -> {
+            state.coverImagePair != null  -> {
                 AudioAsyncImage(
                     modifier = Modifier
                         .clip(CircleShape)
@@ -143,7 +143,7 @@ fun PlaylistDetailScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             when {
-                state.audios.isEmpty() && !state.isLoading -> {
+                state.audios.isEmpty() -> {
                     Text(
                         modifier = Modifier
                             .padding(top = 16.dp, bottom = 8.dp),
@@ -168,7 +168,7 @@ fun PlaylistDetailScreen(
                     )
                 }
 
-                state.audios.isNotEmpty() && !state.isLoading -> {
+                else -> {
                     SongListContent(
                         modifier = modifier
                             .fillMaxSize(),

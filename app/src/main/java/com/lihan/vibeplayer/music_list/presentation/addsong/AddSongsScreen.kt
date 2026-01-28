@@ -64,6 +64,7 @@ fun AddSongsScreenRoot(
 
     AddSongsScreen(
         state = state,
+        playlistId = playlistId,
         onAction = { action ->
             when(action){
                 AddSongsAction.OnBackClick -> onBack()
@@ -79,7 +80,8 @@ fun AddSongsScreenRoot(
 fun AddSongsScreen(
     state: AddSongsState,
     onAction: (AddSongsAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    playlistId: Int?=null
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -169,7 +171,7 @@ fun AddSongsScreen(
                 }
 
             }
-            if(state.selectedAudios.isNotEmpty()){
+            if(state.selectedAudios.isNotEmpty() || playlistId != null){
                 VPButton(
                     modifier = Modifier
                         .widthIn(max = 480.dp)
