@@ -120,10 +120,10 @@ fun PlayListPage(
                     title = playlistUi.title,
                     count = playlistUi.audioIds.size,
                     playlistCardStyle = playlistUi.style,
-                    imageCacheKey = if (playlistUi.coverImageUriString.isNullOrEmpty()){
-                        playlistUi.id.toString()
-                    }else{
-                        playlistUi.coverImageUriString
+                    imageCacheKey = when {
+                        !playlistUi.coverImageUriString.isNullOrEmpty() -> playlistUi.coverImageUriString
+                        playlistUi.audioIds.isNotEmpty() -> "${playlistUi.id}_${playlistUi.audioIds.first()}"
+                        else -> playlistUi.id.toString()
                     },
                     onMenuDotsClick = {
                         onMenuDotsClick(playlistUi)

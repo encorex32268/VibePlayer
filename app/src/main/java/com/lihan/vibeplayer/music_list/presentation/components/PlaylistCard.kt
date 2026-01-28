@@ -39,7 +39,7 @@ fun PlaylistCard(
     onMenuDotsClick: (() -> Unit)?=null,
     imageCacheKey: String? = null
 ) {
-    var isImageLoadingAndError by remember { mutableStateOf(false) }
+    var isImageLoadingAndError by remember(imageCacheKey){ mutableStateOf(false) }
 
     Row(
         modifier = modifier

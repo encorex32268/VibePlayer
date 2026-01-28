@@ -25,8 +25,12 @@ fun AudioAsyncImage(
         model = ImageRequest
             .Builder(context)
             .data(model)
-            .diskCacheKey(cacheKey)
-            .memoryCacheKey(cacheKey)
+            .apply {
+                if (!cacheKey.isNullOrBlank()) {
+                    diskCacheKey(cacheKey)
+                    memoryCacheKey(cacheKey)
+                }
+            }
             .build(),
         contentDescription = contentDescription,
         modifier = modifier,
