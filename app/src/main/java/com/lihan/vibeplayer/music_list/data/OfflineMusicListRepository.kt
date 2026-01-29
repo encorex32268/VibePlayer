@@ -8,13 +8,14 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import com.lihan.vibeplayer.core.database.PlaylistAudios
 import com.lihan.vibeplayer.core.database.VibePlayerRoomDatabase
-import com.lihan.vibeplayer.core.database.mapper.toData
-import com.lihan.vibeplayer.core.database.mapper.toDomain
+import com.lihan.vibeplayer.music_list.data.mapper.toData
+import com.lihan.vibeplayer.music_list.data.mapper.toDmain
+import com.lihan.vibeplayer.music_list.data.mapper.toDomain
 import com.lihan.vibeplayer.music_list.domain.Audio
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.domain.Playlist
+import com.lihan.vibeplayer.music_list.domain.PlaylistAudios
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -116,12 +117,30 @@ class OfflineMusicListRepository(
         } }
     }
 
-    override fun getPlaylistById(id: Int): Flow<Playlist> {
-        return db.playlistDao.getPlaylistById(id).map { it.toDomain() }
+    override fun getPlaylistById(id: Int?): Flow<Playlist?> {
+        return db.playlistDao.getPlaylistById(id).map { it?.toDomain() }
     }
 
-    override fun getPlaylistWithAudios(playlistId: Int): Flow<PlaylistAudios> {
-        return db.playlistDao.getPlaylistWithAudios(playlistId)
+    override fun getPlaylistAudios(): Flow<List<PlaylistAudios>> {
+        return db.playlistDao.getPlaylistAudios().map { it.map {  dbPlaylistAudios -> dbPlaylistAudios.toDmain() } }
+    }
+
+    override fun getPlaylistAudiosById(id: Int?): Flow<PlaylistAudios> {
+        return db.playlistDao.getPlaylistAudiosById(id).map { it.toDmain() }
+    }
+
+    override suspend fun createPlaylistWithAudios(
+        id: Int?,
+        title: String,
+        coverUri: String?,
+        audios: List<String>
+    ) {
+        db.playlistDao.createPlaylistWithAudios(
+            id = id,
+            title = title,
+            coverUri = coverUri,
+            audios = audios
+        )
     }
 
 

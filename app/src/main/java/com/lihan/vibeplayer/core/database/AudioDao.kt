@@ -6,12 +6,16 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 @Dao
 interface AudioDao{
 
     @Upsert
     suspend fun upsertAudio(audioEntity: AudioEntity)
+
+    @Query("DELETE FROM AudioEntity WHERE id NOT IN (:ids)")
+    suspend fun deleteAudiosByIds(ids: List<Int>)
 
     @Delete
     suspend fun deleteAudio(audioEntity: AudioEntity)
@@ -25,6 +29,11 @@ interface AudioDao{
 
     @Transaction
     suspend fun upsertAudioList(audioEntities: List<AudioEntity>){
+
+        val newAudioIds = audioEntities.mapNotNull { it.id}
+
+        deleteAudiosByIds(newAudioIds)
+
         audioEntities.forEach {
             upsertAudio(it)
         }

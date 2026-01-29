@@ -62,7 +62,7 @@ fun PlaylistCard(
                     PlaylistGradientIcon()
                 }else{
                     AudioAsyncImage(
-                        model = playlistCardStyle.imageModel,
+                        model = (playlistCardStyle).imageModel,
                         cacheKey = imageCacheKey?:"",
                         contentDescription = title,
                         modifier = Modifier
@@ -130,7 +130,7 @@ private fun PlaylistCardPreview() {
                 title = "Friday Chill",
                 count = 0,
                 onMenuDotsClick = null,
-                playlistCardStyle = PlaylistCardStyle.HasCover(null),
+                playlistCardStyle = PlaylistCardStyle.HasCover(null,true),
                 imageCacheKey = ""
             )
         }

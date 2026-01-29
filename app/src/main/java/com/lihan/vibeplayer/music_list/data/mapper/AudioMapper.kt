@@ -1,4 +1,4 @@
-package com.lihan.vibeplayer.core.database.mapper
+package com.lihan.vibeplayer.music_list.data.mapper
 
 import android.net.Uri
 import com.lihan.vibeplayer.core.database.AudioEntity

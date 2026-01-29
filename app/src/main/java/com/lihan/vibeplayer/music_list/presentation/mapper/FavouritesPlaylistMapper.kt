@@ -8,7 +8,7 @@ fun FavouritesPlaylist.toUi(): PlaylistUi {
     return PlaylistUi(
         id = id?:0,
         title = title,
-        audioIds = audioIds,
+        count = 1,
         style = PlaylistCardStyle.Favourites
     )
 }

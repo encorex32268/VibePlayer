@@ -80,7 +80,7 @@ fun PlayListPage(
         item {
             PlaylistCard(
                 title = stringResource(R.string.playlist_favourites),
-                count = state.favouritesPlaylists?.audioIds?.size?:0,
+                count = 0,
                 onMenuDotsClick = onFavouritesMenuDotsClick,
                 playlistCardStyle = PlaylistCardStyle.Favourites,
 
@@ -118,7 +118,7 @@ fun PlayListPage(
             ){ playlistUi ->
                 PlaylistCard(
                     title = playlistUi.title,
-                    count = playlistUi.audioIds.size,
+                    count = playlistUi.count,
                     playlistCardStyle = playlistUi.style,
                     imageCacheKey = when {
                         !playlistUi.coverImageUriString.isNullOrEmpty() -> playlistUi.coverImageUriString
@@ -204,8 +204,8 @@ private fun PlayListPagePreview() {
                 selectActionSheetPlaylistUi = PlaylistUi(
                     id = 9,
                     title = "Playlist",
-                    audioIds = listOf("1","2","3","4"),
-                    style = PlaylistCardStyle.NoCover
+                    style = PlaylistCardStyle.NoCover,
+                    count = 1
                 ),
                 isShowDeleteBottomSheet = true
             ),

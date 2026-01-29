@@ -61,7 +61,7 @@ fun PlaylistDetailScreenRoot(
     musicSharedViewModel: MusicSharedViewModel,
     playlistId: Int,
     onBack: () -> Unit,
-    onNavigateToAddSongs: (id: Int,title: String) -> Unit,
+    onNavigateToAddSongs: (id: Int, title: String) -> Unit,
     viewModel: PlaylistDetailViewModel = koinViewModel {
         parametersOf(playlistId)
     }
@@ -72,9 +72,12 @@ fun PlaylistDetailScreenRoot(
         state = state,
         onSharedAction = musicSharedViewModel::onAction,
         onAction = { action ->
-            when(action){
+            when (action) {
                 PlaylistDetailAction.OnBackClick -> onBack()
-                PlaylistDetailAction.OnAddClick -> onNavigateToAddSongs(playlistId,state.playlistUi?.title?:"")
+                PlaylistDetailAction.OnAddClick -> onNavigateToAddSongs(
+                    playlistId,
+                    state.playlistUi?.title ?: ""
+                )
             }
         }
     )
@@ -92,7 +95,6 @@ fun PlaylistDetailScreen(
     val listState = rememberLazyListState()
 
     var isImageLoadingAndError by remember { mutableStateOf(false) }
-
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -112,8 +114,9 @@ fun PlaylistDetailScreen(
             )
         }
         Spacer(modifier = Modifier.height(30.dp))
-        when{
-            state.playlistUi?.style == PlaylistCardStyle.Favourites ->{
+
+        when (state.playlistUi?.style) {
+            PlaylistCardStyle.Favourites -> {
                 HeartIcon(
                     modifier = Modifier
                         .clip(CircleShape)
@@ -121,7 +124,7 @@ fun PlaylistDetailScreen(
                     iconSize = 100.dp
                 )
             }
-            isImageLoadingAndError -> {
+            PlaylistCardStyle.NoCover -> {
                 PlaylistGradientIcon(
                     modifier = Modifier
                         .clip(CircleShape)
@@ -129,19 +132,39 @@ fun PlaylistDetailScreen(
                     iconSize = 100.dp
                 )
             }
-            state.coverImagePair != null  -> {
-                AudioAsyncImage(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(200.dp),
-                    model = state.coverImagePair.first,
-                    cacheKey = state.coverImagePair.second,
-                    onError = {
-                        isImageLoadingAndError = true
-                    }
-                )
+            is PlaylistCardStyle.HasCover -> {
+                if (isImageLoadingAndError) {
+                    PlaylistGradientIcon(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(200.dp),
+                        iconSize = 100.dp
+                    )
+                } else {
+                    val style = state.playlistUi.style
+                    AudioAsyncImage(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(200.dp),
+                        model = style.imageModel,
+                        cacheKey = when {
+                            style.isUploadedImage -> state.playlistUi.coverImageUriString!!
+                            !style.isUploadedImage -> "${state.playlistUi.id}_${state.playlistUi.audioIds.first()}"
+                            else -> state.playlistUi.id.toString()
+                        },
+                        onError = {
+                            isImageLoadingAndError = true
+                        }
+                    )
+
+                }
+
+            }
+            else -> {
             }
         }
+
+
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = state.playlistUi?.title ?: "",
@@ -194,7 +217,6 @@ fun PlaylistDetailScreen(
                             onSharedAction(MusicSharedAction.OnSongClick(audioUi))
                         },
                         onAddClick = {
-                            println("OnAddClick")
                             onAction(PlaylistDetailAction.OnAddClick)
                         }
                     )
@@ -227,9 +249,7 @@ private fun PlaylistDetailScreenPreview() {
                     id = 1,
                     title = "My Playlist Test",
                     style = PlaylistCardStyle.NoCover,
-                    audioIds = (0..10).map {
-                        it.toString()
-                    }
+                    count = 1
                 )
             ),
             onAction = {},

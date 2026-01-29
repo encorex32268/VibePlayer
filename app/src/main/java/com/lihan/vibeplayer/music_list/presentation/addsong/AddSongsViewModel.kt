@@ -185,13 +185,13 @@ class AddSongsViewModel(
     private fun loadAudios() {
         viewModelScope.launch {
 
-            val playlistDeferred = async { playlistId?.let { repository.getPlaylistById(it).first() } }
+            val playlistDeferred = async { playlistId?.let { repository.getPlaylistAudiosById(it).first() } }
             val allAudiosDeferred = async { repository.getAllAudios().first() }
 
             val playlist = playlistDeferred.await()
             val allAudios = allAudiosDeferred.await()
 
-            val playlistAudioIds = playlist?.audioIds?.toSet() ?: emptySet()
+            val playlistAudioIds = playlist?.audios?.map { it.id.toString() }?.toSet()?:emptySet()
 
             val processedAudios = coroutineScope {
                 allAudios.map { audio ->
@@ -229,12 +229,11 @@ class AddSongsViewModel(
         viewModelScope.launch {
             val selectedAudios = state.value.selectedAudios
 
-            repository.upsertPlaylist(
-                playlist = Playlist(
-                    id = playlistId,
-                    title = title,
-                    audioIds = selectedAudios
-                )
+            repository.createPlaylistWithAudios(
+                id = playlistId,
+                title = title,
+                audios = selectedAudios,
+                coverUri = null
             )
 
             _uiEvent.send(

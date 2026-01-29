@@ -1,6 +1,7 @@
 package com.lihan.vibeplayer.music_list.domain
 
 import android.net.Uri
+import com.lihan.vibeplayer.core.database.PlaylistAudioCrossRef
 import com.lihan.vibeplayer.core.database.PlaylistAudios
 import kotlinx.coroutines.flow.Flow
 
@@ -32,9 +33,11 @@ interface MusicListRepository {
 
     fun getAllPlaylist(): Flow<List<Playlist>>
 
-    fun getPlaylistById(id: Int): Flow<Playlist>
+    fun getPlaylistById(id: Int?): Flow<Playlist?>
 
+    fun getPlaylistAudios(): Flow<List<com.lihan.vibeplayer.music_list.domain.PlaylistAudios>>
 
-    fun getPlaylistWithAudios(playlistId: Int): Flow<PlaylistAudios>
+    fun getPlaylistAudiosById(id: Int?): Flow<com.lihan.vibeplayer.music_list.domain.PlaylistAudios?>
 
+    suspend fun createPlaylistWithAudios(id: Int?,title: String, coverUri: String? , audios: List<String>)
 }

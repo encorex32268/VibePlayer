@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
         AudioEntity::class,
         PlaylistEntity::class,
         PlaylistAudioCrossRef::class
-               ],
+    ],
     exportSchema = false
 )
 @TypeConverters(

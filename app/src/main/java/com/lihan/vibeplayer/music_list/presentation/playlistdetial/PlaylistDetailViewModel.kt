@@ -24,6 +24,8 @@ import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -31,6 +33,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlin.collections.first
 
 class PlaylistDetailViewModel(
     private val id: Int,
@@ -51,70 +54,53 @@ class PlaylistDetailViewModel(
         PlaylistDetailState()
     )
 
-    //TODO: Need Fix
     private fun initPlaylistUi() {
-//        val isFavouritesPlaylistId = id == -1
-//
-//        viewModelScope.launch {
-//            val playlist = repository.getPlaylistById(id).firstOrNull()
-//
-//            var currentPlaylistUi = when (playlist) {
-//                is FavouritesPlaylist -> playlist.toUi()
-//                is Playlist -> playlist.toUi(coverStyle = PlaylistCardStyle.NoCover)
-//                else -> null
-//            }
-//
-//            if (currentPlaylistUi == null){
-//                return@launch
-//            }
-//
-//            currentPlaylistUi.let { playlistUi ->
-//                repository
-//                    .getAudiosByIds(ids = playlistUi.audioIds.mapNotNull { it.toIntOrNull() })
-//                    .onEach { audios ->
-//                        val audioUiList = audios.map { it.toUi() }.map { audioUi ->
-//                            val albumImage = repository.getAlbumArtImage(audioUi.album)
-//                            audioUi.copy(albumImage = albumImage)
-//                        }
-//
-//                        val firstAudio = audios.firstOrNull()
-//                        val coverStyle = when {
-//                            playlistUi.coverImageUriString != null -> {
-//                                PlaylistCardStyle.HasCover(playlistUi.coverImageUriString.toUri())
-//                            }
-//
-//                            firstAudio?.album != null && firstAudio.album != Uri.EMPTY -> {
-//                                PlaylistCardStyle.HasCover(repository.getAlbumArtImage(firstAudio.album))
-//                            }
-//                            playlistUi.style == PlaylistCardStyle.Favourites -> {
-//                                PlaylistCardStyle.Favourites
-//                            }
-//                            else -> PlaylistCardStyle.NoCover
-//                        }
-//                        currentPlaylistUi = playlistUi.copy(
-//                            style = coverStyle
-//                        )
-//
-//                        val coverImageString = playlistUi.coverImageUriString
-//                        val coverImagePair =
-//                            when {
-//                                !coverImageString.isNullOrEmpty() -> coverImageString.toUri() to coverImageString
-//                                currentPlaylistUi.audioIds.isNotEmpty() -> (currentPlaylistUi.style as PlaylistCardStyle.HasCover).imageModel to "${currentPlaylistUi.id}_${currentPlaylistUi.audioIds.first()}"
-//                                else -> null to ""
-//                            }
-//
-//                        _state.update {
-//                            it.copy(
-//                                audios = audioUiList,
-//                                playlistUi = currentPlaylistUi,
-//                                coverImagePair = coverImagePair
-//                            )
-//                        }
-//
-//                    }
-//                    .launchIn(this)
-//
-//            }
-//        }
+
+        val isFavouritesPlaylistId = id == -1
+
+        repository
+            .getPlaylistAudiosById(id)
+            .onEach { playlistAudio ->
+                val audios = playlistAudio.audios
+                var playlistUi = playlistAudio.playlist.toUi(audios.size)
+
+                val firstAudio = audios.first()
+                val coverStyle = when{
+                    playlistUi.coverImageUriString != null -> {
+                        PlaylistCardStyle.HasCover(
+                            imageModel = playlistUi.coverImageUriString.toUri(),
+                            isUploadedImage = true
+                        )
+                    }
+                    firstAudio.album != Uri.EMPTY -> {
+                        val image = repository.getAlbumArtImage(firstAudio.album)
+                        PlaylistCardStyle.HasCover(
+                            imageModel = image,
+                            isUploadedImage = false
+                        )
+                    }
+                    else -> playlistUi.style
+                }
+                val hasImageAudios = coroutineScope {
+                    audios.map { audio ->
+                        async {
+                            val audioUi = audio.toUi()
+                            val albumImage = repository.getAlbumArtImage(audioUi.album)
+                            audioUi.copy(albumImage = albumImage)
+                        }
+                    }
+                }
+
+                playlistUi = playlistUi.copy(
+                    style = coverStyle
+                )
+
+                _state.update { it.copy(
+                    playlistUi = playlistUi,
+                    audios = hasImageAudios.awaitAll()
+                ) }
+
+
+            }.launchIn(viewModelScope)
     }
 }

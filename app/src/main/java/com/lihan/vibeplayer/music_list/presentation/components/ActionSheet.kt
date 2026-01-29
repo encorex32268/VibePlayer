@@ -160,8 +160,7 @@ private fun ActionSheetPreview() {
         ActionSheet(
             playlistUi = PlaylistUi(
                 id = 1,
-                title = "Favourites",
-                audioIds = listOf("1","2","3"),
+                title = "Favourites", count = 1,
                 style = PlaylistCardStyle.NoCover
             ),
             onDismiss = {},

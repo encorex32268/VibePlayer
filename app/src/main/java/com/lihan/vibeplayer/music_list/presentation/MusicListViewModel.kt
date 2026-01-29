@@ -7,14 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
-import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -22,13 +20,11 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.collections.distinctBy
 import androidx.core.net.toUri
-import com.lihan.vibeplayer.core.database.mapper.toDomain
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import com.lihan.vibeplayer.music_list.domain.PlaylistAudio
+import com.lihan.vibeplayer.music_list.domain.PlaylistAudios
+import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
 class MusicListViewModel(
@@ -214,17 +210,8 @@ class MusicListViewModel(
     }
 
     private fun onMenuDotsClick(playlistUi: PlaylistUi){
-        val newPlaylistUi = if (playlistUi.coverImageUriString.isNullOrEmpty()){
-            playlistUi
-        }else{
-            playlistUi.copy(
-                style = PlaylistCardStyle.HasCover(
-                    playlistUi.coverImageUriString.toUri()
-                )
-            )
-        }
         _state.update { it.copy(
-            selectActionSheetPlaylistUi = newPlaylistUi,
+            selectActionSheetPlaylistUi = playlistUi,
             isShowActionSheet = true
         ) }
     }
@@ -246,72 +233,44 @@ class MusicListViewModel(
         }
     }
 
-    //TODO: Need Fix
     private fun loadPlaylists() {
-        viewModelScope.launch {
-            repository
-                .getAllPlaylist()
-                .onEach { playlists ->
+        repository
+            .getPlaylistAudios()
+            .onEach { playlistAudios ->
 
-                    playlists.map { playlist ->
-                        playlist.id?.let { id ->
-                            async {
-                                repository.getAlbumArtImage(
-                                    repository
-                                        .getPlaylistWithAudios(id)
-                                        .first().audios.first().toDomain().album
-                                )
-                            }
+                val playlistUis = playlistAudios.map { playlistAudio ->
+                    val audios = playlistAudio.audios
+                    val playlistUi = playlistAudio.playlist.toUi(audios.size)
+
+                    val firstAudio = audios.first()
+                    val coverStyle = when{
+                        playlistUi.coverImageUriString != null -> {
+                            PlaylistCardStyle.HasCover(
+                                imageModel = playlistUi.coverImageUriString.toUri(),
+                                isUploadedImage = true
+                            )
                         }
+                        firstAudio.album != Uri.EMPTY -> {
+                            val image = repository.getAlbumArtImage(firstAudio.album)
+                            PlaylistCardStyle.HasCover(
+                                imageModel = image,
+                                isUploadedImage = false
+                            )
+                        }
+                        else -> playlistUi.style
                     }
-                }.launchIn(viewModelScope)
 
-        }
+                    playlistUi.copy(
+                        style = coverStyle,
+                        audioIds = audios.map { it.id.toString() }
+                    )
+                }
 
-
-
-//        combine(
-//            repository.getFavouritesPlaylist(),
-//            repository.getAllAudios(),
-//            repository.getAllPlaylist()
-//        ) { favouritesPlaylist, audios, playlists ->
-//
-//            val audioMap = audios.associateBy { it.id.toString() }
-//
-//            val playlistsUi = playlists.map { playlist ->
-//                println(">>> ${playlist.title}")
-//                val coverStyle = when {
-//                    playlist.coverImageUriString != null -> {
-//                        PlaylistCardStyle.HasCover(playlist.coverImageUriString.toUri())
-//                    }
-//                    else -> {
-//                        val firstAudioWithAlbum = playlist.audioIds
-//                            .mapNotNull { audioMap[it] }
-//                            .firstOrNull { it.album != Uri.EMPTY }
-//
-//                        if (firstAudioWithAlbum != null) {
-//                            PlaylistCardStyle.HasCover(repository.getAlbumArtImage(firstAudioWithAlbum.album))
-//                        } else {
-//                            PlaylistCardStyle.NoCover
-//                        }
-//                    }
-//                }
-//                playlist.toUi(coverStyle)
-//            }
-//
-//            val favouritesPlaylistUi = favouritesPlaylist?.toUi()
-//
-//            favouritesPlaylistUi to playlistsUi
-//        }
-//            .flowOn(Dispatchers.IO)
-//            .onEach { (favouritesPlaylistUi, playlists) ->
-//
-//                _state.update { it.copy(
-//                    favouritesPlaylists = favouritesPlaylistUi,
-//                    playlists = playlists
-//                )}
-//            }
-//            .launchIn(viewModelScope)
+                _state.update { it.copy(
+                    playlists = playlistUis
+                ) }
+            }
+            .launchIn(viewModelScope)
     }
 
 
@@ -341,5 +300,7 @@ class MusicListViewModel(
         }.launchIn(viewModelScope)
     }
 
-
 }
+
+
+
