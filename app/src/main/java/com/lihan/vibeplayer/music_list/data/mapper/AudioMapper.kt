@@ -1,9 +1,8 @@
 package com.lihan.vibeplayer.music_list.data.mapper
 
-import android.net.Uri
+import androidx.core.net.toUri
 import com.lihan.vibeplayer.core.database.AudioEntity
 import com.lihan.vibeplayer.music_list.domain.Audio
-import androidx.core.net.toUri
 
 fun AudioEntity.toDomain(): Audio{
     return Audio(

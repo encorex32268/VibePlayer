@@ -8,7 +8,6 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import com.lihan.vibeplayer.core.database.AudioEntity
 import com.lihan.vibeplayer.core.database.VibePlayerRoomDatabase
 import com.lihan.vibeplayer.music_list.data.mapper.toData
 import com.lihan.vibeplayer.music_list.data.mapper.toDmain

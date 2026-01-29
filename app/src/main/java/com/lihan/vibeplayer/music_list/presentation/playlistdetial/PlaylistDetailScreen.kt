@@ -15,7 +15,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,31 +23,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lihan.vibeplayer.R
-import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
-import com.lihan.vibeplayer.music_list.domain.Audio
-import com.lihan.vibeplayer.music_list.domain.Playlist
 import com.lihan.vibeplayer.music_list.presentation.MusicSharedAction
 import com.lihan.vibeplayer.music_list.presentation.MusicSharedViewModel
 import com.lihan.vibeplayer.music_list.presentation.components.AudioAsyncImage
 import com.lihan.vibeplayer.music_list.presentation.components.HeartIcon
 import com.lihan.vibeplayer.music_list.presentation.components.PlaylistGradientIcon
 import com.lihan.vibeplayer.music_list.presentation.components.SongListContent
-import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
-import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicAction
 import com.lihan.vibeplayer.ui.design_system.buttons.VPOutlineButton
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.TextSecondary
@@ -160,14 +152,17 @@ fun PlaylistDetailScreen(
                 }
 
             }
-            else -> {
-            }
+            else -> Unit
         }
 
 
         Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = state.playlistUi?.title ?: "",
+            text = if (state.playlistUi?.style is PlaylistCardStyle.Favourites){
+                stringResource(R.string.playlist_favourites)
+            }else{
+                state.playlistUi?.title ?: ""
+            },
             style = MaterialTheme.typography.titleLarge,
             color = TextPrimary
         )

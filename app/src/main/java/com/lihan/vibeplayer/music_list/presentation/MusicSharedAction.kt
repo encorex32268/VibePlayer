@@ -1,6 +1,5 @@
 package com.lihan.vibeplayer.music_list.presentation
 
-import com.lihan.vibeplayer.music_list.domain.Audio
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 
 sealed interface MusicSharedAction {

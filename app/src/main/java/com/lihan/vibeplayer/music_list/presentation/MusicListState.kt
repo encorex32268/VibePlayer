@@ -1,11 +1,7 @@
 package com.lihan.vibeplayer.music_list.presentation
 
 import androidx.compose.foundation.text.input.TextFieldState
-import com.lihan.vibeplayer.core.presentation.util.UiText
-import com.lihan.vibeplayer.music_list.domain.FavouritesPlaylist
-import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
-import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 
 data class MusicListState(
     val playlists: List<PlaylistUi> = emptyList(),

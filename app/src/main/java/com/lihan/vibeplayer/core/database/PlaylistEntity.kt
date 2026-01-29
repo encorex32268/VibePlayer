@@ -1,6 +1,5 @@
 package com.lihan.vibeplayer.core.database
 
-import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

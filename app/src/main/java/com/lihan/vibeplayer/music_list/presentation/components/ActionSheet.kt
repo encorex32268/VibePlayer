@@ -3,7 +3,6 @@
 package com.lihan.vibeplayer.music_list.presentation.components
 
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -30,16 +29,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
+import com.lihan.vibeplayer.core.domain.FAVOURITES_ID
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
-import com.lihan.vibeplayer.music_list.presentation.MusicListViewModel.Companion.FAVOURITES_ID
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 import com.lihan.vibeplayer.ui.theme.SurfaceHighest
 import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
-
-
 
 
 @Composable

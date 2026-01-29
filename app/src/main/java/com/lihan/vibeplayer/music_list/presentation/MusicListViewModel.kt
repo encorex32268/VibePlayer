@@ -6,6 +6,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lihan.vibeplayer.core.domain.FAVOURITES_ID
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
@@ -15,7 +16,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -27,10 +27,6 @@ import kotlinx.coroutines.launch
 class MusicListViewModel(
     private val repository: MusicListRepository
 ) : ViewModel() {
-
-    companion object{
-        const val FAVOURITES_ID = -1
-    }
 
     private var hasInitialLoadedData = false
 
