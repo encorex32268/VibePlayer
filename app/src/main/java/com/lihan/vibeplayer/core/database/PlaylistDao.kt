@@ -32,7 +32,7 @@ interface PlaylistDao {
     fun getPlaylistAudios(): Flow<List<PlaylistAudios>>
 
     @Query("SELECT * From PlaylistEntity WHERE id=:id")
-    fun getPlaylistAudiosById(id: Int?): Flow<PlaylistAudios>
+    fun getPlaylistAudiosById(id: Int?): Flow<PlaylistAudios?>
 
 
     @Transaction

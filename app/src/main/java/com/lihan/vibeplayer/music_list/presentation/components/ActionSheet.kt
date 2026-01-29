@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
+import com.lihan.vibeplayer.music_list.presentation.MusicListViewModel.Companion.FAVOURITES_ID
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 import com.lihan.vibeplayer.ui.theme.SurfaceHighest
@@ -39,7 +40,7 @@ import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
 
-private const val FavouritesID = -1
+
 
 @Composable
 fun ActionSheet(
@@ -81,12 +82,16 @@ fun ActionSheet(
         ){
 
             PlaylistCard(
-                title = if (playlistUi.id == FavouritesID){
+                title = if (playlistUi.id == FAVOURITES_ID){
                     stringResource(R.string.playlist_favourites)
                 }else{
                     playlistUi.title
                 },
-                count = playlistUi.audioIds.size,
+                count = if (playlistUi.id == FAVOURITES_ID){
+                    playlistUi.count
+                }else{
+                    playlistUi.audioIds.size
+                },
                 playlistCardStyle = playlistUi.style,
                 imageCacheKey =  when {
                     !playlistUi.coverImageUriString.isNullOrEmpty() -> playlistUi.coverImageUriString

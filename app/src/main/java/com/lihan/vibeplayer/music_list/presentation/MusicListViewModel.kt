@@ -15,6 +15,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -26,6 +27,10 @@ import kotlinx.coroutines.launch
 class MusicListViewModel(
     private val repository: MusicListRepository
 ) : ViewModel() {
+
+    companion object{
+        const val FAVOURITES_ID = -1
+    }
 
     private var hasInitialLoadedData = false
 
@@ -70,7 +75,7 @@ class MusicListViewModel(
             val currentPlaylistUi = state.value.selectActionSheetPlaylistUi?:return@launch
 
             val id = if (currentPlaylistUi.style == PlaylistCardStyle.Favourites){
-                -1
+                FAVOURITES_ID
             }else{
                 currentPlaylistUi.id
             }
@@ -201,7 +206,9 @@ class MusicListViewModel(
     private fun onFavouritesMenuDotsClick(){
         _state.update { it.copy(
             selectActionSheetPlaylistUi = PlaylistUi(
-                id = -1, style = PlaylistCardStyle.Favourites
+                id = FAVOURITES_ID,
+                style = PlaylistCardStyle.Favourites,
+                count = it.favouritesPlaylistsCount
             ),
             isShowActionSheet = true
         ) }

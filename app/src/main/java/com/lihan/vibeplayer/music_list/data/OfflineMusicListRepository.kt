@@ -138,8 +138,8 @@ class OfflineMusicListRepository(
         return db.playlistDao.getPlaylistAudios().map { it.map {  dbPlaylistAudios -> dbPlaylistAudios.toDmain() } }
     }
 
-    override fun getPlaylistAudiosById(id: Int?): Flow<PlaylistAudios> {
-        return db.playlistDao.getPlaylistAudiosById(id).map { it.toDmain() }
+    override fun getPlaylistAudiosById(id: Int?): Flow<PlaylistAudios?> {
+        return db.playlistDao.getPlaylistAudiosById(id).map { it?.toDmain() }
     }
 
     override suspend fun createPlaylistWithAudios(

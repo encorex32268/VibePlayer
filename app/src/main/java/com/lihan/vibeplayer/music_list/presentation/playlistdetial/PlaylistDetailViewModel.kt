@@ -26,6 +26,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -60,6 +61,7 @@ class PlaylistDetailViewModel(
 
         repository
             .getPlaylistAudiosById(id)
+            .filterNotNull()
             .onEach { playlistAudio ->
                 val audios = playlistAudio.audios
                 var playlistUi = playlistAudio.playlist.toUi(audios.size)
