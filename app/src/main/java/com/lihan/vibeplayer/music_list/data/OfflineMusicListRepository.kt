@@ -8,6 +8,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import com.lihan.vibeplayer.core.database.AudioEntity
 import com.lihan.vibeplayer.core.database.VibePlayerRoomDatabase
 import com.lihan.vibeplayer.music_list.data.mapper.toData
 import com.lihan.vibeplayer.music_list.data.mapper.toDmain
@@ -29,6 +30,18 @@ class OfflineMusicListRepository(
     private val context: Context,
     private val db: VibePlayerRoomDatabase
 ): MusicListRepository{
+
+    override suspend fun upsertAudio(audio: Audio) {
+        db.audioDao.upsertAudio(audio.toData())
+    }
+
+    override fun getAudioById(audioId: Int): Flow<Audio?> {
+        return db.audioDao.getAudioById(audioId).map { it?.toDomain() }
+    }
+
+    override suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean) {
+        db.audioDao.updateFavouriteStatus(audioId,isFavourite)
+    }
 
     override fun getAllAudiosAndSync(): Flow<List<Audio>> {
         return db.audioDao.getAudios().onStart {
@@ -78,6 +91,10 @@ class OfflineMusicListRepository(
         return db.audioDao.getFavouriteAudios().map { it.map { audioEntity -> audioEntity.toDomain() } }
     }
 
+    override fun getFavouriteCount(): Flow<Int> {
+        return db.audioDao.getFavouriteCount()
+    }
+
     override suspend fun getAlbumArtImage(uri: Uri): ByteArray? {
         return withContext(Dispatchers.IO) {
             val retriever = MediaMetadataRetriever()
@@ -92,10 +109,6 @@ class OfflineMusicListRepository(
                 retriever.release()
             }
         }
-    }
-
-    override suspend fun updateFavouriteStatus(audioId: Long, isFavourite: Boolean) {
-        db.audioDao.updateFavouriteStatus(audioId,isFavourite)
     }
 
     override suspend fun upsertPlaylist(playlist: Playlist) {

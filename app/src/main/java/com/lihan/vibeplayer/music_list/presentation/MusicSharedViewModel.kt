@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.lihan.vibeplayer.music_list.presentation
 
 import androidx.lifecycle.ViewModel
@@ -7,23 +9,32 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
+import com.lihan.vibeplayer.music_list.data.mapper.toData
 import com.lihan.vibeplayer.music_list.domain.ExoPlayerManager
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
 import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -36,18 +47,22 @@ class MusicSharedViewModel(
 ) : ViewModel() {
 
     private var progressJob: Job? = null
+    private var progressFavouriteJob: Job? =null
 
     private var exoPlayerListener: Player.Listener? = null
 
     private val _state = MutableStateFlow(MusicSharedState())
-    val state = _state.asStateFlow()
+    val state = _state
+        .onStart {
+            loadAudios()
+            observePlayer()
+            observeCurrentAudio()
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            MusicSharedState()
+        )
 
-
-    init {
-        loadAudios()
-        observeFavouritePlaylist()
-        observePlayer()
-    }
 
     fun onAction(action: MusicSharedAction) {
         when (action) {
@@ -100,14 +115,37 @@ class MusicSharedViewModel(
         }
     }
 
+    private fun observeCurrentAudio(){
+        state
+            .map { it.playingAudioUi }
+            .flatMapLatest {
+                if (it != null){
+                    repository.getAudioById(it.id.toInt())
+                }else emptyFlow()
+            }
+            .filterNotNull()
+            .onEach { audioUi ->
+                _state.update { it.copy(
+                       playingAudioUi = it.playingAudioUi?.copy(
+                           isFavourite = audioUi.isFavourite
+                       )
+                    )
+                }
+
+            }.launchIn(viewModelScope)
+    }
+
     private fun onFavouriteClick(){
         val currentPlayingAudioUi = state.value.playingAudioUi ?: return
-
-        _state.update { state -> state.copy(
-            playingAudioUi = currentPlayingAudioUi.copy(
-                isFavourite = !currentPlayingAudioUi.isFavourite
-            )
-        ) }
+        progressFavouriteJob?.cancel()
+        progressFavouriteJob = viewModelScope.launch {
+            //avoid fast click
+            repository
+                .updateFavouriteStatus(
+                    currentPlayingAudioUi.id.toInt(),
+                    !currentPlayingAudioUi.isFavourite
+                )
+        }
 
     }
 
@@ -287,25 +325,6 @@ class MusicSharedViewModel(
 
     }
 
-    //TODO: Need Fix
-    private fun observeFavouritePlaylist(){
-//        repository
-//            .getFavouritesPlaylist()
-//            .filterNotNull()
-//            .onEach { favouritesPlaylist ->
-//                val currentSelectedAudioUi = state.value.playingAudioUi ?: return@onEach
-//                if (
-//                    currentSelectedAudioUi.id.toString() in favouritesPlaylist.audioIds && !currentSelectedAudioUi.isFavourite
-//                    ){
-//                    _state.update { it.copy(
-//                        playingAudioUi = currentSelectedAudioUi.copy(
-//                            isFavourite = true
-//                        )
-//                    ) }
-//                }
-//            }
-//            .launchIn(viewModelScope)
-    }
 
     private fun updateShuffledList() {
         val items = exoPlayerManager.getPlayingMediaItems()

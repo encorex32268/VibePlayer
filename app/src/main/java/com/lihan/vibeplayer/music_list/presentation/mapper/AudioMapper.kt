@@ -10,7 +10,8 @@ fun Audio.toUi(): AudioUi {
         songTitle = songTitle,
         artisName = artisName,
         duration = duration,
-        size = size
+        size = size,
+        isFavourite = isFavourite
     )
 }
 
@@ -21,6 +22,7 @@ fun AudioUi.toDomain(): Audio {
         songTitle = songTitle,
         artisName = artisName,
         duration = duration,
-        size = size
+        size = size,
+        isFavourite = isFavourite
     )
 }

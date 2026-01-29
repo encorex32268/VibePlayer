@@ -3,10 +3,12 @@ package com.lihan.vibeplayer.music_list.presentation
 import android.net.Uri
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
+import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 import kotlinx.coroutines.channels.Channel
@@ -20,12 +22,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
-import com.lihan.vibeplayer.music_list.domain.PlaylistAudio
-import com.lihan.vibeplayer.music_list.domain.PlaylistAudios
-import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 
 class MusicListViewModel(
     private val repository: MusicListRepository
@@ -41,6 +37,7 @@ class MusicListViewModel(
         .onStart {
             if (!hasInitialLoadedData) {
                 loadPlaylists()
+                observeFavouritePlaylist()
                 observeCreatePlaylistTextField()
                 observeRenameTextField()
                 hasInitialLoadedData = true
@@ -202,9 +199,10 @@ class MusicListViewModel(
     }
 
     private fun onFavouritesMenuDotsClick(){
-        val favouritesPlaylistUi = state.value.favouritesPlaylists
         _state.update { it.copy(
-            selectActionSheetPlaylistUi = favouritesPlaylistUi,
+            selectActionSheetPlaylistUi = PlaylistUi(
+                id = -1, style = PlaylistCardStyle.Favourites
+            ),
             isShowActionSheet = true
         ) }
     }
@@ -232,6 +230,19 @@ class MusicListViewModel(
             )
         }
     }
+
+
+    private fun observeFavouritePlaylist(){
+        repository
+            .getFavouriteCount()
+            .onEach {  count ->
+                _state.update { it.copy(
+                    favouritesPlaylistsCount = count
+                ) }
+            }
+            .launchIn(viewModelScope)
+    }
+
 
     private fun loadPlaylists() {
         repository

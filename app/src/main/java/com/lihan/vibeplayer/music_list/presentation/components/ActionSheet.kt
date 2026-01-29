@@ -38,6 +38,9 @@ import com.lihan.vibeplayer.ui.theme.SurfaceOutline
 import com.lihan.vibeplayer.ui.theme.TextPrimary
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
+
+private const val FavouritesID = -1
+
 @Composable
 fun ActionSheet(
     playlistUi: PlaylistUi,
@@ -76,8 +79,13 @@ fun ActionSheet(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ){
+
             PlaylistCard(
-                title = playlistUi.title,
+                title = if (playlistUi.id == FavouritesID){
+                    stringResource(R.string.playlist_favourites)
+                }else{
+                    playlistUi.title
+                },
                 count = playlistUi.audioIds.size,
                 playlistCardStyle = playlistUi.style,
                 imageCacheKey =  when {

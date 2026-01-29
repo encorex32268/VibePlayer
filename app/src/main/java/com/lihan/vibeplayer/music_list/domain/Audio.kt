@@ -9,4 +9,5 @@ data class Audio(
     val artisName: String,
     val duration: Long,
     val size: Long,
+    val isFavourite: Boolean = false
 )

@@ -7,6 +7,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 @Dao
 interface AudioDao{
@@ -23,9 +24,14 @@ interface AudioDao{
     @Query("SELECT * FROM audioentity")
     fun getAudios(): Flow<List<AudioEntity>>
 
+    @Query("SELECT * FROM AudioEntity WHERE id = :audioId")
+    fun getAudioById(audioId: Int): Flow<AudioEntity?>
+
     @Query("SELECT * FROM AudioEntity WHERE id IN(:ids)")
     fun getAudiosByIds(ids: List<Int>): Flow<List<AudioEntity>>
 
+    @Query("UPDATE AudioEntity SET isFavourite = :isFavourite WHERE id = :audioId")
+    suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean)
 
     @Transaction
     suspend fun upsertAudioList(audioEntities: List<AudioEntity>){
@@ -34,16 +40,21 @@ interface AudioDao{
 
         deleteAudiosByIds(newAudioIds)
 
-        audioEntities.forEach {
+        val favouriteIds = getFavouriteAudios().first().map { it.id }.toSet()
+
+        val mergedAudios = audioEntities.map { audio ->
+           audio.copy(isFavourite = audio.id in favouriteIds)
+        }
+
+        mergedAudios.forEach {
             upsertAudio(it)
         }
     }
 
-    @Query("UPDATE AudioEntity SET isFavourite = :isFavourite WHERE id = :audioId")
-    suspend fun updateFavouriteStatus(audioId: Long, isFavourite: Boolean)
-
-
     @Query("SELECT * FROM AudioEntity WHERE isFavourite = 1")
     fun getFavouriteAudios(): Flow<List<AudioEntity>>
+
+    @Query("SELECT COUNT(*) FROM AudioEntity WHERE isFavourite = 1")
+    fun getFavouriteCount(): Flow<Int>
 
 }

@@ -9,7 +9,7 @@ import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 
 data class MusicListState(
     val playlists: List<PlaylistUi> = emptyList(),
-    val favouritesPlaylists: PlaylistUi?=null,
+    val favouritesPlaylistsCount: Int = 0,
     val isShowCreatePlaylistBottomSheet: Boolean = false,
     val createPlaylistTextFieldState: TextFieldState = TextFieldState(),
     val isCreateButtonEnabled: Boolean = false,
