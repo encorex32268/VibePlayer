@@ -10,12 +10,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -35,8 +38,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -88,6 +93,10 @@ fun FullScreenPlayer(
     } else {
         currentPosition()
     }
+
+    val fraction = if (audioUi.duration > 0f) {
+        (if (isDragging) sliderValue else progress()).coerceIn(0f, 1f)
+    } else 0f
 
     LaunchedEffect(modeStatusBanner) {
         if (modeStatusBanner != null) {
@@ -172,57 +181,66 @@ fun FullScreenPlayer(
                 textAlign = TextAlign.Center,
             )
         }
-
-        Slider(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .background(color = Color.Red.copy(alpha = 0.2f))
                 .padding(horizontal = 16.dp),
-            value = if (isDragging) {
-                sliderValue
-            } else {
-                progress()
-            },
-            onValueChange = { newValue ->
-                isDragging = true
-                sliderValue = newValue
-            },
-            onValueChangeFinished = {
-                isDragging = false
-                onSeek((sliderValue * audioUi.duration).toLong())
-            },
-            track = { state ->
-                SliderDefaults.Track(
-                    modifier = Modifier
-                        .height(6.dp),
-                    sliderState = state,
-                    drawStopIndicator = {},
-                    thumbTrackGapSize = 0.dp,
-                    colors = SliderDefaults.colors(
-                        activeTrackColor = TextPrimary,
-                        inactiveTrackColor = SurfaceOutline
-                    ),
-                )
-            },
-            thumb = {
-                Box(
-                    modifier = Modifier.width(1.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
+        ){
+            Slider(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                value = if (isDragging) {
+                    sliderValue
+                } else {
+                    progress()
+                },
+                onValueChange = { newValue ->
+                    isDragging = true
+                    sliderValue = newValue
+                },
+                onValueChangeFinished = {
+                    isDragging = false
+                    onSeek((sliderValue * audioUi.duration).toLong())
+                },
+                track = { state ->
+                    SliderDefaults.Track(
                         modifier = Modifier
-                            .wrapContentWidth(unbounded = true)
-                            .background(TextPrimary, RoundedCornerShape(100))
-                            .padding(horizontal = 4.dp),
-                        text = "${displayPosition.toTimeStringWithoutZero()}/${audioUi.duration.toTimeStringWithoutZero()}",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Normal,
-                        color = SurfaceBG
+                            .height(6.dp),
+                        sliderState = state,
+                        drawStopIndicator = {},
+                        thumbTrackGapSize = 0.dp,
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = TextPrimary,
+                            inactiveTrackColor = SurfaceOutline
+                        ),
                     )
-
+                },
+                thumb = {
+                    Box(
+                        modifier = Modifier.width(1.dp),
+                        contentAlignment = Alignment.CenterEnd,
+                    ){}
                 }
+            )
 
-            }
-        )
+            Text(
+                modifier = Modifier
+                    .align(
+                        BiasAlignment(
+                            horizontalBias = (fraction * 2) - 1f,
+                            verticalBias = 0f
+                        )
+                    )
+                    .background(TextPrimary, RoundedCornerShape(100))
+                    .padding(horizontal = 4.dp),
+                text = "${displayPosition.toTimeStringWithoutZero()}/${audioUi.duration.toTimeStringWithoutZero()}",
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Normal,
+                color = SurfaceBG
+            )
+
+        }
 
         Box(
             modifier = Modifier
@@ -282,7 +300,7 @@ private fun FullScreenPlayerPreview() {
             onSkipNextClick = {},
             onSkipPreviousClick = {},
             onCollapseClick = {},
-            progress = { 0.5f },
+            progress = { 1f },
             onSeek = {},
             currentPosition = { 2000 },
             isEnabledShuffle = true,
