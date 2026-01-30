@@ -184,7 +184,6 @@ fun FullScreenPlayer(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = Color.Red.copy(alpha = 0.2f))
                 .padding(horizontal = 16.dp),
         ){
             Slider(

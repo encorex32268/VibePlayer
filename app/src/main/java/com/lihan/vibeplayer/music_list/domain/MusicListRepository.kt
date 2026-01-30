@@ -31,7 +31,7 @@ interface MusicListRepository {
     suspend fun getAlbumArtImage(uri: Uri): ByteArray?
 
 
-    suspend fun upsertPlaylist(playlist: Playlist)
+    suspend fun upsertPlaylist(playlist: Playlist): Long
 
     suspend fun deletePlaylist(playlist: Playlist)
 

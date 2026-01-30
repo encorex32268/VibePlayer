@@ -40,7 +40,7 @@ interface PlaylistDao {
 
         val existingPlaylist = id?.let { getPlaylistById(it).firstOrNull() }
         val finalCoverUri = existingPlaylist?.coverImageUriString ?: coverUri
-
+        //
         val upsertId = upsert(
             playlistEntity = PlaylistEntity(
                 id = id?:0,
@@ -48,11 +48,12 @@ interface PlaylistDao {
                 coverImageUriString = finalCoverUri
             )
         )
+        val finalPlaylistId = if (upsertId == -1L) id ?: 0 else upsertId.toInt()
 
         audios.forEach { audioId ->
             insertCrossRef(
                 crossRef = PlaylistAudioCrossRef(
-                    playlistId = upsertId.toInt(),
+                    playlistId = finalPlaylistId,
                     audioId = audioId.toInt()
                 )
             )

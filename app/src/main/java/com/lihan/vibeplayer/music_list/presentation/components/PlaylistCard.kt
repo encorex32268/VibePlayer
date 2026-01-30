@@ -33,11 +33,12 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 @Composable
 fun PlaylistCard(
     title: String,
-    count: Int,
     playlistCardStyle: PlaylistCardStyle,
     modifier: Modifier = Modifier,
+    onItemClick: (() -> Unit)?=null,
     onMenuDotsClick: (() -> Unit)?=null,
-    imageCacheKey: String? = null
+    imageCacheKey: String? = null,
+    count: Int?=null
 ) {
     var isImageLoadingAndError by remember(imageCacheKey){ mutableStateOf(false) }
 
@@ -45,21 +46,24 @@ fun PlaylistCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = {
-                onMenuDotsClick?.invoke()
+                onItemClick?.invoke()
             }),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         when(playlistCardStyle){
+            PlaylistCardStyle.Create -> {
+                CardCreateIcon()
+            }
             PlaylistCardStyle.Favourites -> {
-                HeartIcon()
+                CardFavouriteIcon()
             }
             PlaylistCardStyle.NoCover -> {
-                PlaylistGradientIcon()
+                CardNoCoverIcon()
             }
             is PlaylistCardStyle.HasCover -> {
                 if (isImageLoadingAndError){
-                    PlaylistGradientIcon()
+                    CardNoCoverIcon()
                 }else{
                     AudioAsyncImage(
                         model = (playlistCardStyle).imageModel,
@@ -85,12 +89,14 @@ fun PlaylistCard(
                 style = MaterialTheme.typography.titleMedium,
                 color = TextPrimary
             )
-            Text(
-                text = stringResource(R.string.playlist_song_count,count),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Normal,
-                color = TextSecondary
-            )
+            if (count != null){
+                Text(
+                    text = stringResource(R.string.playlist_song_count,count),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Normal,
+                    color = TextSecondary
+                )
+            }
         }
         if (onMenuDotsClick!= null){
             CircleIconButton (
@@ -112,6 +118,13 @@ private fun PlaylistCardPreview() {
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
+            PlaylistCard(
+                title = "Friday Chill",
+                count = null,
+                onMenuDotsClick = null,
+                playlistCardStyle = PlaylistCardStyle.Create,
+                imageCacheKey = ""
+            )
             PlaylistCard(
                 title = "Friday Chill",
                 count = 222,

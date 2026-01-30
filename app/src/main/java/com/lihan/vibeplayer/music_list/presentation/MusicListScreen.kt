@@ -135,6 +135,7 @@ fun MusicListScreen(
                         PLAYLIST -> {
                             PlayListPage(
                                 state = state,
+                                sharedState = sharedState,
                                 onCreatePlaylistAddClick = {
                                     onAction(MusicListAction.OnCreatePlaylistAddClick)
                                 },

@@ -10,7 +10,6 @@ import android.os.Build
 import android.provider.MediaStore
 import com.lihan.vibeplayer.core.database.VibePlayerRoomDatabase
 import com.lihan.vibeplayer.music_list.data.mapper.toData
-import com.lihan.vibeplayer.music_list.data.mapper.toDmain
 import com.lihan.vibeplayer.music_list.data.mapper.toDomain
 import com.lihan.vibeplayer.music_list.domain.Audio
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
@@ -110,8 +109,8 @@ class OfflineMusicListRepository(
         }
     }
 
-    override suspend fun upsertPlaylist(playlist: Playlist) {
-        db.playlistDao.upsert(
+    override suspend fun upsertPlaylist(playlist: Playlist): Long {
+        return db.playlistDao.upsert(
             playlist.toData()
         )
     }
@@ -134,11 +133,15 @@ class OfflineMusicListRepository(
     }
 
     override fun getPlaylistAudios(): Flow<List<PlaylistAudios>> {
-        return db.playlistDao.getPlaylistAudios().map { it.map {  dbPlaylistAudios -> dbPlaylistAudios.toDmain() } }
+        return db.playlistDao
+            .getPlaylistAudios()
+            //Need to reverse the list so the primary audio's album art is prioritized.
+            .map { it.map {  dbPlaylistAudios -> dbPlaylistAudios.toDomain() }.reversed()}
+
     }
 
     override fun getPlaylistAudiosById(id: Int?): Flow<PlaylistAudios?> {
-        return db.playlistDao.getPlaylistAudiosById(id).map { it?.toDmain() }
+        return db.playlistDao.getPlaylistAudiosById(id).map { it?.toDomain() }
     }
 
     override suspend fun createPlaylistWithAudios(

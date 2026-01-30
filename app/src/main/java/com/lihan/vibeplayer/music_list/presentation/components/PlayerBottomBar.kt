@@ -11,15 +11,19 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.util.UiText
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
+import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 import com.lihan.vibeplayer.music_list.presentation.model.RepeatModeStatus
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 
@@ -28,11 +32,16 @@ fun PlayerBottomBar(
     isExpandPlayer: Boolean,
     isPlaying: Boolean,
     isEnabledShuffle: Boolean,
+    isShowAddToPlaylistSheet: Boolean,
+    isShowCreatePlaylist: Boolean,
     modeStatusBanner: UiText?,
+    playlists: List<PlaylistUi>,
     repeatModeStatus: RepeatModeStatus,
     audioUi: AudioUi,
     currentPosition: Long,
     duration: Long,
+    createPlaylistTextFieldState: TextFieldState,
+    isCreateButtonEnabled: Boolean,
     onSeek: (Long) -> Unit,
     onPlayClick: () -> Unit,
     onSkipNextClick: () -> Unit,
@@ -44,6 +53,12 @@ fun PlayerBottomBar(
     onHideModeChangedBanner: () -> Unit,
     onFavouriteClick: () -> Unit,
     onPlaylistClick: () -> Unit,
+    onCreatePlaylistCancelClick: () -> Unit,
+    onCreatePlaylistConfirmClick: () -> Unit,
+    onCreatePlaylistClick: () -> Unit,
+    onFavouritesClick: () -> Unit,
+    oDismissAddToPlaylistSheet: () -> Unit,
+    onPlaylistItemClick: (PlaylistUi) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -97,6 +112,28 @@ fun PlayerBottomBar(
                 onPlaylistClick = onPlaylistClick
             )
 
+            if (isShowAddToPlaylistSheet){
+                AddToPlaylistSheet(
+                    playlists = playlists,
+                    onCreatePlaylistClick = onCreatePlaylistClick,
+                    onFavouritesClick = onFavouritesClick,
+                    onDismiss = oDismissAddToPlaylistSheet,
+                    onItemClick = onPlaylistItemClick
+                )
+
+            }
+            if (isShowCreatePlaylist){
+                PlaylistBottomSheet(
+                    title = stringResource(R.string.playlist_create_new_playlist),
+                    placeholder = stringResource(R.string.playlist_bottom_sheet_place_holder),
+                    confirmText = stringResource(R.string.create),
+                    textFieldState = createPlaylistTextFieldState,
+                    isCreateButtonEnabled = isCreateButtonEnabled,
+                    onCancelClick = onCreatePlaylistCancelClick,
+                    onConfirmClick = onCreatePlaylistConfirmClick
+                )
+            }
+
 
         } else {
 
@@ -148,7 +185,18 @@ private fun PlayerBottomBarPreview() {
             onHideModeChangedBanner = {},
             repeatModeStatus = RepeatModeStatus.Off,
             onPlaylistClick = {},
-            onFavouriteClick = {}
+            onFavouriteClick = {},
+            isShowAddToPlaylistSheet = true,
+            createPlaylistTextFieldState = TextFieldState(),
+            isCreateButtonEnabled = false,
+            isShowCreatePlaylist = false,
+            onCreatePlaylistCancelClick = {},
+            onCreatePlaylistConfirmClick = {},
+            onFavouritesClick = {},
+            onCreatePlaylistClick = {},
+            onPlaylistItemClick = {},
+            oDismissAddToPlaylistSheet = {},
+            playlists = emptyList()
         )
     }
 

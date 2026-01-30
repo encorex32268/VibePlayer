@@ -73,7 +73,7 @@ class PlaylistDetailViewModel(
                     val audios = playlistAudio.audios
                     var playlistUi = playlistAudio.playlist.toUi(audios.size)
 
-                    val firstAudio = audios.first()
+                    val firstAudio = audios.firstOrNull()
                     val coverStyle = when{
                         playlistUi.coverImageUriString != null -> {
                             PlaylistCardStyle.HasCover(
@@ -81,7 +81,7 @@ class PlaylistDetailViewModel(
                                 isUploadedImage = true
                             )
                         }
-                        firstAudio.album != Uri.EMPTY -> {
+                        firstAudio!=null && firstAudio.album != Uri.EMPTY -> {
                             val image = repository.getAlbumArtImage(firstAudio.album)
                             PlaylistCardStyle.HasCover(
                                 imageModel = image,

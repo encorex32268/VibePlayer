@@ -4,7 +4,6 @@ import androidx.compose.foundation.text.input.TextFieldState
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 
 data class MusicListState(
-    val playlists: List<PlaylistUi> = emptyList(),
     val favouritesPlaylistsCount: Int = 0,
     val isShowCreatePlaylistBottomSheet: Boolean = false,
     val createPlaylistTextFieldState: TextFieldState = TextFieldState(),

@@ -37,7 +37,6 @@ class MusicListViewModel(
     val state = _state
         .onStart {
             if (!hasInitialLoadedData) {
-                loadPlaylists()
                 observeFavouritePlaylist()
                 observeCreatePlaylistTextField()
                 observeRenameTextField()
@@ -241,47 +240,6 @@ class MusicListViewModel(
             .onEach {  count ->
                 _state.update { it.copy(
                     favouritesPlaylistsCount = count
-                ) }
-            }
-            .launchIn(viewModelScope)
-    }
-
-
-    private fun loadPlaylists() {
-        repository
-            .getPlaylistAudios()
-            .onEach { playlistAudios ->
-
-                val playlistUis = playlistAudios.map { playlistAudio ->
-                    val audios = playlistAudio.audios
-                    val playlistUi = playlistAudio.playlist.toUi(audios.size)
-
-                    val firstAudio = audios.first()
-                    val coverStyle = when{
-                        playlistUi.coverImageUriString != null -> {
-                            PlaylistCardStyle.HasCover(
-                                imageModel = playlistUi.coverImageUriString.toUri(),
-                                isUploadedImage = true
-                            )
-                        }
-                        firstAudio.album != Uri.EMPTY -> {
-                            val image = repository.getAlbumArtImage(firstAudio.album)
-                            PlaylistCardStyle.HasCover(
-                                imageModel = image,
-                                isUploadedImage = false
-                            )
-                        }
-                        else -> playlistUi.style
-                    }
-
-                    playlistUi.copy(
-                        style = coverStyle,
-                        audioIds = audios.map { it.id.toString() }
-                    )
-                }
-
-                _state.update { it.copy(
-                    playlists = playlistUis
                 ) }
             }
             .launchIn(viewModelScope)

@@ -37,6 +37,7 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 @Composable
 fun PlayListPage(
     state: MusicListState,
+    sharedState: MusicSharedState,
     onCreatePlaylistAddClick: () -> Unit,
     onFavouritesMenuDotsClick: () -> Unit,
     onMenuDotsClick: (PlaylistUi) -> Unit,
@@ -50,8 +51,8 @@ fun PlayListPage(
     modifier: Modifier = Modifier
 ) {
 
-    val totalPlaylists = remember(state.playlists.size){
-        state.playlists.size + 1
+    val totalPlaylists = remember(sharedState.playlists.size){
+        sharedState.playlists.size + 1
     }
     LazyColumn(
         modifier = modifier
@@ -82,21 +83,21 @@ fun PlayListPage(
                 title = stringResource(R.string.playlist_favourites),
                 count = state.favouritesPlaylistsCount,
                 onMenuDotsClick = onFavouritesMenuDotsClick,
+                onItemClick = onFavouritesMenuDotsClick,
                 playlistCardStyle = PlaylistCardStyle.Favourites,
-
             )
         }
         item {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.playlist_my_playlist_count,state.playlists.size),
+                text = stringResource(R.string.playlist_my_playlist_count,sharedState.playlists.size),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
                 color = TextSecondary
             )
 
         }
-        if (state.playlists.isEmpty()){
+        if (sharedState.playlists.isEmpty()){
             item {
                 VPOutlineButton(
                     text = stringResource(R.string.playlist_create_playlist),
@@ -113,7 +114,7 @@ fun PlayListPage(
             }
         }else{
             items(
-                items = state.playlists,
+                items = sharedState.playlists,
                 key = { it.id }
             ){ playlistUi ->
                 PlaylistCard(
@@ -126,6 +127,9 @@ fun PlayListPage(
                         else -> playlistUi.id.toString()
                     },
                     onMenuDotsClick = {
+                        onMenuDotsClick(playlistUi)
+                    },
+                    onItemClick = {
                         onMenuDotsClick(playlistUi)
                     }
                 )
@@ -200,7 +204,6 @@ private fun PlayListPagePreview() {
     VibePlayerTheme {
         PlayListPage(
             state = MusicListState(
-                playlists = emptyList(),
                 selectActionSheetPlaylistUi = PlaylistUi(
                     id = 9,
                     title = "Playlist",
@@ -209,6 +212,7 @@ private fun PlayListPagePreview() {
                 ),
                 isShowDeleteBottomSheet = true
             ),
+            sharedState = MusicSharedState(),
             onDeleteAction = {},
             onRenameAction = {},
             onNavigateToAddSongs = {},

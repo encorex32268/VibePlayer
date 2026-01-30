@@ -35,6 +35,8 @@ import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.music_list.presentation.MusicSharedAction
 import com.lihan.vibeplayer.music_list.presentation.MusicSharedViewModel
 import com.lihan.vibeplayer.music_list.presentation.components.AudioAsyncImage
+import com.lihan.vibeplayer.music_list.presentation.components.CardFavouriteIcon
+import com.lihan.vibeplayer.music_list.presentation.components.CardNoCoverIcon
 import com.lihan.vibeplayer.music_list.presentation.components.HeartIcon
 import com.lihan.vibeplayer.music_list.presentation.components.PlaylistGradientIcon
 import com.lihan.vibeplayer.music_list.presentation.components.SongListContent
@@ -109,27 +111,21 @@ fun PlaylistDetailScreen(
 
         when (state.playlistUi?.style) {
             PlaylistCardStyle.Favourites -> {
-                HeartIcon(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(200.dp),
-                    iconSize = 100.dp
+                CardFavouriteIcon(
+                    iconSize = 100.dp,
+                    backgroundSize = 200.dp
                 )
             }
             PlaylistCardStyle.NoCover -> {
-                PlaylistGradientIcon(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(200.dp),
+                CardNoCoverIcon(
+                    backgroundSize = 200.dp,
                     iconSize = 100.dp
                 )
             }
             is PlaylistCardStyle.HasCover -> {
                 if (isImageLoadingAndError) {
-                    PlaylistGradientIcon(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .size(200.dp),
+                    CardNoCoverIcon(
+                        backgroundSize = 200.dp,
                         iconSize = 100.dp
                     )
                 } else {
@@ -141,7 +137,14 @@ fun PlaylistDetailScreen(
                         model = style.imageModel,
                         cacheKey = when {
                             style.isUploadedImage -> state.playlistUi.coverImageUriString!!
-                            !style.isUploadedImage -> "${state.playlistUi.id}_${state.playlistUi.audioIds.first()}"
+                            !style.isUploadedImage -> {
+                                val firstAudioId = state.playlistUi.audioIds.firstOrNull()
+                                if (firstAudioId != null) {
+                                    "${state.playlistUi.id}_$firstAudioId"
+                                } else {
+                                    state.playlistUi.id.toString()
+                                }
+                            }
                             else -> state.playlistUi.id.toString()
                         },
                         onError = {
