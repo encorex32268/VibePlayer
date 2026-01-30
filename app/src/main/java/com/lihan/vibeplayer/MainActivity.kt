@@ -33,7 +33,9 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -74,214 +76,246 @@ class MainActivity : ComponentActivity() {
                 } else {
                     Route.Permission
                 }
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                val isHideBottomBar = withoutBottomBarRoutes.any { currentDestination?.hasRoute(it) == true }
 
-                val snackbarHostState = remember { SnackbarHostState() }
 
-                val musicSharedViewModel = koinActivityViewModel<MusicSharedViewModel>()
-                val sharedState by musicSharedViewModel.state.collectAsStateWithLifecycle()
+                if (startDestination == Route.Permission) {
 
-                ObserveEvent(musicSharedViewModel.uiEvent) { uiEvent ->
-                    when(uiEvent){
-                        is MusicSharedUiEvent.OnAddToPlaylistSucceed -> {
-                            snackbarHostState.showSnackbar(message = this@MainActivity.getString(R.string.add_to_playlist,uiEvent.playlistTitle))
+                    PermissionScreenRoot(
+                        audioPermissionState = audioPermissionState,
+                        onNavigateToSetting = {
+                            val intent = Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", this@MainActivity.packageName, null)
+                            )
+                            this@MainActivity.startActivity(intent)
+                        }
+                    )
+
+                } else {
+
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+                    val isHideBottomBar =
+                        withoutBottomBarRoutes.any { currentDestination?.hasRoute(it) == true }
+
+                    val snackbarHostState = remember { SnackbarHostState() }
+
+                    val musicSharedViewModel = koinActivityViewModel<MusicSharedViewModel>()
+                    val sharedState by musicSharedViewModel.state.collectAsStateWithLifecycle()
+
+                    ObserveEvent(musicSharedViewModel.uiEvent) { uiEvent ->
+                        when (uiEvent) {
+                            is MusicSharedUiEvent.OnAddToPlaylistSucceed -> {
+                                snackbarHostState.showSnackbar(
+                                    message = this@MainActivity.getString(
+                                        R.string.add_to_playlist,
+                                        uiEvent.playlistTitle
+                                    )
+                                )
+                            }
                         }
                     }
-                }
 
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ){
-                    Scaffold(
-                        containerColor = SurfaceBG,
-                        bottomBar = {
-                            if (sharedState.playingAudioUi != null && !isHideBottomBar){
-                                AnimatedVisibility(
-                                    visible = true,
-                                    enter = slideInVertically(
-                                        initialOffsetY = { fullHeight -> fullHeight }
-                                    ) + fadeIn(),
-                                    exit = slideOutVertically(
-                                        targetOffsetY = { fullHeight -> fullHeight }
-                                    ) + fadeOut()
-                                ) {
-                                    PlayerBottomBar(
-                                        audioUi = sharedState.playingAudioUi!!,
-                                        playlists = sharedState.playlists,
-                                        modeStatusBanner = sharedState.modeStatusBanner,
-                                        repeatModeStatus = sharedState.repeatModeStatus,
-                                        isPlaying = sharedState.isPlaying,
-                                        isEnabledShuffle = sharedState.isEnabledShuffle,
-                                        isExpandPlayer = sharedState.isExpandPlayer,
-                                        duration = sharedState.duration,
-                                        currentPosition = sharedState.currentPosition,
-                                        isShowAddToPlaylistSheet = sharedState.isShowAddToPlaylistSheet,
-                                        onPlayClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnPlayClick)
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Scaffold(
+                            containerColor = SurfaceBG,
+                            bottomBar = {
+                                if (sharedState.playingAudioUi != null && !isHideBottomBar) {
+                                    AnimatedVisibility(
+                                        visible = true,
+                                        enter = slideInVertically(
+                                            initialOffsetY = { fullHeight -> fullHeight }
+                                        ) + fadeIn(),
+                                        exit = slideOutVertically(
+                                            targetOffsetY = { fullHeight -> fullHeight }
+                                        ) + fadeOut()
+                                    ) {
+                                        PlayerBottomBar(
+                                            audioUi = sharedState.playingAudioUi!!,
+                                            playlists = sharedState.playlists,
+                                            modeStatusBanner = sharedState.modeStatusBanner,
+                                            repeatModeStatus = sharedState.repeatModeStatus,
+                                            isPlaying = sharedState.isPlaying,
+                                            isEnabledShuffle = sharedState.isEnabledShuffle,
+                                            isExpandPlayer = sharedState.isExpandPlayer,
+                                            duration = sharedState.duration,
+                                            currentPosition = sharedState.currentPosition,
+                                            isShowAddToPlaylistSheet = sharedState.isShowAddToPlaylistSheet,
+                                            onPlayClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnPlayClick)
+                                            },
+                                            onSkipNextClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnSkipNextClick)
+                                            },
+                                            onSkipPreviousClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnSkipPreviousClick)
+                                            },
+                                            onSeek = {
+                                                musicSharedViewModel.onAction(
+                                                    MusicSharedAction.OnSeek(
+                                                        it
+                                                    )
+                                                )
+                                            },
+                                            onRepeatClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnRepeatClick)
+                                            },
+                                            onShuffleClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnShuffleClick)
+                                            },
+                                            onExpandClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnExpandClick)
+                                            },
+                                            onCollapseClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnCollapseClick)
+                                            },
+                                            onHideModeChangedBanner = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnHideModeChangedBanner)
+                                            },
+                                            onToggleFavourite = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnToggleFavourite)
+                                            },
+                                            onPlaylistClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnPlaylistClick)
+                                            },
+                                            onCreatePlaylistCancelClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnCreatePlaylistCancelClick)
+                                            },
+                                            onCreatePlaylistConfirmClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnCreatePlaylistConfirmClick)
+                                            },
+                                            isCreateButtonEnabled = sharedState.isCreateButtonEnabled,
+                                            isShowCreatePlaylist = sharedState.isShowCreatePlaylistSheet,
+                                            createPlaylistTextFieldState = sharedState.createPlaylistTextFieldState,
+                                            onCreatePlaylistClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnCreatePlaylistClick)
+                                            },
+                                            onFavouritesClick = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnFavouritesClick)
+                                            },
+                                            onPlaylistItemClick = {
+                                                musicSharedViewModel.onAction(
+                                                    MusicSharedAction.OnPlaylistItemClick(
+                                                        it
+                                                    )
+                                                )
+                                            },
+                                            oDismissAddToPlaylistSheet = {
+                                                musicSharedViewModel.onAction(MusicSharedAction.OnDismissAddToPlaylistSheet)
+                                            },
+                                            favouritesPlaylistsCount = sharedState.favouritesPlaylistsCount
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            NavHost(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(it),
+                                navController = navController,
+                                startDestination = startDestination
+                            ) {
+                                composable<Route.MusicList> {
+                                    MusicListScreenRoot(
+                                        musicSharedViewModel = musicSharedViewModel,
+                                        onNavigateToScan = {
+                                            navController.navigate(Route.ScanMusic)
                                         },
-                                        onSkipNextClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnSkipNextClick)
+                                        onNavigateToSearch = {
+                                            navController.navigate(Route.Search)
                                         },
-                                        onSkipPreviousClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnSkipPreviousClick)
+                                        onNavigateToAddSongs = { title ->
+                                            navController.navigate(Route.AddSongs(title))
                                         },
-                                        onSeek = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnSeek(it))
+                                        onNavigateToPlaylistDetail = { playlistId ->
+                                            navController.navigate(Route.PlaylistDetail(playlistId))
                                         },
-                                        onRepeatClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnRepeatClick)
+                                        onFunctionPlayClick = {
+                                            musicSharedViewModel.onAction(
+                                                MusicSharedAction.OnFunctionPlayClick(
+                                                    emptyList()
+                                                )
+                                            )
                                         },
-                                        onShuffleClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnShuffleClick)
+                                        onFunctionShuffleClick = {
+                                            musicSharedViewModel.onAction(
+                                                MusicSharedAction.OnFunctionShuffleClick(
+                                                    emptyList()
+                                                )
+                                            )
                                         },
-                                        onExpandClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnExpandClick)
+                                        onSongClick = { audioUi ->
+                                            musicSharedViewModel.onAction(
+                                                MusicSharedAction.OnSongClick(
+                                                    audioUi
+                                                )
+                                            )
+                                        }
+
+                                    )
+                                }
+
+                                composable<Route.ScanMusic> {
+                                    ScanMusicScreenRoot(
+                                        onBack = {
+                                            navController.navigateUp()
+                                        }
+                                    )
+                                }
+
+                                composable<Route.Search> {
+                                    SearchScreenRoot(
+                                        onBack = {
+                                            navController.navigateUp()
+                                        }
+                                    )
+                                }
+
+                                composable<Route.AddSongs> { entry ->
+                                    val route = entry.toRoute<Route.AddSongs>()
+                                    AddSongsScreenRoot(
+                                        title = route.title ?: "",
+                                        playlistId = route.id,
+                                        onBack = {
+                                            navController.navigateUp()
+                                        }
+                                    )
+                                }
+
+                                composable<Route.PlaylistDetail> { entry ->
+                                    val routeId = entry.toRoute<Route.PlaylistDetail>().id
+                                    PlaylistDetailScreenRoot(
+                                        musicSharedViewModel = musicSharedViewModel,
+                                        playlistId = routeId,
+                                        onBack = {
+                                            navController.navigateUp()
                                         },
-                                        onCollapseClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnCollapseClick)
-                                        },
-                                        onHideModeChangedBanner = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnHideModeChangedBanner)
-                                        },
-                                        onToggleFavourite = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnToggleFavourite)
-                                        },
-                                        onPlaylistClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnPlaylistClick)
-                                        },
-                                        onCreatePlaylistCancelClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnCreatePlaylistCancelClick)
-                                        },
-                                        onCreatePlaylistConfirmClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnCreatePlaylistConfirmClick)
-                                        },
-                                        isCreateButtonEnabled = sharedState.isCreateButtonEnabled,
-                                        isShowCreatePlaylist = sharedState.isShowCreatePlaylistSheet,
-                                        createPlaylistTextFieldState = sharedState.createPlaylistTextFieldState,
-                                        onCreatePlaylistClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnCreatePlaylistClick)
-                                        },
-                                        onFavouritesClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnFavouritesClick)
-                                        },
-                                        onPlaylistItemClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnPlaylistItemClick(it))
-                                        },
-                                        oDismissAddToPlaylistSheet = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnDismissAddToPlaylistSheet)
-                                        },
-                                        favouritesPlaylistsCount = sharedState.favouritesPlaylistsCount
+                                        onNavigateToAddSongs = { playlistId, playlistTitle ->
+                                            navController.navigate(
+                                                Route.AddSongs(
+                                                    id = playlistId,
+                                                    title = playlistTitle
+                                                )
+                                            )
+                                        }
                                     )
                                 }
                             }
                         }
-                    ) {
-                        NavHost(
+                        SnackbarHost(
+                            hostState = snackbarHostState,
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(it),
-                            navController = navController,
-                            startDestination = startDestination
-                        ) {
-                            composable<Route.Permission> {
-                                PermissionScreenRoot(
-                                    audioPermissionState = audioPermissionState,
-                                    onNavigateToSetting = {
-                                        val intent = Intent(
-                                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                            Uri.fromParts("package", this@MainActivity.packageName, null)
-                                        )
-                                        this@MainActivity.startActivity(intent)
-                                    }
-                                )
-
-                            }
-
-                            composable<Route.MusicList> {
-                                MusicListScreenRoot(
-                                    musicSharedViewModel = musicSharedViewModel,
-                                    onNavigateToScan = {
-                                        navController.navigate(Route.ScanMusic)
-                                    },
-                                    onNavigateToSearch = {
-                                        navController.navigate(Route.Search)
-                                    },
-                                    onNavigateToAddSongs = { title ->
-                                        navController.navigate(Route.AddSongs(title))
-                                    },
-                                    onNavigateToPlaylistDetail = { playlistId ->
-                                        navController.navigate(Route.PlaylistDetail(playlistId))
-                                    },
-                                    onFunctionPlayClick = {
-                                        musicSharedViewModel.onAction(MusicSharedAction.OnFunctionPlayClick(emptyList()))
-                                    },
-                                    onFunctionShuffleClick = {
-                                        musicSharedViewModel.onAction(MusicSharedAction.OnFunctionShuffleClick(emptyList()))
-                                    },
-                                    onSongClick = { audioUi ->
-                                        musicSharedViewModel.onAction(MusicSharedAction.OnSongClick(audioUi))
-                                    }
-
-                                )
-                            }
-
-                            composable<Route.ScanMusic> {
-                                ScanMusicScreenRoot(
-                                    onBack = {
-                                        navController.navigateUp()
-                                    }
-                                )
-                            }
-
-                            composable<Route.Search>{
-                                SearchScreenRoot(
-                                    onBack = {
-                                        navController.navigateUp()
-                                    }
-                                )
-                            }
-
-                            composable<Route.AddSongs>{ entry ->
-                                val route = entry.toRoute<Route.AddSongs>()
-                                AddSongsScreenRoot(
-                                    title = route.title?:"",
-                                    playlistId = route.id,
-                                    onBack = {
-                                        navController.navigateUp()
-                                    }
-                                )
-                            }
-
-                            composable<Route.PlaylistDetail>{ entry ->
-                                val routeId = entry.toRoute<Route.PlaylistDetail>().id
-                                PlaylistDetailScreenRoot(
-                                    musicSharedViewModel = musicSharedViewModel,
-                                    playlistId = routeId,
-                                    onBack = {
-                                        navController.navigateUp()
-                                    },
-                                    onNavigateToAddSongs = { playlistId,playlistTitle ->
-                                        navController.navigate(
-                                            Route.AddSongs(
-                                                id = playlistId,
-                                                title = playlistTitle
-                                            )
-                                        )
-                                    }
-                                )
-                            }
-                        }
+                                .align(Alignment.BottomCenter)
+                                .navigationBarsPadding()
+                                .padding(bottom = 16.dp)
+                        )
                     }
-                    SnackbarHost(
-                        hostState = snackbarHostState,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .navigationBarsPadding()
-                            .padding(bottom = 16.dp)
-                    )
+
                 }
+
             }
         }
     }
