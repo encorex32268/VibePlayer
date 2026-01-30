@@ -18,7 +18,7 @@ sealed interface MusicListAction {
     data class OnMenuDotsClick(
         val playlistUi: PlaylistUi
     ): MusicListAction
-    data object OnFavouritesMenuDotsClick: MusicListAction
+    data class OnFavouritesMenuDotsClick(val favouritesPlaylistsCount: Int): MusicListAction
     data object OnActionSheetDismiss: MusicListAction
 
     data class OnUpdatePlaylistCover(val uriString: String): MusicListAction

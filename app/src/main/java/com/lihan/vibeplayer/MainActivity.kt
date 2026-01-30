@@ -26,9 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -43,7 +41,6 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.lihan.vibeplayer.core.navigation.Route
 import com.lihan.vibeplayer.core.navigation.withoutBottomBarRoutes
 import com.lihan.vibeplayer.core.presentation.ObserveEvent
-import com.lihan.vibeplayer.music_list.presentation.MusicListScreen
 import com.lihan.vibeplayer.music_list.presentation.MusicListScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.MusicSharedAction
 import com.lihan.vibeplayer.music_list.presentation.MusicSharedUiEvent
@@ -148,8 +145,8 @@ class MainActivity : ComponentActivity() {
                                         onHideModeChangedBanner = {
                                             musicSharedViewModel.onAction(MusicSharedAction.OnHideModeChangedBanner)
                                         },
-                                        onFavouriteClick = {
-                                            musicSharedViewModel.onAction(MusicSharedAction.OnFavouriteClick)
+                                        onToggleFavourite = {
+                                            musicSharedViewModel.onAction(MusicSharedAction.OnToggleFavourite)
                                         },
                                         onPlaylistClick = {
                                             musicSharedViewModel.onAction(MusicSharedAction.OnPlaylistClick)
@@ -174,7 +171,8 @@ class MainActivity : ComponentActivity() {
                                         },
                                         oDismissAddToPlaylistSheet = {
                                             musicSharedViewModel.onAction(MusicSharedAction.OnDismissAddToPlaylistSheet)
-                                        }
+                                        },
+                                        favouritesPlaylistsCount = sharedState.favouritesPlaylistsCount
                                     )
                                 }
                             }

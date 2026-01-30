@@ -42,6 +42,7 @@ fun PlayerBottomBar(
     duration: Long,
     createPlaylistTextFieldState: TextFieldState,
     isCreateButtonEnabled: Boolean,
+    favouritesPlaylistsCount: Int,
     onSeek: (Long) -> Unit,
     onPlayClick: () -> Unit,
     onSkipNextClick: () -> Unit,
@@ -51,7 +52,7 @@ fun PlayerBottomBar(
     onCollapseClick: () -> Unit,
     onExpandClick: () -> Unit,
     onHideModeChangedBanner: () -> Unit,
-    onFavouriteClick: () -> Unit,
+    onToggleFavourite: () -> Unit,
     onPlaylistClick: () -> Unit,
     onCreatePlaylistCancelClick: () -> Unit,
     onCreatePlaylistConfirmClick: () -> Unit,
@@ -108,7 +109,7 @@ fun PlayerBottomBar(
                 onRepeatClick = onRepeatClick,
                 onShuffleClick = onShuffleClick,
                 onHideModeChangedBanner = onHideModeChangedBanner,
-                onFavouriteClick = onFavouriteClick,
+                onToggleFavourite = onToggleFavourite,
                 onPlaylistClick = onPlaylistClick
             )
 
@@ -118,7 +119,8 @@ fun PlayerBottomBar(
                     onCreatePlaylistClick = onCreatePlaylistClick,
                     onFavouritesClick = onFavouritesClick,
                     onDismiss = oDismissAddToPlaylistSheet,
-                    onItemClick = onPlaylistItemClick
+                    onItemClick = onPlaylistItemClick,
+                    favouritesPlaylistsCount = favouritesPlaylistsCount
                 )
 
             }
@@ -185,7 +187,7 @@ private fun PlayerBottomBarPreview() {
             onHideModeChangedBanner = {},
             repeatModeStatus = RepeatModeStatus.Off,
             onPlaylistClick = {},
-            onFavouriteClick = {},
+            onToggleFavourite = {},
             isShowAddToPlaylistSheet = true,
             createPlaylistTextFieldState = TextFieldState(),
             isCreateButtonEnabled = false,
@@ -196,7 +198,8 @@ private fun PlayerBottomBarPreview() {
             onCreatePlaylistClick = {},
             onPlaylistItemClick = {},
             oDismissAddToPlaylistSheet = {},
-            playlists = emptyList()
+            playlists = emptyList(),
+            favouritesPlaylistsCount = 1
         )
     }
 

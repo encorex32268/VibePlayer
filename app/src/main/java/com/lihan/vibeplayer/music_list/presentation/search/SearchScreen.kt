@@ -77,6 +77,7 @@ fun SearchScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SearchBar(
+                modifier = Modifier.weight(1f),
                 textFieldState = state.textFieldState,
                 onCloseClick = {
                     onAction(SearchAction.OnCloseClick)

@@ -70,7 +70,7 @@ class PlaylistDetailViewModel(
                 .getPlaylistAudiosById(id)
                 .filterNotNull()
                 .onEach { playlistAudio ->
-                    val audios = playlistAudio.audios
+                    val audios = playlistAudio.audios.reversed()
                     var playlistUi = playlistAudio.playlist.toUi(audios.size)
 
                     val firstAudio = audios.firstOrNull()

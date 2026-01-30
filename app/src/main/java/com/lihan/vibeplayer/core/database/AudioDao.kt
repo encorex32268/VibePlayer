@@ -29,8 +29,8 @@ interface AudioDao{
     @Query("SELECT * FROM AudioEntity WHERE id IN(:ids)")
     fun getAudiosByIds(ids: List<Int>): Flow<List<AudioEntity>>
 
-    @Query("UPDATE AudioEntity SET isFavourite = :isFavourite WHERE id = :audioId")
-    suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean)
+    @Query("UPDATE AudioEntity SET isFavourite = :isFavourite, addedFavouriteTimestamp = :timestamp WHERE id = :audioId")
+    suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean,timestamp: Long?)
 
     @Transaction
     suspend fun upsertAudioList(audioEntities: List<AudioEntity>){
@@ -50,7 +50,7 @@ interface AudioDao{
         }
     }
 
-    @Query("SELECT * FROM AudioEntity WHERE isFavourite = 1")
+    @Query("SELECT * FROM AudioEntity WHERE isFavourite = 1 ORDER BY addedFavouriteTimestamp ASC ")
     fun getFavouriteAudios(): Flow<List<AudioEntity>>
 
     @Query("SELECT COUNT(*) FROM AudioEntity WHERE isFavourite = 1")

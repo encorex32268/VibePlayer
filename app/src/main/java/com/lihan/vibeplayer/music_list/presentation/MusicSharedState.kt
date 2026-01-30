@@ -25,5 +25,6 @@ data class MusicSharedState(
     val createPlaylistTextFieldState: TextFieldState = TextFieldState(),
     val isCreateButtonEnabled: Boolean = false,
     val isShowCreatePlaylistSheet: Boolean = false,
+    val favouritesPlaylistsCount: Int = 0,
 
 )

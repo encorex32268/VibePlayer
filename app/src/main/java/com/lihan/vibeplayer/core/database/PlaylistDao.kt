@@ -40,7 +40,7 @@ interface PlaylistDao {
 
         val existingPlaylist = id?.let { getPlaylistById(it).firstOrNull() }
         val finalCoverUri = existingPlaylist?.coverImageUriString ?: coverUri
-        //
+
         val upsertId = upsert(
             playlistEntity = PlaylistEntity(
                 id = id?:0,

@@ -37,8 +37,8 @@ class OfflineMusicListRepository(
         return db.audioDao.getAudioById(audioId).map { it?.toDomain() }
     }
 
-    override suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean) {
-        db.audioDao.updateFavouriteStatus(audioId,isFavourite)
+    override suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean , timestamp: Long?) {
+        db.audioDao.updateFavouriteStatus(audioId,isFavourite, timestamp)
     }
 
     override fun getAllAudiosAndSync(): Flow<List<Audio>> {
@@ -135,8 +135,7 @@ class OfflineMusicListRepository(
     override fun getPlaylistAudios(): Flow<List<PlaylistAudios>> {
         return db.playlistDao
             .getPlaylistAudios()
-            //Need to reverse the list so the primary audio's album art is prioritized.
-            .map { it.map {  dbPlaylistAudios -> dbPlaylistAudios.toDomain() }.reversed()}
+            .map { it.map {  dbPlaylistAudios -> dbPlaylistAudios.toDomain() }}
 
     }
 

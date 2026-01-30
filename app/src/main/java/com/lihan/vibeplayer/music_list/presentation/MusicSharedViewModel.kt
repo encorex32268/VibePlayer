@@ -67,6 +67,7 @@ class MusicSharedViewModel(
         .onStart {
             loadAudios()
             loadPlaylists()
+            observeFavouritePlaylist()
             observePlayer()
             observeCurrentAudio()
             observeCreatePlaylistTextField()
@@ -114,7 +115,7 @@ class MusicSharedViewModel(
             is MusicSharedAction.OnSeek -> onSeek(action.duration)
             is MusicSharedAction.OnSongClick -> onSongClick(action.audioUi)
             MusicSharedAction.OnScanAgainClick -> loadAudios()
-            MusicSharedAction.OnFavouriteClick -> onFavouriteClick()
+            MusicSharedAction.OnToggleFavourite -> onToggleFavourite()
             MusicSharedAction.OnPlaylistClick -> onPlaylistClick()
             MusicSharedAction.OnCreatePlaylistCancelClick -> onCreatePlaylistCancelClick()
             MusicSharedAction.OnCreatePlaylistConfirmClick -> onCreatePlaylistConfirmClick()
@@ -211,12 +212,14 @@ class MusicSharedViewModel(
             ) }
             return
         }
+        val isFavourite = !currentPlayingAudioUi.isFavourite
         progressFavouriteJob?.cancel()
         progressFavouriteJob = viewModelScope.launch {
             repository
                 .updateFavouriteStatus(
-                    currentPlayingAudioUi.id.toInt(),
-                    !currentPlayingAudioUi.isFavourite
+                    audioId = currentPlayingAudioUi.id.toInt(),
+                    isFavourite = isFavourite,
+                    timestamp = if (isFavourite) System.currentTimeMillis() else null
                 )
         }
         _state.update { it.copy(
@@ -267,14 +270,16 @@ class MusicSharedViewModel(
             }.launchIn(viewModelScope)
     }
 
-    private fun onFavouriteClick(){
+    private fun onToggleFavourite(){
         val currentPlayingAudioUi = state.value.playingAudioUi ?: return
+        val isFavourite = !currentPlayingAudioUi.isFavourite
         progressFavouriteJob?.cancel()
         progressFavouriteJob = viewModelScope.launch {
             repository
                 .updateFavouriteStatus(
-                    currentPlayingAudioUi.id.toInt(),
-                    !currentPlayingAudioUi.isFavourite
+                    audioId = currentPlayingAudioUi.id.toInt(),
+                    isFavourite = isFavourite,
+                    timestamp = if (isFavourite) System.currentTimeMillis() else null
                 )
         }
 
@@ -490,7 +495,8 @@ class MusicSharedViewModel(
             .onEach { playlistAudios ->
 
                 val playlistUis = playlistAudios.map { playlistAudio ->
-                    val audios = playlistAudio.audios
+                    //Need to reverse the list so the primary audio's album art is prioritized.
+                    val audios = playlistAudio.audios.reversed()
                     val playlistUi = playlistAudio.playlist.toUi(audios.size)
 
                     val firstAudio = audios.firstOrNull()
@@ -519,6 +525,17 @@ class MusicSharedViewModel(
 
                 _state.update { it.copy(
                     playlists = playlistUis
+                ) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeFavouritePlaylist(){
+        repository
+            .getFavouriteCount()
+            .onEach {  count ->
+                _state.update { it.copy(
+                    favouritesPlaylistsCount = count
                 ) }
             }
             .launchIn(viewModelScope)

@@ -9,7 +9,7 @@ interface MusicListRepository {
 
     fun getAudioById(audioId: Int): Flow<Audio?>
 
-    suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean)
+    suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean , timestamp: Long?)
 
     fun getAllAudiosAndSync(): Flow<List<Audio>>
 

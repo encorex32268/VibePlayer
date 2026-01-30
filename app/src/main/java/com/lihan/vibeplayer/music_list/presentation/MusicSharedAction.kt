@@ -17,7 +17,7 @@ sealed interface MusicSharedAction {
     data class OnFunctionPlayClick(val audios: List<AudioUi>): MusicSharedAction
     data class OnFunctionShuffleClick(val audios: List<AudioUi>): MusicSharedAction
     data class OnSongClick(val audioUi: AudioUi): MusicSharedAction
-    data object OnFavouriteClick: MusicSharedAction
+    data object OnToggleFavourite: MusicSharedAction
     data object OnPlaylistClick: MusicSharedAction
     data object OnCreatePlaylistCancelClick: MusicSharedAction
     data object OnCreatePlaylistConfirmClick: MusicSharedAction

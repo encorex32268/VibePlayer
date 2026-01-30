@@ -27,6 +27,7 @@ import com.lihan.vibeplayer.ui.theme.VibePlayerTheme
 @Composable
 fun AddToPlaylistSheet(
     playlists: List<PlaylistUi>,
+    favouritesPlaylistsCount: Int,
     onCreatePlaylistClick: () -> Unit,
     onFavouritesClick: () -> Unit,
     onItemClick: (PlaylistUi) -> Unit,
@@ -64,7 +65,8 @@ fun AddToPlaylistSheet(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                     title = stringResource(R.string.favourites),
                     playlistCardStyle = PlaylistCardStyle.Favourites,
-                    onItemClick = onFavouritesClick
+                    onItemClick = onFavouritesClick,
+                    count = favouritesPlaylistsCount
                 )
             }
             items(
@@ -107,7 +109,8 @@ private fun AddToPlaylistSheetPreview() {
             onItemClick = {},
             onDismiss = {},
             onCreatePlaylistClick = {},
-            onFavouritesClick = {}
+            onFavouritesClick = {},
+            favouritesPlaylistsCount = 100
         )
     }
 }

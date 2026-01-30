@@ -12,5 +12,6 @@ data class AudioEntity(
     val artisName: String,
     val duration: Long,
     val size: Long,
-    val isFavourite: Boolean = false
+    val isFavourite: Boolean = false,
+    val addedFavouriteTimestamp: Long? = null
 )

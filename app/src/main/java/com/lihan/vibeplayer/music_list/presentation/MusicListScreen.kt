@@ -143,7 +143,7 @@ fun MusicListScreen(
                                     onAction(MusicListAction.OnCreatePlaylistCancelClick)
                                 },
                                 onFavouritesMenuDotsClick = {
-                                    onAction(MusicListAction.OnFavouritesMenuDotsClick)
+                                    onAction(MusicListAction.OnFavouritesMenuDotsClick(sharedState.favouritesPlaylistsCount))
                                 },
                                 onMenuDotsClick = { playlistUi ->
                                     onAction(MusicListAction.OnMenuDotsClick(playlistUi))

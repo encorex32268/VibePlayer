@@ -37,7 +37,6 @@ class MusicListViewModel(
     val state = _state
         .onStart {
             if (!hasInitialLoadedData) {
-                observeFavouritePlaylist()
                 observeCreatePlaylistTextField()
                 observeRenameTextField()
                 hasInitialLoadedData = true
@@ -56,7 +55,7 @@ class MusicListViewModel(
             is MusicListAction.OnNavigateToPlaylistDetail -> onNavigateToPlaylistDetail()
             MusicListAction.OnCreatePlaylistCancelClick -> onCreatePlaylistCancel()
             is MusicListAction.OnMenuDotsClick -> onMenuDotsClick(action.playlistUi)
-            MusicListAction.OnFavouritesMenuDotsClick -> onFavouritesMenuDotsClick()
+            is MusicListAction.OnFavouritesMenuDotsClick -> onFavouritesMenuDotsClick(action.favouritesPlaylistsCount)
             MusicListAction.OnActionSheetDismiss -> onActionSheetDismiss()
             is MusicListAction.OnUpdatePlaylistCover -> onUpdatePlaylistCover(action.uriString)
             is MusicListAction.OnDeleteAction -> onDeleteAction(action.action)
@@ -198,12 +197,12 @@ class MusicListViewModel(
         ) }
     }
 
-    private fun onFavouritesMenuDotsClick(){
+    private fun onFavouritesMenuDotsClick(favouritesPlaylistsCount: Int){
         _state.update { it.copy(
             selectActionSheetPlaylistUi = PlaylistUi(
                 id = FAVOURITES_ID,
                 style = PlaylistCardStyle.Favourites,
-                count = it.favouritesPlaylistsCount
+                count = favouritesPlaylistsCount
             ),
             isShowActionSheet = true
         ) }
@@ -232,19 +231,6 @@ class MusicListViewModel(
             )
         }
     }
-
-
-    private fun observeFavouritePlaylist(){
-        repository
-            .getFavouriteCount()
-            .onEach {  count ->
-                _state.update { it.copy(
-                    favouritesPlaylistsCount = count
-                ) }
-            }
-            .launchIn(viewModelScope)
-    }
-
 
     private fun observeCreatePlaylistTextField() {
         snapshotFlow {

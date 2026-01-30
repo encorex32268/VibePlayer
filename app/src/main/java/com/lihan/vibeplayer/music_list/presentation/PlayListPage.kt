@@ -81,7 +81,7 @@ fun PlayListPage(
         item {
             PlaylistCard(
                 title = stringResource(R.string.playlist_favourites),
-                count = state.favouritesPlaylistsCount,
+                count = sharedState.favouritesPlaylistsCount,
                 onMenuDotsClick = onFavouritesMenuDotsClick,
                 onItemClick = onFavouritesMenuDotsClick,
                 playlistCardStyle = PlaylistCardStyle.Favourites,
