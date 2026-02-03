@@ -58,6 +58,7 @@ This app follows the **Clean Architecture** principles to ensure separation of c
 This project is open source.
 
 **Author**: [LiHan](https://github.com/encorex32268)
+
 **Project Link**: [VibePlayer](https://github.com/encorex32268/VibePlayer) 
 
 ## 🚀 Future Roadmap
