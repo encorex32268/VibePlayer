@@ -25,14 +25,14 @@ import kotlinx.coroutines.launch
 class SearchViewModel(
     private val repository: MusicListRepository
 ) : ViewModel() {
-    private var hasInitialLoadedData = false
+    private var hasLoadedInitialData = false
 
     private val _state = MutableStateFlow(SearchState())
     val state = _state
         .onStart {
-            if (!hasInitialLoadedData) {
+            if (!hasLoadedInitialData) {
                 observerTextFieldState()
-                hasInitialLoadedData = true
+                hasLoadedInitialData = true
             }
         }.stateIn(
             viewModelScope,

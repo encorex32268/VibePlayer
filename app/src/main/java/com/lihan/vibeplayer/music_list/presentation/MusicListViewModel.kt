@@ -1,15 +1,12 @@
 package com.lihan.vibeplayer.music_list.presentation
 
-import android.net.Uri
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lihan.vibeplayer.core.domain.FAVOURITES_ID
 import com.lihan.vibeplayer.music_list.domain.MusicListRepository
 import com.lihan.vibeplayer.music_list.presentation.mapper.toDomain
-import com.lihan.vibeplayer.music_list.presentation.mapper.toUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistUi
 import kotlinx.coroutines.channels.Channel
@@ -28,7 +25,8 @@ class MusicListViewModel(
     private val repository: MusicListRepository
 ) : ViewModel() {
 
-    private var hasInitialLoadedData = false
+
+    private var hasLoadedInitialData = false
 
     private val _uiEvent = Channel<MusicListUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -36,10 +34,10 @@ class MusicListViewModel(
     private val _state = MutableStateFlow(MusicListState())
     val state = _state
         .onStart {
-            if (!hasInitialLoadedData) {
+            if (!hasLoadedInitialData) {
                 observeCreatePlaylistTextField()
                 observeRenameTextField()
-                hasInitialLoadedData = true
+                hasLoadedInitialData = true
             }
         }.stateIn(
             viewModelScope,

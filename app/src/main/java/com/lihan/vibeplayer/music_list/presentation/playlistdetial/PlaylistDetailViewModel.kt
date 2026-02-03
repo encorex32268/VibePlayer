@@ -32,13 +32,13 @@ class PlaylistDetailViewModel(
     private val repository: OfflineMusicListRepository
 ) : ViewModel() {
 
-    private var hasInitialLoadedData = false
+    private var hasLoadedInitialData = false
 
     private val _state = MutableStateFlow(PlaylistDetailState())
     val state = _state.onStart {
-        if (!hasInitialLoadedData) {
+        if (!hasLoadedInitialData) {
             initPlaylistUi()
-            hasInitialLoadedData = true
+            hasLoadedInitialData = true
         }
     }.stateIn(
         viewModelScope,

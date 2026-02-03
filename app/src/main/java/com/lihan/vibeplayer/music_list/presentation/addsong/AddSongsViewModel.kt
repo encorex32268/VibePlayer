@@ -32,7 +32,7 @@ class AddSongsViewModel(
     private val repository: MusicListRepository
 ) : ViewModel() {
 
-    private var hasInitialLoadedData = false
+    private var hasLoadedInitialData = false
 
     private var originAudioUi: List<AudioUi> = emptyList()
 
@@ -42,10 +42,10 @@ class AddSongsViewModel(
     private val _state = MutableStateFlow(AddSongsState())
     val state = _state
         .onStart {
-            if (!hasInitialLoadedData) {
+            if (!hasLoadedInitialData) {
                 loadAudios()
                 observeSearchTextField()
-                hasInitialLoadedData = true
+                hasLoadedInitialData = true
             }
         }.stateIn(
             viewModelScope,

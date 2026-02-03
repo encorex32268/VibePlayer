@@ -55,7 +55,7 @@ class VibePlayerApp : Application(), SingletonImageLoader.Factory{
 
 class ByteArrayKeyer : Keyer<ByteArray> {
 
-    override fun key(data: ByteArray, options: Options): String? {
+    override fun key(data: ByteArray, options: Options): String {
         return data.joinToString(",") { it.toString() }
     }
 }
