@@ -9,7 +9,7 @@ import androidx.room.TypeConverters
     entities = [
         AudioEntity::class,
         PlaylistEntity::class,
-        PlaylistAudioCrossRef::class
+        PlaylistAudioEntityCrossRef::class
     ],
     exportSchema = false
 )

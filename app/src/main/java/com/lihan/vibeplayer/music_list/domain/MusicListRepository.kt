@@ -5,8 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface MusicListRepository {
 
-    suspend fun upsertAudio(audio: Audio)
-
     fun getAudioById(audioId: Int): Flow<Audio?>
 
     suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean , timestamp: Long?)
@@ -14,8 +12,6 @@ interface MusicListRepository {
     fun getAllAudiosAndSync(): Flow<List<Audio>>
 
     fun getAllAudios(): Flow<List<Audio>>
-
-    fun getAudiosByIds(ids: List<Int>): Flow<List<Audio>>
 
     suspend fun getAudiosBySizeAndDuration(
         duration: Long,
@@ -34,10 +30,6 @@ interface MusicListRepository {
     suspend fun upsertPlaylist(playlist: Playlist): Long
 
     suspend fun deletePlaylist(playlist: Playlist)
-
-    fun getAllPlaylist(): Flow<List<Playlist>>
-
-    fun getPlaylistById(id: Int?): Flow<Playlist?>
 
     fun getPlaylistAudios(): Flow<List<PlaylistAudios>>
 

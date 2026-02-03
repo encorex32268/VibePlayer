@@ -37,8 +37,6 @@ import com.lihan.vibeplayer.music_list.presentation.MusicSharedViewModel
 import com.lihan.vibeplayer.music_list.presentation.components.AudioAsyncImage
 import com.lihan.vibeplayer.music_list.presentation.components.CardFavouriteIcon
 import com.lihan.vibeplayer.music_list.presentation.components.CardNoCoverIcon
-import com.lihan.vibeplayer.music_list.presentation.components.HeartIcon
-import com.lihan.vibeplayer.music_list.presentation.components.PlaylistGradientIcon
 import com.lihan.vibeplayer.music_list.presentation.components.SongListContent
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi
 import com.lihan.vibeplayer.music_list.presentation.model.PlaylistCardStyle
@@ -138,7 +136,7 @@ fun PlaylistDetailScreen(
                         cacheKey = when {
                             style.isUploadedImage -> state.playlistUi.coverImageUriString!!
                             !style.isUploadedImage -> {
-                                val firstAudioId = state.playlistUi.audioIds.firstOrNull()
+                                val firstAudioId = state.playlistAudio?.sortedAudios?.firstOrNull()
                                 if (firstAudioId != null) {
                                     "${state.playlistUi.id}_$firstAudioId"
                                 } else {

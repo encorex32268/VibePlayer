@@ -7,6 +7,7 @@ typealias DomainPlaylistAudios = com.lihan.vibeplayer.music_list.domain.Playlist
 fun PlaylistAudios.toDomain(): DomainPlaylistAudios{
     return DomainPlaylistAudios(
         playlist = this.playlist.toDomain(),
-        audios = audios.map { it.toDomain() }
+        audios = audios.map { it.toDomain() },
+        crossRefs = crossRefs.map { it.toDomain() }
     )
 }

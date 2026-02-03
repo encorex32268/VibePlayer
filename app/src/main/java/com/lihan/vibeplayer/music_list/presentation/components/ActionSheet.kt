@@ -4,12 +4,14 @@ package com.lihan.vibeplayer.music_list.presentation.components
 
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,14 +51,10 @@ fun ActionSheet(
     onUpdatePlaylistCover: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-
     val picker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.PickVisualMedia()
     ) { imageUri ->
         if (imageUri!=null){
-            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            context.contentResolver.takePersistableUriPermission(imageUri, flag)
             onUpdatePlaylistCover(imageUri.toString())
         }
     }
@@ -119,7 +117,11 @@ fun ActionSheet(
                     ActionItem(
                         icon = ImageVector.vectorResource(R.drawable.img_edit),
                         onClick = {
-                            picker.launch("image/*")
+                            picker.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
                         },
                         title = stringResource(R.string.change_cover)
                     )

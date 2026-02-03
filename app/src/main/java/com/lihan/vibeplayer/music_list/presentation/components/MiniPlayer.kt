@@ -2,6 +2,7 @@ package com.lihan.vibeplayer.music_list.presentation.components
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -87,6 +88,7 @@ fun MiniPlayer(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
+                        modifier = Modifier.basicMarquee(),
                         text = audioUi.songTitle,
                         style = MaterialTheme.typography.titleMedium,
                         color = TextPrimary,
@@ -94,6 +96,7 @@ fun MiniPlayer(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
+                        modifier = Modifier.basicMarquee(),
                         text = audioUi.artisName,
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary,

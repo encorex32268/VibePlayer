@@ -9,6 +9,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,8 +31,8 @@ import kotlin.math.sin
 
 @Composable
 fun RadarScanningView(
-    isActiveAnimation: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isActiveAnimation: Boolean = true
 ) {
     val density = LocalDensity.current
     val biggerStroke = with(density) { 1.5.dp.toPx() }
@@ -44,7 +45,7 @@ fun RadarScanningView(
     val moreInnerCircleRadius =  with(density) { 16.dp.toPx() }
     val centerCircleRadius =  with(density) { 4.dp.toPx() }
 
-    var currentAngle by remember { mutableStateOf(105f) }
+    var currentAngle by remember { mutableFloatStateOf(105f) }
 
     val infiniteTransition = rememberInfiniteTransition()
     val animatable by infiniteTransition.animateFloat(

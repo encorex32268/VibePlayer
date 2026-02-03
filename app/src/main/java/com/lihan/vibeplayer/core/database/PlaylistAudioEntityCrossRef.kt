@@ -22,7 +22,8 @@ import androidx.room.Index
         )
     ]
 )
-data class PlaylistAudioCrossRef(
+data class PlaylistAudioEntityCrossRef(
     val playlistId: Int,
-    val audioId: Int
+    val audioId: Int,
+    val order: Int
 )

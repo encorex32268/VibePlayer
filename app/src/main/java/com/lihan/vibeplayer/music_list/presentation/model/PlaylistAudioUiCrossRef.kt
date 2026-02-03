@@ -1,6 +1,7 @@
 package com.lihan.vibeplayer.music_list.presentation.model
 
-data class PlaylistAudioUi(
+data class PlaylistAudioUiCrossRef(
     val playlistId: Int,
-    val audioId: Int
+    val audioId: Int,
+    val order: Int
 )

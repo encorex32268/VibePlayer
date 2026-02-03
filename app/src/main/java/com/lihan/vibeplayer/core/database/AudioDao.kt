@@ -26,9 +26,6 @@ interface AudioDao{
     @Query("SELECT * FROM AudioEntity WHERE id = :audioId")
     fun getAudioById(audioId: Int): Flow<AudioEntity?>
 
-    @Query("SELECT * FROM AudioEntity WHERE id IN(:ids)")
-    fun getAudiosByIds(ids: List<Int>): Flow<List<AudioEntity>>
-
     @Query("UPDATE AudioEntity SET isFavourite = :isFavourite, addedFavouriteTimestamp = :timestamp WHERE id = :audioId")
     suspend fun updateFavouriteStatus(audioId: Int, isFavourite: Boolean,timestamp: Long?)
 

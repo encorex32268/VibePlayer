@@ -439,11 +439,14 @@ class MusicSharedViewModel(
     private fun loadAudios() {
         viewModelScope.launch {
             _state.update { it.copy(isScanning = true) }
+
             val allAudios = repository.getAllAudiosAndSync().first()
-
-            val hasImageAudios = toDeferredAlbumArtImages(allAudios)
-
             exoPlayerManager.setInitMediaItems(allAudios)
+
+            val hasImageAudios = toDeferredAlbumArtImages(
+                allAudios.map { it.toUi() }
+            )
+
             delay(300L)
             _state.update { state ->
                 state.copy(
@@ -492,12 +495,13 @@ class MusicSharedViewModel(
     private fun loadPlaylists() {
         repository
             .getPlaylistAudios()
+            .map { it.map { playlistAudios -> playlistAudios.toUi() } }
             .onEach { playlistAudios ->
 
                 val playlistUis = playlistAudios.map { playlistAudio ->
-                    //Need to reverse the list so the primary audio's album art is prioritized.
-                    val audios = playlistAudio.audios.reversed()
-                    val playlistUi = playlistAudio.playlist.toUi(audios.size)
+
+                    val audios = playlistAudio.sortedAudios
+                    val playlistUi = playlistAudio.playlist
 
                     val firstAudio = audios.firstOrNull()
                     val coverStyle = when{
@@ -549,11 +553,10 @@ class MusicSharedViewModel(
         }
     }
 
-    private suspend fun toDeferredAlbumArtImages(audios: List<Audio>): List<Deferred<AudioUi>>{
+    private suspend fun toDeferredAlbumArtImages(audios: List<AudioUi>): List<Deferred<AudioUi>>{
         return coroutineScope {
-            audios.map { audio ->
+            audios.map { audioUi ->
                 async {
-                    val audioUi = audio.toUi()
                     val albumImage = repository.getAlbumArtImage(audioUi.album)
                     audioUi.copy(albumImage = albumImage)
                 }

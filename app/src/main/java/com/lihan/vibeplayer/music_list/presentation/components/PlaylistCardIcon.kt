@@ -158,3 +158,21 @@ fun CardCreateIcon(
         }
     )
 }
+
+@Preview
+@Composable
+fun CardFavouriteIconPreview() {
+    CardFavouriteIcon()
+}
+
+@Preview
+@Composable
+fun CardNoCoverIconPreview() {
+    CardNoCoverIcon()
+}
+
+@Preview
+@Composable
+fun CardCreateIconPreview() {
+    CardCreateIcon()
+}

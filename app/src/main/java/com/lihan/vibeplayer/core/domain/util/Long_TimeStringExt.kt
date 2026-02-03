@@ -1,5 +1,8 @@
 package com.lihan.vibeplayer.core.domain.util
 
+import android.annotation.SuppressLint
+
+@SuppressLint("DefaultLocale")
 fun Long.toTimeString(): String{
     val mins = this / 60 / 1000
     var seconds = (this / 1000) % 60
@@ -11,6 +14,7 @@ fun Long.toTimeString(): String{
     )
 }
 
+@SuppressLint("DefaultLocale")
 fun Long.toTimeStringWithoutZero(): String{
     val mins = this / 60 / 1000
     val seconds = (this / 1000) % 60

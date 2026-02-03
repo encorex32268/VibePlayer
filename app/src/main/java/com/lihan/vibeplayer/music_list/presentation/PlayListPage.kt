@@ -210,7 +210,7 @@ private fun PlayListPagePreview() {
                     style = PlaylistCardStyle.NoCover,
                     count = 1
                 ),
-                isShowDeleteBottomSheet = true
+                isShowDeleteBottomSheet = false
             ),
             sharedState = MusicSharedState(),
             onDeleteAction = {},

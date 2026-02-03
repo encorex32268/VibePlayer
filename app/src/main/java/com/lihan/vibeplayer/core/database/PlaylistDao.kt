@@ -22,18 +22,17 @@ interface PlaylistDao {
     @Query("SELECT * From playlistentity Where id=:id")
     fun getPlaylistById(id: Int?): Flow<PlaylistEntity?>
 
-    @Query("SELECT * From playlistentity")
-    fun getPlaylists(): Flow<List<PlaylistEntity>>
-
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertCrossRef(crossRef: PlaylistAudioCrossRef)
+    suspend fun insertCrossRef(crossRef: PlaylistAudioEntityCrossRef)
 
-    @Query("SELECT * From PlaylistEntity")
+    @Query("SELECT * From PlaylistEntity" )
     fun getPlaylistAudios(): Flow<List<PlaylistAudios>>
 
     @Query("SELECT * From PlaylistEntity WHERE id=:id")
     fun getPlaylistAudiosById(id: Int?): Flow<PlaylistAudios?>
 
+    @Query("DELETE FROM PlaylistAudioEntityCrossRef WHERE playlistId = :playlistId")
+    suspend fun deleteCrossRefsByPlaylistId(playlistId: Int)
 
     @Transaction
     suspend fun createPlaylistWithAudios(id: Int?,title: String, coverUri: String? , audios: List<String>){
@@ -43,18 +42,25 @@ interface PlaylistDao {
 
         val upsertId = upsert(
             playlistEntity = PlaylistEntity(
-                id = id?:0,
+                id = id,
                 title = title,
                 coverImageUriString = finalCoverUri
             )
         )
         val finalPlaylistId = if (upsertId == -1L) id ?: 0 else upsertId.toInt()
 
-        audios.forEach { audioId ->
+        //before upsert need clear old data
+        //make sure the order is correct
+        if (id != null) {
+            deleteCrossRefsByPlaylistId(id)
+        }
+
+        audios.forEachIndexed { index,audioId ->
             insertCrossRef(
-                crossRef = PlaylistAudioCrossRef(
+                crossRef = PlaylistAudioEntityCrossRef(
                     playlistId = finalPlaylistId,
-                    audioId = audioId.toInt()
+                    audioId = audioId.toInt(),
+                    order = index
                 )
             )
         }

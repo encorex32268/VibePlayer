@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -53,6 +54,7 @@ class PlaylistDetailViewModel(
         if(isFavouritesPlaylistId){
             repository
                 .getFavouriteAudios()
+                .map { it.map { audio -> audio.toUi() } }
                 .onEach {audios ->
                     val hasImageAudios = toDeferredAlbumArtImages(audios)
 
@@ -69,9 +71,13 @@ class PlaylistDetailViewModel(
             repository
                 .getPlaylistAudiosById(id)
                 .filterNotNull()
+                .map { it.toUi() }
                 .onEach { playlistAudio ->
-                    val audios = playlistAudio.audios.reversed()
-                    var playlistUi = playlistAudio.playlist.toUi(audios.size)
+
+                    val audios = playlistAudio.sortedAudios
+                    var playlistUi = playlistAudio.playlist
+
+                    println("audios ${audios.firstOrNull()?.songTitle}")
 
                     val firstAudio = audios.firstOrNull()
                     val coverStyle = when{
@@ -98,7 +104,8 @@ class PlaylistDetailViewModel(
 
                     _state.update { it.copy(
                         playlistUi = playlistUi,
-                        audios = hasImageAudios.awaitAll()
+                        audios = hasImageAudios.awaitAll(),
+                        playlistAudio = playlistAudio
                     ) }
 
 
@@ -108,11 +115,10 @@ class PlaylistDetailViewModel(
     }
 
 
-    private suspend fun toDeferredAlbumArtImages(audios: List<Audio>): List<Deferred<AudioUi>>{
+    private suspend fun toDeferredAlbumArtImages(audios: List<AudioUi>): List<Deferred<AudioUi>>{
         return coroutineScope {
-            audios.map { audio ->
+            audios.map { audioUi ->
                 async {
-                    val audioUi = audio.toUi()
                     val albumImage = repository.getAlbumArtImage(audioUi.album)
                     audioUi.copy(albumImage = albumImage)
                 }

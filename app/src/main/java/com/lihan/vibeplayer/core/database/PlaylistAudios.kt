@@ -10,10 +10,16 @@ data class PlaylistAudios(
         parentColumn = "id",
         entityColumn = "id",
         associateBy = Junction(
-            value = PlaylistAudioCrossRef::class,
+            value = PlaylistAudioEntityCrossRef::class,
             parentColumn = "playlistId",
             entityColumn = "audioId"
         )
     )
-    val audios: List<AudioEntity>
+    val audios: List<AudioEntity>,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "playlistId"
+    )
+    val crossRefs: List<PlaylistAudioEntityCrossRef>
 )
