@@ -1,4 +1,4 @@
-package com.lihan.vibeplayer.music_list.presentation.scan
+package com.lihan.vibeplayer.scan
 
 sealed interface ScanMusicAction {
     data class OnSecondSelect(val second: String): ScanMusicAction

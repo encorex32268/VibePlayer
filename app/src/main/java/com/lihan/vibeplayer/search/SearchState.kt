@@ -1,4 +1,4 @@
-package com.lihan.vibeplayer.music_list.presentation.search
+package com.lihan.vibeplayer.search
 
 import androidx.compose.foundation.text.input.TextFieldState
 import com.lihan.vibeplayer.music_list.presentation.model.AudioUi

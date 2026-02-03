@@ -1,4 +1,4 @@
-package com.lihan.vibeplayer.music_list.presentation.scan.components
+package com.lihan.vibeplayer.scan.components
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

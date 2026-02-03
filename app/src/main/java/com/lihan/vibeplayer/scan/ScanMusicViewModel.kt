@@ -1,4 +1,4 @@
-package com.lihan.vibeplayer.music_list.presentation.scan
+package com.lihan.vibeplayer.scan
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

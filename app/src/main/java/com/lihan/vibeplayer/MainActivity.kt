@@ -33,9 +33,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -50,8 +48,8 @@ import com.lihan.vibeplayer.music_list.presentation.MusicSharedViewModel
 import com.lihan.vibeplayer.music_list.presentation.addsong.AddSongsScreenRoot
 import com.lihan.vibeplayer.music_list.presentation.components.PlayerBottomBar
 import com.lihan.vibeplayer.music_list.presentation.playlistdetial.PlaylistDetailScreenRoot
-import com.lihan.vibeplayer.music_list.presentation.scan.ScanMusicScreenRoot
-import com.lihan.vibeplayer.music_list.presentation.search.SearchScreenRoot
+import com.lihan.vibeplayer.scan.ScanMusicScreenRoot
+import com.lihan.vibeplayer.search.SearchScreenRoot
 import com.lihan.vibeplayer.permission.PermissionScreenRoot
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
 import com.lihan.vibeplayer.ui.theme.VibePlayerTheme

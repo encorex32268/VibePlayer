@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.lihan.vibeplayer.music_list.presentation.scan
+package com.lihan.vibeplayer.scan
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +41,7 @@ import com.lihan.vibeplayer.R
 import com.lihan.vibeplayer.core.presentation.ObserveEvent
 import com.lihan.vibeplayer.core.presentation.components.CircleIconButton
 import com.lihan.vibeplayer.core.presentation.components.RadarScanningView
-import com.lihan.vibeplayer.music_list.presentation.scan.components.ScanFilterRadioGroup
+import com.lihan.vibeplayer.scan.components.ScanFilterRadioGroup
 import com.lihan.vibeplayer.ui.design_system.buttons.VPButton
 import com.lihan.vibeplayer.ui.theme.SurfaceBG
 import com.lihan.vibeplayer.ui.theme.TextDisabled

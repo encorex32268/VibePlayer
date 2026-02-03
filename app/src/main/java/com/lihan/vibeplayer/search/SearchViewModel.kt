@@ -1,6 +1,6 @@
 @file:OptIn(FlowPreview::class)
 
-package com.lihan.vibeplayer.music_list.presentation.search
+package com.lihan.vibeplayer.search
 
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow

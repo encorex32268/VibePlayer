@@ -1,4 +1,4 @@
-package com.lihan.vibeplayer.music_list.presentation.search
+package com.lihan.vibeplayer.search
 
 sealed interface SearchAction {
     data object OnCancelClick: SearchAction
