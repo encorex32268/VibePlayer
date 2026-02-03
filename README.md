@@ -44,7 +44,14 @@ This app follows the **Clean Architecture** principles to ensure separation of c
 
 ## 📸 Screenshots
 
-*(Screenshots coming soon)*
+|                   All Songs                    |                     Playlist Options                      |               Add Songs to Playlist                |
+|:----------------------------------------------:|:---------------------------------------------------------:|:--------------------------------------------------:|
+| <img src="./screenshots/list.png" width="250"> | <img src="./screenshots/playlistoptions.png" width="250"> | <img src="./screenshots/addsongs.png" width="250"> |
+
+|                     Playlist Detail                      |                    Fullscreen Player                     |
+|:--------------------------------------------------------:|:--------------------------------------------------------:|
+| <img src="./screenshots/playlistdetail.png" width="250"> | <img src="./screenshots/playfullscreen.png" width="250"> |
+
 
 ## 📜 License
 
